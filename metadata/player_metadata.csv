@@ -1,0 +1,209 @@
+player_id,first_name,last_name,name,team_id,team_name,position,jersey_number,height,birthdate,hometown,image_url
+52,Zoe,Boyd,Zoe Boyd,1,Boston Fleet,D,3,5'8,2000-08-09,"Caledon East, ON",https://assets.leaguestat.com/pwhl/240x240/52.jpg
+12,Megan,Keller,Megan Keller,1,Boston Fleet,D,5,5'11,1996-05-01,"Farmington, MI",https://assets.leaguestat.com/pwhl/240x240/12.jpg
+182,Hadley,Hartmetz,Hadley Hartmetz,1,Boston Fleet,D,6,5'5,2001-03-25,"Phoenixville, PA",https://assets.leaguestat.com/pwhl/240x240/182.jpg
+254,Mia,Biotti,Mia Biotti,1,Boston Fleet,D,7,,2002-07-24,"Cambridge, MA",https://assets.leaguestat.com/pwhl/240x240/254.jpg
+246,Haley,Winn,Haley Winn,1,Boston Fleet,D,8,5'6,2003-07-14,"Rochester, NY",https://assets.leaguestat.com/pwhl/240x240/246.jpg
+18,Sophie,Shirley,Sophie Shirley,1,Boston Fleet,F,9,5'9,1999-06-30,"Saskatoon, SK",https://assets.leaguestat.com/pwhl/240x240/18.jpg
+15,Alina,Müller,Alina Müller,1,Boston Fleet,F,11,"5'5""",1998-03-12,"Winterthur, SWI",https://assets.leaguestat.com/pwhl/240x240/15.jpg
+97,Liz,Schepers,Liz Schepers,1,Boston Fleet,F,13,5'7,1999-02-13,"Mound, MN",https://assets.leaguestat.com/pwhl/240x240/97.jpg
+256,Olivia,Mobley,Olivia Mobley,1,Boston Fleet,C,15,,2001-10-28,"St. Louis Park, MN",https://assets.leaguestat.com/pwhl/240x240/256.jpg
+255,Riley,Brengman,Riley Brengman,1,Boston Fleet,D,16,,2002-07-06,"China Township, MI",https://assets.leaguestat.com/pwhl/240x240/255.jpg
+17,Theresa,Schafzahl,Theresa Schafzahl,1,Boston Fleet,F,17,5'8,2000-04-12,"Weiz, AUT",https://assets.leaguestat.com/pwhl/240x240/17.jpg
+259,Abby,Newhook,Abby Newhook,1,Boston Fleet,C,19,,2003-05-13,"St John's, NL",https://assets.leaguestat.com/pwhl/240x240/259.jpg
+1,Hannah,Brandt,Hannah Brandt,1,Boston Fleet,F,20,"5'6""",1993-11-27,"Vadnais Heights, MN",https://assets.leaguestat.com/pwhl/240x240/1.jpg
+212,Laura,Kluge,Laura Kluge,1,Boston Fleet,F,25,5'10,1996-11-06,"Berlin, GER",https://assets.leaguestat.com/pwhl/240x240/212.jpg
+243,Ella,Huber,Ella Huber,1,Boston Fleet,F,26,5'5,2002-12-18,"Northfield, IL",https://assets.leaguestat.com/pwhl/240x240/243.jpg
+183,Shay,Maloney,Shay Maloney,1,Boston Fleet,F,27,5'9,2000-01-13,"McHenry, IL",https://assets.leaguestat.com/pwhl/240x240/183.jpg
+262,Amanda,Thiele,Amanda Thiele,1,Boston Fleet,G,30,,2002-06-30,"Milford, MI",https://assets.leaguestat.com/pwhl/240x240/262.jpg
+6,Aerin,Frankel,Aerin Frankel,1,Boston Fleet,G,31,5'5,1999-05-24,"Chappaqua, NY",https://assets.leaguestat.com/pwhl/240x240/6.jpg
+8,Loren,Gabel,Loren Gabel,1,Boston Fleet,F,36,5'4,1997-07-24,"Kitchener, ON",https://assets.leaguestat.com/pwhl/240x240/8.jpg
+41,Abbey,Levy,Abbey Levy,1,Boston Fleet,G,39,6'1,2000-04-02,"Congers, NY",https://assets.leaguestat.com/pwhl/240x240/41.jpg
+149,Jill,Saulnier,Jill Saulnier,1,Boston Fleet,F,44,5'5,1992-03-07,"Halifax, NS",https://assets.leaguestat.com/pwhl/240x240/149.jpg
+16,Jamie Lee,Rattray,Jamie Lee Rattray,1,Boston Fleet,F,47,5'6,1992-09-30,"Kanata, ON",https://assets.leaguestat.com/pwhl/240x240/16.jpg
+232,Rylind,MacKinnon,Rylind MacKinnon,1,Boston Fleet,D,53,5'10,2000-03-05,"Cranbrook, BC",https://assets.leaguestat.com/pwhl/240x240/232.jpg
+185,Daniela,Pejšová,Daniela Pejšová,1,Boston Fleet,D,55,5'8,2002-08-14,"Teplice, CZE",https://assets.leaguestat.com/pwhl/240x240/185.jpg
+46,Olivia,Zafuto,Olivia Zafuto,1,Boston Fleet,D,73,5'6,1997-01-25,"Niagara Falls, NY",https://assets.leaguestat.com/pwhl/240x240/46.jpg
+78,Susanna,Tapani,Susanna Tapani,1,Boston Fleet,F,77,5'10,1993-03-02,"Turku, FIN",https://assets.leaguestat.com/pwhl/240x240/78.jpg
+166,Marlène,Boissonnault,Marlène Boissonnault,2,Minnesota Frost,G,1,,1997-06-19,"Dundee, NB",https://assets.leaguestat.com/pwhl/240x240/166.jpg
+24,Lee,Stecklein,Lee Stecklein,2,Minnesota Frost,D,2,"6'0""",1994-04-23,"Roseville, MN",https://assets.leaguestat.com/pwhl/240x240/24.jpg
+236,Kendall,Cooper,Kendall Cooper,2,Minnesota Frost,D,4,5',2002-05-19,"Oakville, ON",https://assets.leaguestat.com/pwhl/240x240/236.jpg
+167,Sidney,Morin,Sidney Morin,2,Minnesota Frost,D,5,5'5,1995-06-06,"Minnetonka, MN",https://assets.leaguestat.com/pwhl/240x240/167.jpg
+191,Katy,Knoll,Katy Knoll,2,Minnesota Frost,F,6,"5'7""",2001-01-16,"Amherst, NY",https://assets.leaguestat.com/pwhl/240x240/191.jpg
+102,Claire,Butorac,Claire Butorac,2,Minnesota Frost,F,7,5'6,1999-09-24,"Andover, MN",https://assets.leaguestat.com/pwhl/240x240/102.jpg
+162,Madison,Bizal,Madison Bizal,2,Minnesota Frost,D,9,,2000-01-25,"Elk River, MN",https://assets.leaguestat.com/pwhl/240x240/162.jpg
+23,Kelly,Pannek,Kelly Pannek,2,Minnesota Frost,F,12,"5'7""",1995-12-29,"Plymouth, MN",https://assets.leaguestat.com/pwhl/240x240/23.jpg
+25,Grace,Zumwinkle,Grace Zumwinkle,2,Minnesota Frost,F,13,"5'9""",1999-04-23,"Excelsior, MN",https://assets.leaguestat.com/pwhl/240x240/25.jpg
+195,Dominique,Petrie,Dominique Petrie,2,Minnesota Frost,F,14,5'7,2001-01-21,"Hermosa Beach, CA",https://assets.leaguestat.com/pwhl/240x240/195.jpg
+264,Brooke,Becker,Brooke Becker,2,Minnesota Frost,D,15,,2002-05-30,"Orchard Park, NY",https://assets.leaguestat.com/pwhl/240x240/264.jpg
+194,Kaitlyn,O'Donohoe,Kaitlyn O'Donohoe,2,Minnesota Frost,F,16,5'7,2001-09-20,"Atlanta, GA",https://assets.leaguestat.com/pwhl/240x240/194.jpg
+267,Ava,Rinker,Ava Rinker,2,Minnesota Frost,D,17,,2002-11-25,"Elverson, PA",https://assets.leaguestat.com/pwhl/240x240/267.jpg
+37,Élizabeth,Giguère,Élizabeth Giguère,2,Minnesota Frost,F,18,5'10,1997-05-08,"Quebec City, QC",https://assets.leaguestat.com/pwhl/240x240/37.jpg
+188,Mae,Batherson,Mae Batherson,2,Minnesota Frost,D,21,5'8,2000-12-05,"New Minas, NS",https://assets.leaguestat.com/pwhl/240x240/188.jpg
+90,Natalie,Buchbinder,Natalie Buchbinder,2,Minnesota Frost,D,22,"5'8""",1999-01-22,"Fairport, NY",https://assets.leaguestat.com/pwhl/240x240/90.jpg
+269,Vanessa,Upson,Vanessa Upson,2,Minnesota Frost,F,24,,2003-11-18,"Stoney Creek, ON",https://assets.leaguestat.com/pwhl/240x240/269.jpg
+20,Kendall,Coyne Schofield,Kendall Coyne Schofield,2,Minnesota Frost,F,26,5'2,1992-05-25,"Palos Heights, IL",https://assets.leaguestat.com/pwhl/240x240/20.jpg
+21,Taylor,Heise,Taylor Heise,2,Minnesota Frost,F,27,5'10,2000-03-17,"Lake City, MN",https://assets.leaguestat.com/pwhl/240x240/21.jpg
+22,Nicole,Hensley,Nicole Hensley,2,Minnesota Frost,G,29,5'7,1994-06-23,"Lakewood, CO",https://assets.leaguestat.com/pwhl/240x240/22.jpg
+123,Maddie,Rooney,Maddie Rooney,2,Minnesota Frost,G,35,"5'5""",1997-07-07,"Andover, MN",https://assets.leaguestat.com/pwhl/240x240/123.jpg
+104,Denisa,Křížová,Denisa Křížová,2,Minnesota Frost,F,41,"5'5""",1994-11-03,"Horní Cerekev, CZE",https://assets.leaguestat.com/pwhl/240x240/104.jpg
+190,Klára,Hymlárová,Klára Hymlárová,2,Minnesota Frost,F,71,5'5,1999-02-27,"Opava, CZE",https://assets.leaguestat.com/pwhl/240x240/190.jpg
+247,Abby,Hustler,Abby Hustler,2,Minnesota Frost,F,74,5'9,2003-05-05,"St. Louis, PEI",https://assets.leaguestat.com/pwhl/240x240/247.jpg
+189,Britta,Curl-Salemme,Britta Curl-Salemme,2,Minnesota Frost,F,77,5'9,2000-03-20,"Bismarck, ND",https://assets.leaguestat.com/pwhl/240x240/189.jpg
+263,Peyton,Anderson,Peyton Anderson,2,Minnesota Frost,F,91,,2001-04-18,"Arvada, CO",https://assets.leaguestat.com/pwhl/240x240/263.jpg
+270,Megan,Warrener,Megan Warrener,3,Montréal Victoire,G,1,5'6'',2003-07-03,"Stoney Creek, ON",https://assets.leaguestat.com/pwhl/240x240/270.jpg
+273,Maya,Labad,Maya Labad,3,Montréal Victoire,F,4,5'7'',2002-05-07,"Mascouche, QC",https://assets.leaguestat.com/pwhl/240x240/273.jpg
+32,Laura,Stacey,Laura Stacey,3,Montréal Victoire,F,7,"5'10""",1994-05-05,"Kleinburg, ON",https://assets.leaguestat.com/pwhl/240x240/32.jpg
+84,Kati,Tabin,Kati Tabin,3,Montréal Victoire,D,9,"5'8""",1997-04-21,"Winnipeg, MB",https://assets.leaguestat.com/pwhl/240x240/84.jpg
+42,Abby,Roque,Abby Roque,3,Montréal Victoire,F,11,"5'7""",1997-09-25,"Sault Ste. Marie, MI",https://assets.leaguestat.com/pwhl/240x240/42.jpg
+271,Tamara,Giaquinto,Tamara Giaquinto,3,Montréal Victoire,D,12,5'6'',2002-03-29,"Toronto, ON",https://assets.leaguestat.com/pwhl/240x240/271.jpg
+39,Alexandra,Labelle,Alexandra Labelle,3,Montréal Victoire,F,13,5'7,1996-02-27,"St-Louis-de-Gonzague, QC",https://assets.leaguestat.com/pwhl/240x240/39.jpg
+276,Claire,Vekich,Claire Vekich,3,Montréal Victoire,F,15,5'10'',2002-11-26,"Coleraine, MN",https://assets.leaguestat.com/pwhl/240x240/276.jpg
+61,Hayley,Scamurra,Hayley Scamurra,3,Montréal Victoire,F,16,"5'8""",1994-12-14,"Buffalo, NY",https://assets.leaguestat.com/pwhl/240x240/61.jpg
+199,Dara,Greig,Dara Greig,3,Montréal Victoire,F,17,5'7'',2000-12-30,"Camden, NJ",https://assets.leaguestat.com/pwhl/240x240/199.jpg
+128,Kaitlin,Willoughby,Kaitlin Willoughby,3,Montréal Victoire,F,19,"5'6""",1995-03-26,"Prince Albert, SK",https://assets.leaguestat.com/pwhl/240x240/128.jpg
+98,Maureen,Murphy,Maureen Murphy,3,Montréal Victoire,F,21,5'4,1999-12-15,"Buffalo, NY",https://assets.leaguestat.com/pwhl/240x240/98.jpg
+5,Jessica,DiGirolamo,Jessica DiGirolamo,3,Montréal Victoire,D,22,5'9'',1999-02-13,"Mississauga, ON",https://assets.leaguestat.com/pwhl/240x240/5.jpg
+83,Erin,Ambrose,Erin Ambrose,3,Montréal Victoire,D,23,"5'5""",1994-04-30,"Keswick, ON",https://assets.leaguestat.com/pwhl/240x240/83.jpg
+201,Lina,Ljungblom,Lina Ljungblom,3,Montréal Victoire,F,25,5'9,2001-10-15,"Skövde, SWE",https://assets.leaguestat.com/pwhl/240x240/201.jpg
+4,Shiann,Darkangelo,Shiann Darkangelo,3,Montréal Victoire,F,27,"5'11""",1993-11-28,"Brighton, MI",https://assets.leaguestat.com/pwhl/240x240/4.jpg
+157,Catherine,Dubois,Catherine Dubois,3,Montréal Victoire,F,28,"5'10""",1995-07-29,"Charlesbourg, QC",https://assets.leaguestat.com/pwhl/240x240/157.jpg
+31,Marie-Philip,Poulin,Marie-Philip Poulin,3,Montréal Victoire,F,29,5'7,1991-03-28,"Beauceville, QC",https://assets.leaguestat.com/pwhl/240x240/31.jpg
+48,Sandra,Abstreiter,Sandra Abstreiter,3,Montréal Victoire,G,30,"5'11""",1998-07-23,"Freising, GER",https://assets.leaguestat.com/pwhl/240x240/48.jpg
+28,Ann-Renée,Desbiens,Ann-Renée Desbiens,3,Montréal Victoire,G,35,"5'9""",1994-04-10,"Clermont, QC",https://assets.leaguestat.com/pwhl/240x240/28.jpg
+51,Amanda,Boulier,Amanda Boulier,3,Montréal Victoire,D,44,"5'1""",1993-03-30,"Watertown, CT",https://assets.leaguestat.com/pwhl/240x240/51.jpg
+202,Kelly Ann,Nadeau,Kelly Ann Nadeau,3,Montréal Victoire,D,51,5'7,1998-03-30,"Mont-Laurier, QC",https://assets.leaguestat.com/pwhl/240x240/202.jpg
+253,Nicole,Gosling,Nicole Gosling,3,Montréal Victoire,D,61,5'6,2002-04-21,"London, ON",https://assets.leaguestat.com/pwhl/240x240/253.jpg
+35,Jade,Downie-Landry,Jade Downie-Landry,3,Montréal Victoire,F,77,5'9,1995-10-03,"St-Jean-sur-Richelieu, QC",https://assets.leaguestat.com/pwhl/240x240/35.jpg
+272,Skylar,Irving,Skylar Irving,3,Montréal Victoire,F,88,5'8'',2002-01-21,"Kingston, MA",https://assets.leaguestat.com/pwhl/240x240/272.jpg
+79,Maggie,Flaherty,Maggie Flaherty,3,Montréal Victoire,D,91,5'8,2000-06-02,"Lakeville, MN",https://assets.leaguestat.com/pwhl/240x240/79.jpg
+274,Natálie,Mlýnková,Natálie Mlýnková,3,Montréal Victoire,F,96,5'3'',2001-05-24,"Zlin, CZE",https://assets.leaguestat.com/pwhl/240x240/274.jpg
+251,Dayle,Ross,Dayle Ross,4,New York Sirens,D,2,5'6,2003-05-26,"Spirit River, AB",https://assets.leaguestat.com/pwhl/240x240/251.jpg
+206,Elle,Hartje,Elle Hartje,4,New York Sirens,F,4,5'5,2001-04-13,"Detroit, MI ",https://assets.leaguestat.com/pwhl/240x240/206.jpg
+147,Savannah,Norcross,Savannah Norcross,4,New York Sirens,F,7,5'7,2000-06-10,"Lynn, MA",https://assets.leaguestat.com/pwhl/240x240/147.jpg
+229,Maja,Nylen Persson,Maja Nylen Persson,4,New York Sirens,D,8,"5'5""",2000-11-20,"Avesta, SWE",https://assets.leaguestat.com/pwhl/240x240/229.jpg
+131,Olivia,Knowles,Olivia Knowles,4,New York Sirens,D,9,5'9,1999-01-24,"Campbell River, BC",https://assets.leaguestat.com/pwhl/240x240/131.jpg
+205,Sarah,Fillier,Sarah Fillier,4,New York Sirens,F,10,5'5,2000-06-09,"Georgetown, ON",https://assets.leaguestat.com/pwhl/240x240/205.jpg
+283,Nicole,Vallario,Nicole Vallario,4,New York Sirens,D,11,5'4,2001-08-30,"Lugano, SWI",https://assets.leaguestat.com/pwhl/240x240/283.jpg
+87,Jaime,Bourbonnais,Jaime Bourbonnais,4,New York Sirens,D,14,5'7,1998-09-09,"Mississauga, ON",https://assets.leaguestat.com/pwhl/240x240/87.jpg
+207,Lauren,Bernard,Lauren Bernard,4,New York Sirens,D,16,5'7,2001-07-15,"Madison, OH",https://assets.leaguestat.com/pwhl/240x240/207.jpg
+9,Taylor,Girard,Taylor Girard,4,New York Sirens,F,17,5'10,1998-07-17,"Macomb, MI",https://assets.leaguestat.com/pwhl/240x240/9.jpg
+285,Maddi,Wheeler,Maddi Wheeler,4,New York Sirens,F,18,5'4,2002-10-10,"Erinsville, ON",https://assets.leaguestat.com/pwhl/240x240/285.jpg
+40,Paetyn,Levis,Paetyn Levis,4,New York Sirens,F,19,"5'5""",1999-11-06,"Rogers, MN",https://assets.leaguestat.com/pwhl/240x240/40.jpg
+230,Allyson,Simpson,Allyson Simpson,4,New York Sirens,D,20,"5'8""",2000-12-20,"Frisco, TX",https://assets.leaguestat.com/pwhl/240x240/230.jpg
+277,Anna,Bargman,Anna Bargman,4,New York Sirens,F,22,5'8,2002-08-07,"Boxford, MA",https://assets.leaguestat.com/pwhl/240x240/277.jpg
+249,Anne,Cherkowski,Anne Cherkowski,4,New York Sirens,F,24,5’6”,2002-07-06,"Coldstream, BC",https://assets.leaguestat.com/pwhl/240x240/249.jpg
+280,Casey,O'Brien,Casey O'Brien,4,New York Sirens,F,26,5'4,2001-08-27,"Milton, MA",https://assets.leaguestat.com/pwhl/240x240/280.jpg
+47,Micah,Zandee-Hart,Micah Zandee-Hart,4,New York Sirens,D,28,5'8,1997-01-13,"Saanichton, BC",https://assets.leaguestat.com/pwhl/240x240/47.jpg
+204,Emmy,Fecteau,Emmy Fecteau,4,New York Sirens,F,29,5'6,1999-04-07,Saint-Odilon-de-Cranbourn,https://assets.leaguestat.com/pwhl/240x240/204.jpg
+282,Callie,Shanahan,Callie Shanahan,4,New York Sirens,G,37,5'10,2003-05-26,"Commerce Township, MI",https://assets.leaguestat.com/pwhl/240x240/282.jpg
+278,Kaley,Doyle,Kaley Doyle,4,New York Sirens,G,39,5'5,2001-03-23,"Livonia, MI",https://assets.leaguestat.com/pwhl/240x240/278.jpg
+30,Kristin,O'Neill,Kristin O'Neill,4,New York Sirens,F,43,"5'4""",1998-03-30,"Oakville, ON",https://assets.leaguestat.com/pwhl/240x240/30.jpg
+60,Jincy,Roese,Jincy Roese,4,New York Sirens,D,71,"5'6""",1997-05-15,"O'Fallon, MO",https://assets.leaguestat.com/pwhl/240x240/60.jpg
+45,Kayla,Vespa,Kayla Vespa,4,New York Sirens,F,81,"5'2""",1997-04-01,"Hamilton, ON",https://assets.leaguestat.com/pwhl/240x240/45.jpg
+228,Kayle,Osborne,Kayle Osborne,4,New York Sirens,G,82,"5'8""",2002-02-28,"Westport, ON ",https://assets.leaguestat.com/pwhl/240x240/228.jpg
+245,Kristýna,Kaltounková,Kristýna Kaltounková,4,New York Sirens,F,98,5'9,2002-04-14,"Vlašim, CZE",https://assets.leaguestat.com/pwhl/240x240/245.jpg
+238,Sanni,Ahola,Sanni Ahola,5,Ottawa Charge,G,1,5'7,2000-06-03,"Helsinki, FIN",https://assets.leaguestat.com/pwhl/240x240/238.jpg
+71,Jocelyne,Larocque,Jocelyne Larocque,5,Ottawa Charge,D,3,5'5,1988-05-19,"Ste. Anne, MB",https://assets.leaguestat.com/pwhl/240x240/71.jpg
+242,Rory,Guilday,Rory Guilday,5,Ottawa Charge,D,5,5'11,2002-09-07,"Chanhassen, MN",https://assets.leaguestat.com/pwhl/240x240/242.jpg
+219,Stephanie,Markowski,Stephanie Markowski,5,Ottawa Charge,D,6,5'8,2001-08-24,"Edmonton, AB",https://assets.leaguestat.com/pwhl/240x240/219.jpg
+289,Kathryn,Reilly,Kathryn Reilly,5,Ottawa Charge,D,8,5'7,2001-01-17,"Richmond, BC",https://assets.leaguestat.com/pwhl/240x240/289.jpg
+288,Vita,Poniatovskaia,Vita Poniatovskaia,5,Ottawa Charge,D,9,5'8,2003-08-03,"Chelyabinsk, RUS",https://assets.leaguestat.com/pwhl/240x240/288.jpg
+101,Alexa,Vasko,Alexa Vasko,5,Ottawa Charge,F,10,5'5,1999-02-07,"St. Catharines, ON",https://assets.leaguestat.com/pwhl/240x240/101.jpg
+38,Brooke,Hobson,Brooke Hobson,5,Ottawa Charge,D,11,5'6,1999-05-27,"Prince Albert, SK",https://assets.leaguestat.com/pwhl/240x240/38.jpg
+296,Olivia,Wallin,Olivia Wallin,5,Ottawa Charge,F,14,5'7,2002-03-09,"Oakville, ON",https://assets.leaguestat.com/pwhl/240x240/296.jpg
+318,Reece,Hunt,Reece Hunt,5,Ottawa Charge,F,15,"5'5""",2001-03-19,"Nelson, BC",https://assets.leaguestat.com/pwhl/240x240/318.jpg
+88,Kateřina,Mrázová,Kateřina Mrázová,5,Ottawa Charge,F,16,5'4,1992-10-19,"Kolín, CZE",https://assets.leaguestat.com/pwhl/240x240/88.jpg
+57,Gabbie,Hughes,Gabbie Hughes,5,Ottawa Charge,F,17,5'9,1999-10-04,"Lino Lakes, MN",https://assets.leaguestat.com/pwhl/240x240/57.jpg
+220,Mannon,McMahon,Mannon McMahon,5,Ottawa Charge,F,18,5'7,2001-07-29,"Maple Grove, MN",https://assets.leaguestat.com/pwhl/240x240/220.jpg
+58,Brianne,Jenner,Brianne Jenner,5,Ottawa Charge,F,19,5'9,1991-05-04,"Oakville, ON",https://assets.leaguestat.com/pwhl/240x240/58.jpg
+217,Taylor,House,Taylor House,5,Ottawa Charge,F,22,5'10,1998-09-29,"Joliet, IL",https://assets.leaguestat.com/pwhl/240x240/217.jpg
+241,Sarah,Wozniewicz,Sarah Wozniewicz,5,Ottawa Charge,F,23,5'7,2003-08-25,"Cochrane, AB",https://assets.leaguestat.com/pwhl/240x240/241.jpg
+53,Emily,Clark,Emily Clark,5,Ottawa Charge,F,26,5'7,1995-11-28,"Saskatoon, SK",https://assets.leaguestat.com/pwhl/240x240/53.jpg
+286,Peyton,Hemp,Peyton Hemp,5,Ottawa Charge,F,29,5'5,2003-05-15,"Andover, MN",https://assets.leaguestat.com/pwhl/240x240/286.jpg
+222,Gwyneth,Philips,Gwyneth Philips,5,Ottawa Charge,G,33,5'7,2000-09-17,"Athens, OH",https://assets.leaguestat.com/pwhl/240x240/222.jpg
+72,Rebecca,Leslie,Rebecca Leslie,5,Ottawa Charge,F,37,5'6,1996-05-08,"Ottawa, ON",https://assets.leaguestat.com/pwhl/240x240/72.jpg
+108,Samantha,Isbell,Samantha Isbell,5,Ottawa Charge,D,55,5'7,1998-02-17,"Thunder Bay, ON",https://assets.leaguestat.com/pwhl/240x240/108.jpg
+290,Kendra,Woodland,Kendra Woodland,5,Ottawa Charge,G,70,5'8,2000-02-18,"Kamloops, BC",https://assets.leaguestat.com/pwhl/240x240/290.jpg
+240,Fanuza,Kadirova,Fanuza Kadirova,5,Ottawa Charge,F,71,5'4,1998-04-06,"Kukmor, RUS",https://assets.leaguestat.com/pwhl/240x240/240.jpg
+223,Ronja,Savolainen,Ronja Savolainen,5,Ottawa Charge,D,88,5'10,1997-11-29,"Helsinki, FIN",https://assets.leaguestat.com/pwhl/240x240/223.jpg
+221,Anna,Meixner,Anna Meixner,5,Ottawa Charge,F,94,5'3,1994-06-16,"Zell Am See, AUT",https://assets.leaguestat.com/pwhl/240x240/221.jpg
+239,Anna,Shokhina,Anna Shokhina,5,Ottawa Charge,F,97,5'6,1997-06-23,"Novosinkovo, RUS",https://assets.leaguestat.com/pwhl/240x240/239.jpg
+211,Raygan,Kirk,Raygan Kirk,6,Toronto Sceptres,G,1,5'8,2001-03-11,"Ste. Anne, MB",https://assets.leaguestat.com/pwhl/240x240/211.jpg
+132,Jessica,Kondas,Jessica Kondas,6,Toronto Sceptres,D,2,"5'9""",2000-01-03,"Calgary, AB",https://assets.leaguestat.com/pwhl/240x240/132.jpg
+68,Kali,Flanagan,Kali Flanagan,6,Toronto Sceptres,D,6,"5'4""",1995-09-19,"Burlington, MA",https://assets.leaguestat.com/pwhl/240x240/68.jpg
+116,Clair,DeGeorge,Clair DeGeorge,6,Toronto Sceptres,F,8,5'11,1999-06-07,"Anchorage, AK",https://assets.leaguestat.com/pwhl/240x240/116.jpg
+63,Daryl,Watts,Daryl Watts,6,Toronto Sceptres,F,9,"5'6""",1999-05-15,"Toronto, ON",https://assets.leaguestat.com/pwhl/240x240/63.jpg
+311,Hanna,Baskin,Hanna Baskin,6,Toronto Sceptres,D,10,,2003-07-10,"Minnetonka, MN",https://assets.leaguestat.com/pwhl/240x240/311.jpg
+317,Kiara,Zanon,Kiara Zanon,6,Toronto Sceptres,F,11,,2002-08-22,"Fairport, NY",https://assets.leaguestat.com/pwhl/240x240/317.jpg
+74,Allie,Munroe,Allie Munroe,6,Toronto Sceptres,D,12,"5'6""",1997-04-20,"Yarmouth, NS",https://assets.leaguestat.com/pwhl/240x240/74.jpg
+67,Renata,Fast,Renata Fast,6,Toronto Sceptres,D,14,"5'7""",1994-10-06,"Burlington, ON",https://assets.leaguestat.com/pwhl/240x240/67.jpg
+56,Savannah,Harmon,Savannah Harmon,6,Toronto Sceptres,D,15,"5'3""",1995-10-27,"Downers Grove, IL",https://assets.leaguestat.com/pwhl/240x240/56.jpg
+315,Lauren,Messier,Lauren Messier,6,Toronto Sceptres,F,16,,2003-07-03,"Burlington, ON",https://assets.leaguestat.com/pwhl/240x240/315.jpg
+44,Ella,Shelton,Ella Shelton,6,Toronto Sceptres,D,17,"5'8""",1998-01-19,"Ingersoll, ON",https://assets.leaguestat.com/pwhl/240x240/44.jpg
+65,Jesse,Compher,Jesse Compher,6,Toronto Sceptres,F,18,"5'8""",1999-07-01,"Northbrook, IL",https://assets.leaguestat.com/pwhl/240x240/65.jpg
+313,Sara,Hjalmarsson,Sara Hjalmarsson,6,Toronto Sceptres,F,19,,1998-02-08,"Bankeryd, SWE",https://assets.leaguestat.com/pwhl/240x240/313.jpg
+244,Emma,Gentry,Emma Gentry,6,Toronto Sceptres,F,20,5'11,2002-10-23,"Alpena, MI",https://assets.leaguestat.com/pwhl/240x240/244.jpg
+54,Kristin,Della Rovere,Kristin Della Rovere,6,Toronto Sceptres,F,21,,2000-11-30,"Caledon East, ON",https://assets.leaguestat.com/pwhl/240x240/54.jpg
+66,Maggie,Connors,Maggie Connors,6,Toronto Sceptres,F,22,"5'6""",2000-10-22,"St. John's, NL",https://assets.leaguestat.com/pwhl/240x240/66.jpg
+100,Natalie,Spooner,Natalie Spooner,6,Toronto Sceptres,F,24,"5'10""",1990-10-17,"Scarborough, ON",https://assets.leaguestat.com/pwhl/240x240/100.jpg
+316,Clara,Van Wieren,Clara Van Wieren,6,Toronto Sceptres,F,25,,2002-01-25,"Okemos, MI",https://assets.leaguestat.com/pwhl/240x240/316.jpg
+73,Emma,Maltais,Emma Maltais,6,Toronto Sceptres,F,27,"5'3""",1999-11-04,"Burlington, ON",https://assets.leaguestat.com/pwhl/240x240/73.jpg
+85,Elaine,Chuli,Elaine Chuli,6,Toronto Sceptres,G,29,5'7,1994-05-16,"Waterford, ON",https://assets.leaguestat.com/pwhl/240x240/85.jpg
+76,Blayre,Turnbull,Blayre Turnbull,6,Toronto Sceptres,F,40,"5'7""",1993-07-15,"Stellarton, NS",https://assets.leaguestat.com/pwhl/240x240/76.jpg
+26,Claire,Dalton,Claire Dalton,6,Toronto Sceptres,F,42,"5'9""",2000-03-20,"Toronto, ON",https://assets.leaguestat.com/pwhl/240x240/26.jpg
+86,Emma,Woods,Emma Woods,6,Toronto Sceptres,F,67,"5'7""",1995-12-18,"Burford, ON",https://assets.leaguestat.com/pwhl/240x240/86.jpg
+200,Anna,Kjellbin,Anna Kjellbin,6,Toronto Sceptres,D,71,"5'7""",1994-03-16,"Göteberg, SWE",https://assets.leaguestat.com/pwhl/240x240/200.jpg
+314,Jessie,McPherson,Jessie McPherson,6,Toronto Sceptres,G,91,,2002-12-20,"Chatham, ON",https://assets.leaguestat.com/pwhl/240x240/314.jpg
+62,Aneta,Tejralová,Aneta Tejralová,8,Seattle Torrent,D,2,5'5,1996-01-04,"Prague, CZE",https://assets.leaguestat.com/pwhl/240x240/62.jpg
+196,Cayla,Barnes,Cayla Barnes,8,Seattle Torrent,D,3,"5'2""",1999-01-07,"Eastvale, CA",https://assets.leaguestat.com/pwhl/240x240/196.jpg
+203,Anna,Wilgren,Anna Wilgren,8,Seattle Torrent,D,5,"5'8""",1999-11-10,"Hudson, WI",https://assets.leaguestat.com/pwhl/240x240/203.jpg
+298,Emily,Zumwinkle,Emily Zumwinkle,8,Seattle Torrent,D,6,,2003-05-20,"Excelsior, MN",https://assets.leaguestat.com/pwhl/240x240/298.jpg
+291,Lily,Delianedis,Lily Delianedis,8,Seattle Torrent,F,7,,2001-10-07,"Edina, MN",https://assets.leaguestat.com/pwhl/240x240/291.jpg
+142,Natalie,Snodgrass,Natalie Snodgrass,8,Seattle Torrent,F,8,"5'6""",1998-12-17,"Eagan, MN",https://assets.leaguestat.com/pwhl/240x240/142.jpg
+36,Jessie,Eldridge,Jessie Eldridge,8,Seattle Torrent,F,9,"5'9""",1997-12-17,"Barrie, ON",https://assets.leaguestat.com/pwhl/240x240/36.jpg
+237,Jenna,Buglioni,Jenna Buglioni,8,Seattle Torrent,F,10,5'3,2002-03-13,"Port Moody, BC",https://assets.leaguestat.com/pwhl/240x240/237.jpg
+2,Emily,Brown,Emily Brown,8,Seattle Torrent,D,11,5'7,1998-12-30,"Blaine, MN",https://assets.leaguestat.com/pwhl/240x240/2.jpg
+138,Mikyla,Grant-Mentis,Mikyla Grant-Mentis,8,Seattle Torrent,F,13,5'6,1998-07-15,"Brampton, ON",https://assets.leaguestat.com/pwhl/240x240/138.jpg
+91,Brooke,Bryant,Brooke Bryant,8,Seattle Torrent,F,17,5'6,2000-08-22,"Linden, CA",https://assets.leaguestat.com/pwhl/240x240/91.jpg
+181,Hannah,Bilka,Hannah Bilka,8,Seattle Torrent,F,19,5'5,2001-03-24,"Coppell, TX",https://assets.leaguestat.com/pwhl/240x240/181.jpg
+99,Mariah,Keopple,Mariah Keopple,8,Seattle Torrent,D,20,5'9,2000-06-27,"Menomonie, WI",https://assets.leaguestat.com/pwhl/240x240/99.jpg
+13,Hilary,Knight,Hilary Knight,8,Seattle Torrent,F,21,5'11,1989-07-12,"Sun Valley, ID",https://assets.leaguestat.com/pwhl/240x240/13.jpg
+294,Lyndie,Lobdell,Lyndie Lobdell,8,Seattle Torrent,D,24,,2002-09-01,"Aurora, IL",https://assets.leaguestat.com/pwhl/240x240/294.jpg
+34,Alex,Carpenter,Alex Carpenter,8,Seattle Torrent,F,25,"5'7""",1994-04-13,"North Reading, MA",https://assets.leaguestat.com/pwhl/240x240/34.jpg
+208,Megan,Carter,Megan Carter,8,Seattle Torrent,D,27,5'8,2001-05-23,"Milton, ON",https://assets.leaguestat.com/pwhl/240x240/208.jpg
+155,Corinne,Schroeder,Corinne Schroeder,8,Seattle Torrent,G,30,"5'11""",1999-08-17,"Elm Creek, MB",https://assets.leaguestat.com/pwhl/240x240/155.jpg
+292,Jada,Habisch,Jada Habisch,8,Seattle Torrent,F,52,,2002-06-25,"Buffalo, MN",https://assets.leaguestat.com/pwhl/240x240/292.jpg
+295,Marah,Wagner,Marah Wagner,8,Seattle Torrent,F,66,,2000-10-19,"Seattle, WA",https://assets.leaguestat.com/pwhl/240x240/295.jpg
+134,Carly,Jackson,Carly Jackson,8,Seattle Torrent,G,70,"5'5""",1997-06-23,"Amherst, NS",https://assets.leaguestat.com/pwhl/240x240/134.jpg
+293,Sydney,Langseth,Sydney Langseth,8,Seattle Torrent,F,71,,2002-01-29,"Eden Prairie, MN",https://assets.leaguestat.com/pwhl/240x240/293.jpg
+49,Lexie,Adzija,Lexie Adzija,8,Seattle Torrent,F,78,5'10,2000-06-30,"St. Thomas, ON",https://assets.leaguestat.com/pwhl/240x240/49.jpg
+250,Hannah,Murphy,Hannah Murphy,8,Seattle Torrent,G,83,5'10,2003-08-03,"Kingston, ON",https://assets.leaguestat.com/pwhl/240x240/250.jpg
+210,Julia,Gosling,Julia Gosling,8,Seattle Torrent,F,88,"5'10""",2001-02-21,"London, ON",https://assets.leaguestat.com/pwhl/240x240/210.jpg
+224,Danielle,Serdachny,Danielle Serdachny,8,Seattle Torrent,F,92,"5'9""",2001-05-12,"Edmonton, AB",https://assets.leaguestat.com/pwhl/240x240/224.jpg
+310,Madison,Samoskevich,Madison Samoskevich,9,Vancouver Goldeneyes,F,7,5'5,2002-11-15,"Sandy Hook, CT",https://assets.leaguestat.com/pwhl/240x240/310.jpg
+209,Izzy,Daniel,Izzy Daniel,9,Vancouver Goldeneyes,F,8,"5'5""",2000-09-29,"Minneapolis, MN",https://assets.leaguestat.com/pwhl/240x240/209.jpg
+301,Katie,Chan,Katie Chan,9,Vancouver Goldeneyes,F,9,5'2,2003-01-05,"Richmond, BC",https://assets.leaguestat.com/pwhl/240x240/301.jpg
+180,Sydney,Bard,Sydney Bard,9,Vancouver Goldeneyes,D,11,5'3,2001-01-15,"New Hartford, NY",https://assets.leaguestat.com/pwhl/240x240/180.jpg
+198,Jenn,Gardiner,Jenn Gardiner,9,Vancouver Goldeneyes,F,12,5'6,2001-09-18,"Surrey, BC",https://assets.leaguestat.com/pwhl/240x240/198.jpg
+161,Tereza,Vanišová,Tereza Vanišová,9,Vancouver Goldeneyes,F,13,5'7,1996-01-30,"Strakonice, CZE",https://assets.leaguestat.com/pwhl/240x240/161.jpg
+227,Gabby,Rosenthal,Gabby Rosenthal,9,Vancouver Goldeneyes,F,15,5'7,1999-09-13,"Blaine, MN",https://assets.leaguestat.com/pwhl/240x240/227.jpg
+11,Sophie,Jaques,Sophie Jaques,9,Vancouver Goldeneyes,D,16,5'8,2000-10-16,"Toronto, ON",https://assets.leaguestat.com/pwhl/240x240/11.jpg
+300,Brianna,Brooks,Brianna Brooks,9,Vancouver Goldeneyes,F,17,5'9,2002-06-28,"Whitby, ON",https://assets.leaguestat.com/pwhl/240x240/300.jpg
+140,Malia,Schneider,Malia Schneider,9,Vancouver Goldeneyes,F,18,"5'6""",1998-10-03,"Millarville, AB",https://assets.leaguestat.com/pwhl/240x240/140.jpg
+75,Sarah,Nurse,Sarah Nurse,9,Vancouver Goldeneyes,F,20,5'7,1995-01-04,"Hamilton, ON",https://assets.leaguestat.com/pwhl/240x240/75.jpg
+50,Ashton,Bell,Ashton Bell,9,Vancouver Goldeneyes,D,21,"5'9""",1999-12-07,"Deloraine, MB",https://assets.leaguestat.com/pwhl/240x240/50.jpg
+114,Abby,Boreen,Abby Boreen,9,Vancouver Goldeneyes,F,22,5'8,2000-04-03,"Somerset, WI",https://assets.leaguestat.com/pwhl/240x240/114.jpg
+129,Mellissa,Channell-Watkins,Mellissa Channell-Watkins,9,Vancouver Goldeneyes,D,23,5'4,1994-12-16,"Plymouth, MI",https://assets.leaguestat.com/pwhl/240x240/129.jpg
+118,Emma,Greco,Emma Greco,9,Vancouver Goldeneyes,D,25,5'9,1995-03-06,"Burlington, ON",https://assets.leaguestat.com/pwhl/240x240/118.jpg
+192,Brooke,McQuigge,Brooke McQuigge,9,Vancouver Goldeneyes,F,26,"5'8""",2000-06-09,"Bowmanville, ON",https://assets.leaguestat.com/pwhl/240x240/192.jpg
+305,Nina,Jobst-Smith,Nina Jobst-Smith,9,Vancouver Goldeneyes,D,28,5'7,2001-08-30,"North Vancouver, BC",https://assets.leaguestat.com/pwhl/240x240/305.jpg
+252,Michelle,Karvinen,Michelle Karvinen,9,Vancouver Goldeneyes,F,33,5'6,1990-03-27,"Rødovre, DEN",https://assets.leaguestat.com/pwhl/240x240/252.jpg
+89,Hannah,Miller,Hannah Miller,9,Vancouver Goldeneyes,F,34,"5'9""",1996-02-16,"North Vancouver, BC ",https://assets.leaguestat.com/pwhl/240x240/89.jpg
+309,Kimberly,Newell,Kimberly Newell,9,Vancouver Goldeneyes,G,35,5'9,1995-10-04,"Burnaby, BC",https://assets.leaguestat.com/pwhl/240x240/309.jpg
+59,Emerance,Maschmeyer,Emerance Maschmeyer,9,Vancouver Goldeneyes,G,38,5'6,1994-10-05,"Bruderheim, AB",https://assets.leaguestat.com/pwhl/240x240/59.jpg
+169,Claire,Thompson,Claire Thompson,9,Vancouver Goldeneyes,D,42,5'8,1998-01-28,"Toronto, ON",https://assets.leaguestat.com/pwhl/240x240/169.jpg
+64,Kristen,Campbell,Kristen Campbell,9,Vancouver Goldeneyes,G,50,"5'10""",1997-11-30,"Brandon, MB",https://assets.leaguestat.com/pwhl/240x240/64.jpg
+248,Anna,Segedi,Anna Segedi,9,Vancouver Goldeneyes,F,51,5'5,2000-12-20,"Commerce Township, MI",https://assets.leaguestat.com/pwhl/240x240/248.jpg
+306,Darcie,Lappan,Darcie Lappan,9,Vancouver Goldeneyes,F,72,5'7,2001-09-15,"Kingston, ON",https://assets.leaguestat.com/pwhl/240x240/306.jpg
+115,Michela,Cava,Michela Cava,9,Vancouver Goldeneyes,F,86,5'4,1994-03-26,"Thunder Bay, ON",https://assets.leaguestat.com/pwhl/240x240/115.jpg
