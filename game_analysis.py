@@ -505,10 +505,18 @@ def main():
                 print(format_game_summary(analysis))
                 
                 os.makedirs('outputs', exist_ok=True)
+                
+                # Save text summary
                 output_file = f"outputs/game_analysis_{game_id}.txt"
                 with open(output_file, 'w', encoding='utf-8') as f:
                     f.write(format_game_summary(analysis))
-                print(f"\n💾 Saved to: {output_file}")
+                print(f"\n💾 Saved text summary to: {output_file}")
+                
+                # Save JSON data for tweet generation
+                json_output_file = f"outputs/game_analysis_{game_id}.json"
+                with open(json_output_file, 'w', encoding='utf-8') as f:
+                    json.dump(analysis, f, indent=2)
+                print(f"💾 Saved JSON data to: {json_output_file}")
             else:
                 print("❌ Could not analyze game")
         except Exception as e:
@@ -575,13 +583,30 @@ def main():
     # Display results
     print("\n" + format_game_summary(analysis))
     
-    # Save to file
+    # Save to files (both text and JSON)
     os.makedirs('outputs', exist_ok=True)
+    
+    # Save text summary
     output_file = f"outputs/game_analysis_{most_recent['game_id']}.txt"
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(format_game_summary(analysis))
     
-    print(f"\n💾 Saved to: {output_file}")
+    print(f"\n💾 Saved text summary to: {output_file}")
+    
+    # Save JSON data for tweet generation
+    json_output_file = f"outputs/game_analysis_{most_recent['game_id']}.json"
+    with open(json_output_file, 'w', encoding='utf-8') as f:
+        json.dump(analysis, f, indent=2)
+    
+    print(f"💾 Saved JSON data to: {json_output_file}")
+    
+    # TODO: Auto-update attendance records
+    print("\n📊 Updating attendance records...")
+    try:
+        from attendance import add_game_attendance
+        add_game_attendance(analysis)
+    except Exception as e:
+        print(f"  ⚠️  Could not update attendance: {e}")
     
     # Show next games info
     if len(games) > 1:
