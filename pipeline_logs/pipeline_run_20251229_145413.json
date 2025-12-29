@@ -1,0 +1,26 @@
+{
+  "timestamp": "2025-12-29T14:54:13.764453",
+  "steps": [
+    {
+      "step": "update_data",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-29T14:54:13.764826"
+    },
+    {
+      "step": "update_data",
+      "message": "\ud83d\udce1 STEP 1: UPDATING DATA FROM API",
+      "timestamp": "2025-12-29T14:54:13.764833"
+    },
+    {
+      "step": "update_data",
+      "message": "============================================================",
+      "timestamp": "2025-12-29T14:54:13.764851"
+    }
+  ],
+  "games_analyzed": [],
+  "tweets_generated": [],
+  "tweets_posted": [],
+  "errors": [
+    "\u274c Data extraction (PowerShell) - Failed: /bin/sh: 1: powershell: not found\n"
+  ]
+}

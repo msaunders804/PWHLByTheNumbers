@@ -339,68 +339,25 @@
                                                       "name":  "Aerin Frankel",
                                                       "active":  "1",
                                                       "team_code":  "BOS",
-                                                      "games_played":  "6",
-                                                      "minutes_played":  "359:27",
-                                                      "saves":  "154",
-                                                      "shots":  "159",
-                                                      "save_percentage":  "0.969",
-                                                      "goals_against":  "5",
+                                                      "games_played":  "7",
+                                                      "minutes_played":  "424:27",
+                                                      "saves":  "184",
+                                                      "shots":  "191",
+                                                      "save_percentage":  "0.963",
+                                                      "goals_against":  "7",
                                                       "shutouts":  "3",
                                                       "wins":  "5",
                                                       "losses":  "1",
                                                       "ot_losses":  "0",
-                                                      "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
+                                                      "shootout_losses":  "1",
+                                                      "shootout_goals_against":  "3",
+                                                      "shootout_attempts":  "8",
                                                       "goals":  "0",
                                                       "assists":  "0",
                                                       "penalty_minutes":  "0",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "0.83",
+                                                      "shootout_percentage":  "0.625",
+                                                      "goals_against_average":  "0.99",
                                                       "rank":  1
-                                                  }
-                                      },
-                                      {
-                                          "prop":  {
-                                                       "rookie":  {
-                                                                      "rookie":  "1"
-                                                                  },
-                                                       "name":  {
-                                                                    "playerLink":  "250",
-                                                                    "seoName":  "Hannah Murphy"
-                                                                },
-                                                       "active":  {
-                                                                      "active":  "1"
-                                                                  },
-                                                       "team_code":  {
-                                                                         "teamLink":  "8"
-                                                                     }
-                                                   },
-                                          "row":  {
-                                                      "player_id":  "250",
-                                                      "rookie":  "1",
-                                                      "name":  "Hannah Murphy",
-                                                      "active":  "1",
-                                                      "team_code":  "SEA",
-                                                      "games_played":  "3",
-                                                      "minutes_played":  "180:00",
-                                                      "saves":  "84",
-                                                      "shots":  "87",
-                                                      "save_percentage":  "0.966",
-                                                      "goals_against":  "3",
-                                                      "shutouts":  "0",
-                                                      "wins":  "3",
-                                                      "losses":  "0",
-                                                      "ot_losses":  "0",
-                                                      "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
-                                                      "goals":  "0",
-                                                      "assists":  "0",
-                                                      "penalty_minutes":  "0",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "1.00",
-                                                      "rank":  2
                                                   }
                                       },
                                       {
@@ -443,7 +400,7 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
                                                       "goals_against_average":  "1.00",
-                                                      "rank":  3
+                                                      "rank":  2
                                                   }
                                       },
                                       {
@@ -468,15 +425,15 @@
                                                       "name":  "Ann-Renée Desbiens",
                                                       "active":  "1",
                                                       "team_code":  "MTL",
-                                                      "games_played":  "5",
-                                                      "minutes_played":  "301:54",
-                                                      "saves":  "136",
-                                                      "shots":  "142",
-                                                      "save_percentage":  "0.958",
-                                                      "goals_against":  "6",
+                                                      "games_played":  "6",
+                                                      "minutes_played":  "359:13",
+                                                      "saves":  "159",
+                                                      "shots":  "167",
+                                                      "save_percentage":  "0.952",
+                                                      "goals_against":  "8",
                                                       "shutouts":  "1",
                                                       "wins":  "3",
-                                                      "losses":  "2",
+                                                      "losses":  "3",
                                                       "ot_losses":  "0",
                                                       "shootout_losses":  "0",
                                                       "shootout_goals_against":  "0",
@@ -485,8 +442,8 @@
                                                       "assists":  "0",
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "1.000",
-                                                      "goals_against_average":  "1.19",
-                                                      "rank":  4
+                                                      "goals_against_average":  "1.34",
+                                                      "rank":  3
                                                   }
                                       },
                                       {
@@ -529,7 +486,93 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
                                                       "goals_against_average":  "1.48",
+                                                      "rank":  4
+                                                  }
+                                      },
+                                      {
+                                          "prop":  {
+                                                       "rookie":  {
+                                                                      "rookie":  "0"
+                                                                  },
+                                                       "name":  {
+                                                                    "playerLink":  "85",
+                                                                    "seoName":  "Elaine Chuli"
+                                                                },
+                                                       "active":  {
+                                                                      "active":  "1"
+                                                                  },
+                                                       "team_code":  {
+                                                                         "teamLink":  "6"
+                                                                     }
+                                                   },
+                                          "row":  {
+                                                      "player_id":  "85",
+                                                      "rookie":  "0",
+                                                      "name":  "Elaine Chuli",
+                                                      "active":  "1",
+                                                      "team_code":  "TOR",
+                                                      "games_played":  "3",
+                                                      "minutes_played":  "179:56",
+                                                      "saves":  "82",
+                                                      "shots":  "87",
+                                                      "save_percentage":  "0.943",
+                                                      "goals_against":  "5",
+                                                      "shutouts":  "0",
+                                                      "wins":  "3",
+                                                      "losses":  "0",
+                                                      "ot_losses":  "0",
+                                                      "shootout_losses":  "0",
+                                                      "shootout_goals_against":  "0",
+                                                      "shootout_attempts":  "0",
+                                                      "goals":  "0",
+                                                      "assists":  "0",
+                                                      "penalty_minutes":  "0",
+                                                      "shootout_percentage":  "0.000",
+                                                      "goals_against_average":  "1.67",
                                                       "rank":  5
+                                                  }
+                                      },
+                                      {
+                                          "prop":  {
+                                                       "rookie":  {
+                                                                      "rookie":  "1"
+                                                                  },
+                                                       "name":  {
+                                                                    "playerLink":  "250",
+                                                                    "seoName":  "Hannah Murphy"
+                                                                },
+                                                       "active":  {
+                                                                      "active":  "1"
+                                                                  },
+                                                       "team_code":  {
+                                                                         "teamLink":  "8"
+                                                                     }
+                                                   },
+                                          "row":  {
+                                                      "player_id":  "250",
+                                                      "rookie":  "1",
+                                                      "name":  "Hannah Murphy",
+                                                      "active":  "1",
+                                                      "team_code":  "SEA",
+                                                      "games_played":  "4",
+                                                      "minutes_played":  "238:21",
+                                                      "saves":  "121",
+                                                      "shots":  "128",
+                                                      "save_percentage":  "0.945",
+                                                      "goals_against":  "7",
+                                                      "shutouts":  "0",
+                                                      "wins":  "3",
+                                                      "losses":  "1",
+                                                      "ot_losses":  "0",
+                                                      "shootout_losses":  "0",
+                                                      "shootout_goals_against":  "0",
+                                                      "shootout_attempts":  "0",
+                                                      "goals":  "0",
+                                                      "assists":  "1",
+                                                      "penalty_minutes":  "0",
+                                                      "shootout_percentage":  "0.000",
+                                                      "goals_against_average":  "1.76",
+                                                      "rank":  6
                                                   }
                                       },
                                       {
@@ -572,93 +615,7 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
                                                       "goals_against_average":  "2.00",
-                                                      "rank":  6
-                                                  }
-                                      },
-                                      {
-                                          "prop":  {
-                                                       "rookie":  {
-                                                                      "rookie":  "0"
-                                                                  },
-                                                       "name":  {
-                                                                    "playerLink":  "85",
-                                                                    "seoName":  "Elaine Chuli"
-                                                                },
-                                                       "active":  {
-                                                                      "active":  "1"
-                                                                  },
-                                                       "team_code":  {
-                                                                         "teamLink":  "6"
-                                                                     }
-                                                   },
-                                          "row":  {
-                                                      "player_id":  "85",
-                                                      "rookie":  "0",
-                                                      "name":  "Elaine Chuli",
-                                                      "active":  "1",
-                                                      "team_code":  "TOR",
-                                                      "games_played":  "2",
-                                                      "minutes_played":  "119:56",
-                                                      "saves":  "53",
-                                                      "shots":  "57",
-                                                      "save_percentage":  "0.930",
-                                                      "goals_against":  "4",
-                                                      "shutouts":  "0",
-                                                      "wins":  "2",
-                                                      "losses":  "0",
-                                                      "ot_losses":  "0",
-                                                      "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
-                                                      "goals":  "0",
-                                                      "assists":  "0",
-                                                      "penalty_minutes":  "0",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "2.00",
                                                       "rank":  7
-                                                  }
-                                      },
-                                      {
-                                          "prop":  {
-                                                       "rookie":  {
-                                                                      "rookie":  "0"
-                                                                  },
-                                                       "name":  {
-                                                                    "playerLink":  "228",
-                                                                    "seoName":  "Kayle Osborne"
-                                                                },
-                                                       "active":  {
-                                                                      "active":  "1"
-                                                                  },
-                                                       "team_code":  {
-                                                                         "teamLink":  "4"
-                                                                     }
-                                                   },
-                                          "row":  {
-                                                      "player_id":  "228",
-                                                      "rookie":  "0",
-                                                      "name":  "Kayle Osborne",
-                                                      "active":  "1",
-                                                      "team_code":  "NY",
-                                                      "games_played":  "7",
-                                                      "minutes_played":  "411:37",
-                                                      "saves":  "150",
-                                                      "shots":  "165",
-                                                      "save_percentage":  "0.909",
-                                                      "goals_against":  "15",
-                                                      "shutouts":  "1",
-                                                      "wins":  "2",
-                                                      "losses":  "5",
-                                                      "ot_losses":  "0",
-                                                      "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
-                                                      "goals":  "0",
-                                                      "assists":  "0",
-                                                      "penalty_minutes":  "0",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "2.19",
-                                                      "rank":  8
                                                   }
                                       },
                                       {
@@ -701,7 +658,93 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.800",
                                                       "goals_against_average":  "2.19",
+                                                      "rank":  8
+                                                  }
+                                      },
+                                      {
+                                          "prop":  {
+                                                       "rookie":  {
+                                                                      "rookie":  "0"
+                                                                  },
+                                                       "name":  {
+                                                                    "playerLink":  "228",
+                                                                    "seoName":  "Kayle Osborne"
+                                                                },
+                                                       "active":  {
+                                                                      "active":  "1"
+                                                                  },
+                                                       "team_code":  {
+                                                                         "teamLink":  "4"
+                                                                     }
+                                                   },
+                                          "row":  {
+                                                      "player_id":  "228",
+                                                      "rookie":  "0",
+                                                      "name":  "Kayle Osborne",
+                                                      "active":  "1",
+                                                      "team_code":  "NY",
+                                                      "games_played":  "8",
+                                                      "minutes_played":  "471:37",
+                                                      "saves":  "180",
+                                                      "shots":  "198",
+                                                      "save_percentage":  "0.909",
+                                                      "goals_against":  "18",
+                                                      "shutouts":  "1",
+                                                      "wins":  "3",
+                                                      "losses":  "5",
+                                                      "ot_losses":  "0",
+                                                      "shootout_losses":  "0",
+                                                      "shootout_goals_against":  "0",
+                                                      "shootout_attempts":  "0",
+                                                      "goals":  "0",
+                                                      "assists":  "0",
+                                                      "penalty_minutes":  "0",
+                                                      "shootout_percentage":  "0.000",
+                                                      "goals_against_average":  "2.29",
                                                       "rank":  9
+                                                  }
+                                      },
+                                      {
+                                          "prop":  {
+                                                       "rookie":  {
+                                                                      "rookie":  "0"
+                                                                  },
+                                                       "name":  {
+                                                                    "playerLink":  "123",
+                                                                    "seoName":  "Maddie Rooney"
+                                                                },
+                                                       "active":  {
+                                                                      "active":  "1"
+                                                                  },
+                                                       "team_code":  {
+                                                                         "teamLink":  "2"
+                                                                     }
+                                                   },
+                                          "row":  {
+                                                      "player_id":  "123",
+                                                      "rookie":  "0",
+                                                      "name":  "Maddie Rooney",
+                                                      "active":  "1",
+                                                      "team_code":  "MIN",
+                                                      "games_played":  "3",
+                                                      "minutes_played":  "181:45",
+                                                      "saves":  "75",
+                                                      "shots":  "82",
+                                                      "save_percentage":  "0.915",
+                                                      "goals_against":  "7",
+                                                      "shutouts":  "0",
+                                                      "wins":  "1",
+                                                      "losses":  "2",
+                                                      "ot_losses":  "0",
+                                                      "shootout_losses":  "0",
+                                                      "shootout_goals_against":  "0",
+                                                      "shootout_attempts":  "0",
+                                                      "goals":  "0",
+                                                      "assists":  "0",
+                                                      "penalty_minutes":  "0",
+                                                      "shootout_percentage":  "0.000",
+                                                      "goals_against_average":  "2.31",
+                                                      "rank":  10
                                                   }
                                       },
                                       {
@@ -726,25 +769,25 @@
                                                       "name":  "Gwyneth Philips",
                                                       "active":  "1",
                                                       "team_code":  "OTT",
-                                                      "games_played":  "7",
-                                                      "minutes_played":  "418:10",
-                                                      "saves":  "220",
-                                                      "shots":  "237",
-                                                      "save_percentage":  "0.928",
-                                                      "goals_against":  "17",
+                                                      "games_played":  "8",
+                                                      "minutes_played":  "483:10",
+                                                      "saves":  "254",
+                                                      "shots":  "273",
+                                                      "save_percentage":  "0.930",
+                                                      "goals_against":  "19",
                                                       "shutouts":  "0",
-                                                      "wins":  "3",
+                                                      "wins":  "4",
                                                       "losses":  "4",
                                                       "ot_losses":  "0",
                                                       "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
+                                                      "shootout_goals_against":  "2",
+                                                      "shootout_attempts":  "8",
                                                       "goals":  "0",
                                                       "assists":  "0",
                                                       "penalty_minutes":  "2",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "2.44",
-                                                      "rank":  10
+                                                      "shootout_percentage":  "0.750",
+                                                      "goals_against_average":  "2.36",
+                                                      "rank":  11
                                                   }
                                       },
                                       {
@@ -769,16 +812,16 @@
                                                       "name":  "Emerance Maschmeyer",
                                                       "active":  "1",
                                                       "team_code":  "VAN",
-                                                      "games_played":  "5",
-                                                      "minutes_played":  "293:00",
-                                                      "saves":  "137",
-                                                      "shots":  "150",
-                                                      "save_percentage":  "0.913",
-                                                      "goals_against":  "13",
+                                                      "games_played":  "6",
+                                                      "minutes_played":  "355:57",
+                                                      "saves":  "170",
+                                                      "shots":  "185",
+                                                      "save_percentage":  "0.919",
+                                                      "goals_against":  "15",
                                                       "shutouts":  "1",
                                                       "wins":  "2",
                                                       "losses":  "3",
-                                                      "ot_losses":  "0",
+                                                      "ot_losses":  "1",
                                                       "shootout_losses":  "0",
                                                       "shootout_goals_against":  "0",
                                                       "shootout_attempts":  "0",
@@ -786,8 +829,8 @@
                                                       "assists":  "0",
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "2.66",
-                                                      "rank":  11
+                                                      "goals_against_average":  "2.53",
+                                                      "rank":  12
                                                   }
                                       },
                                       {
@@ -830,7 +873,7 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
                                                       "goals_against_average":  "3.00",
-                                                      "rank":  12
+                                                      "rank":  13
                                                   }
                                       },
                                       {
@@ -873,49 +916,6 @@
                                                       "penalty_minutes":  "0",
                                                       "shootout_percentage":  "0.000",
                                                       "goals_against_average":  "3.00",
-                                                      "rank":  13
-                                                  }
-                                      },
-                                      {
-                                          "prop":  {
-                                                       "rookie":  {
-                                                                      "rookie":  "0"
-                                                                  },
-                                                       "name":  {
-                                                                    "playerLink":  "123",
-                                                                    "seoName":  "Maddie Rooney"
-                                                                },
-                                                       "active":  {
-                                                                      "active":  "1"
-                                                                  },
-                                                       "team_code":  {
-                                                                         "teamLink":  "2"
-                                                                     }
-                                                   },
-                                          "row":  {
-                                                      "player_id":  "123",
-                                                      "rookie":  "0",
-                                                      "name":  "Maddie Rooney",
-                                                      "active":  "1",
-                                                      "team_code":  "MIN",
-                                                      "games_played":  "2",
-                                                      "minutes_played":  "118:48",
-                                                      "saves":  "48",
-                                                      "shots":  "54",
-                                                      "save_percentage":  "0.889",
-                                                      "goals_against":  "6",
-                                                      "shutouts":  "0",
-                                                      "wins":  "0",
-                                                      "losses":  "2",
-                                                      "ot_losses":  "0",
-                                                      "shootout_losses":  "0",
-                                                      "shootout_goals_against":  "0",
-                                                      "shootout_attempts":  "0",
-                                                      "goals":  "0",
-                                                      "assists":  "0",
-                                                      "penalty_minutes":  "0",
-                                                      "shootout_percentage":  "0.000",
-                                                      "goals_against_average":  "3.03",
                                                       "rank":  14
                                                   }
                                       },

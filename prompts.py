@@ -22,10 +22,10 @@ def build_game_summary_prompt(game_data, hot_players, hot_goalies):
     home_score = game_data['home_score']
     winner = game_data['winner']
     
-    prompt = f"""You are writing exciting social media content for a PWHL analytics account. 
-Develop the post to display exciting information about the game in the following format.
+    prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account. 
+Develop the post to display exciting but data focused information about the game in the following format.
 Once you have identified the basic information, analyze the game details and create a tweet that highlights the key moments and standout players. 
-If there are any remarkable stats (including # of attendees), include them in the tweet.
+If there are any remarkable stats (including # of attendees), include them in the tweet. You must format the tweet to start with the Game Results as listed below:
 
 Game Result:
 {visitor} {visitor_score} @ {home} {home_score}
@@ -86,8 +86,8 @@ def build_hot_player_prompt(player_data, game_context):
     visitor_score = game_context['visitor_score']
     home_score = game_context['home_score']
     
-    prompt = f"""You are writing exciting social media content for a PWHL analytics account.
-Focus on highlighting one standout player's performance in a specific game.
+    prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account.
+Focus on highlighting one standout player's performance in a specific game. If a player scores 3 goals (a hat trick) they will automatically be the hot player, unless a player scored more than 3 goals that game.
 
 Player: {name} (#{jersey} {team})
 Game Result: {visitor} {visitor_score} @ {home} {home_score}
@@ -138,7 +138,7 @@ def build_goalie_spotlight_prompt(goalie_data, game_context):
     visitor_score = game_context['visitor_score']
     home_score = game_context['home_score']
     
-    prompt = f"""You are writing exciting social media content for a PWHL analytics account.
+    prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account.
 Focus on highlighting one standout goalie's performance in a specific game.
 
 Goalie: {name} (#{jersey} {team})
@@ -190,7 +190,7 @@ def build_attendance_highlight_prompt(game_data):
     
     final_score = f"{visitor_score}-{home_score}"
     
-    prompt = f"""You are writing exciting social media content for a PWHL analytics account.
+    prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account.
 Highlight the impressive fan turnout and attendance at this game.
 
 Game Details:
