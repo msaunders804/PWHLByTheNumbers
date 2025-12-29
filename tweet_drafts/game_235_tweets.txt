@@ -1,0 +1,30 @@
+Tweet Drafts for Game #235
+============================================================
+
+DRAFT #1 - GAME_SUMMARY
+------------------------------------------------------------
+🚨 Rebecca Leslie was UNSTOPPABLE! 2 goals including the PPG winner as OTT edged TOR in a goaltending clinic - Kirk (33 saves) vs Philips (34 saves) put on a show! Leslie's clutch performance stole the spotlight in this thriller 🔥⚡ #PWHL
+
+✅ Valid
+Length: 236 characters
+
+============================================================
+
+DRAFT #2 - HOT_PLAYER
+------------------------------------------------------------
+Natalie Spooner was BUZZING last night! 🔥 Led all skaters with 6 shots on goal while picking up an assist in a thriller against Ottawa. Sometimes the scoresheet doesn't tell the whole story - Spooner was creating chances all night long! 🎯 #PWHL
+
+✅ Valid
+Length: 244 characters
+
+============================================================
+
+DRAFT #3 - GOALIE_SPOTLIGHT
+------------------------------------------------------------
+🧱 Raygan Kirk was a WALL for Toronto tonight! 33 saves on 37 shots (89.2%) through 61+ minutes of action. Kirk kept her team in the fight with some spectacular stops - those numbers don't tell the whole story of her stellar performance! 🥅⭐ #PWHL
+
+✅ Valid
+Length: 245 characters
+
+============================================================
+
