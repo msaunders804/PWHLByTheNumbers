@@ -8,6 +8,7 @@ AI_PROVIDER = "anthropic"  # Fill this in
 # API Keys - Get these from:
 # Anthropic: https://console.anthropic.com/
 ANTHROPIC_API_KEY = ""  # Your Claude API key here
+ANTHROPIC_API_KEY = ""
 
 # AI Model Selection
 CLAUDE_MODEL = "claude-sonnet-4-20250514"  # Latest Claude model
