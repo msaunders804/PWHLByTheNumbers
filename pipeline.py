@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-PWHL Analytics Pipeline - Fully Automated
-Runs the complete workflow: data update → analysis → tweets → posting
+PWHL Analytics Pipeline - Streamlined with Database
+Runs the complete workflow: check recent game → fetch if needed → generate tweets → post
 """
 
 import os
@@ -10,6 +10,7 @@ import json
 import subprocess
 from datetime import datetime
 import time
+from db_queries import get_most_recent_completed_game, ensure_game_in_db, get_game_analysis
 
 # Configuration
 DRY_RUN = True  # Set to False to actually post to Twitter
@@ -98,115 +99,73 @@ class PWHLPipeline:
             self.results['errors'].append(error_msg)
             return False, str(e)
     
-    def step1_update_data(self):
-        """Step 1: Update all data from API"""
-        self.log("\n" + "="*60, "update_data")
-        self.log("📡 STEP 1: UPDATING DATA FROM API", "update_data")
-        self.log("="*60, "update_data")
-        # Check if PowerShell script exists AND we're on Windows (not WSL)
-        is_wsl = 'microsoft' in os.uname().release.lower() if hasattr(os, 'uname') else False
-        script_path = os.path.join('data processing', 'data_extract.ps1')
+    def step1_get_recent_game(self):
+        """Step 1: Get most recent game from database"""
+        self.log("\n" + "="*60, "get_recent_game")
+        self.log("🔍 STEP 1: FINDING MOST RECENT GAME", "get_recent_game")
+        self.log("="*60, "get_recent_game")
 
-        if os.path.exists(script_path) and not is_wsl and os.name == 'nt':
-            self.log("Running PowerShell data extraction script...")
-            success, output = self.run_command(
-                f'powershell -ExecutionPolicy Bypass -File "{script_path}"',
-                "Data extraction (PowerShell)"
-            )
-        else:
-            # Use Python fallback (works on Linux/WSL/Mac)
-            if is_wsl:
-                self.log("WSL detected - using Python fallback for data update...")
-            else:
-                self.log("PowerShell not available - using Python fallback...")
-            
-            success = self._update_schedule_python()
-        
-        return success
-    
-    def _update_schedule_python(self):
-        """Fallback: Update schedule using Python"""
         try:
-            import requests
-            
-            url = "https://lscluster.hockeytech.com/feed/"
-            params = {
-                'feed': 'modulekit',
-                'view': 'scorebar',
-                'key': '446521baf8c38984',
-                'fmt': 'json',
-                'client_code': 'pwhl',
-                'lang': 'en',
-                'league_id': '1',
-                'season_id': '8',
-                'numberofdaysahead': '365',
-                'numberofdaysback': '365'
-            }
-            
-            self.log("  Downloading schedule from API...")
-            response = requests.get(url, params=params, timeout=30)
-            response.raise_for_status()
-            
-            # Remove JavaScript wrapper
-            text = response.text
-            if text.startswith('angular.callbacks'):
-                text = text[text.find('(')+1:text.rfind(')')]
-            
-            data = json.loads(text)
-            
-            # Save to file
-            os.makedirs('raw_data', exist_ok=True)
-            with open('raw_data/schedule.json', 'w') as f:
-                json.dump(data, f, indent=2)
-            
-            self.log("  ✅ Schedule updated successfully")
-            return True
-            
+            self.log("  Querying database for most recent completed game...")
+            game_info = get_most_recent_completed_game()
+
+            if not game_info:
+                self.log("  ❌ No completed games found in database")
+                self.results['errors'].append("No completed games in database")
+                return False, None
+
+            self.log(f"  ✅ Found: Game #{game_info['game_id']}")
+            self.log(f"     {game_info['away_team']} @ {game_info['home_team']}")
+            self.log(f"     Final: {game_info['away_score']}-{game_info['home_score']}")
+            self.log(f"     Date: {game_info['date']}")
+
+            self.results['games_analyzed'].append(str(game_info['game_id']))
+            return True, game_info
+
         except Exception as e:
-            self.log(f"  ❌ Failed to update schedule: {e}")
-            self.results['errors'].append(f"Schedule update failed: {e}")
+            error_msg = f"Error querying database: {e}"
+            self.log(f"  ❌ {error_msg}")
+            self.results['errors'].append(error_msg)
+            return False, None
+    
+    def step2_ensure_game_data(self, game_id):
+        """Step 2: Ensure game data is in database (fetch from API if needed)"""
+        self.log("\n" + "="*60, "ensure_game_data")
+        self.log("📥 STEP 2: ENSURING GAME DATA IN DATABASE", "ensure_game_data")
+        self.log("="*60, "ensure_game_data")
+
+        try:
+            success = ensure_game_in_db(game_id)
+
+            if success:
+                self.log(f"  ✅ Game {game_id} data ready in database")
+                return True
+            else:
+                error_msg = f"Failed to ensure game {game_id} in database"
+                self.log(f"  ❌ {error_msg}")
+                self.results['errors'].append(error_msg)
+                return False
+
+        except Exception as e:
+            error_msg = f"Error ensuring game data: {e}"
+            self.log(f"  ❌ {error_msg}")
+            self.results['errors'].append(error_msg)
             return False
     
-    def step2_analyze_games(self):
-        """Step 2: Run game analysis on most recent game"""
-        self.log("\n" + "="*60, "analyze_games")
-        self.log("🔍 STEP 2: ANALYZING RECENT GAMES", "analyze_games")
-        self.log("="*60, "analyze_games")
-        
-        # Use 'python' on Windows, 'python3' on Linux/Mac
-        python_cmd = 'python' if os.name == 'nt' else 'python3'
-        
-        success, output = self.run_command(
-            f'{python_cmd} "data processing/game_analysis.py"',
-            "Game analysis"
-        )
-        
-        if success:
-            # Extract game ID from output (simple parsing)
-            try:
-                lines = output.split('\n')
-                for line in lines:
-                    if 'Most Recent: Game #' in line:
-                        game_id = line.split('Game #')[1].split()[0]
-                        self.results['games_analyzed'].append(game_id)
-                        self.log(f"  ✅ Analyzed Game #{game_id}")
-                        break
-            except:
-                pass
-        
-        return success
-    
-    def step3_generate_tweets(self):
+    def step3_generate_tweets(self, game_id):
         """Step 3: Generate tweet drafts"""
         self.log("\n" + "="*60, "generate_tweets")
         self.log("✍️  STEP 3: GENERATING TWEET DRAFTS", "generate_tweets")
         self.log("="*60, "generate_tweets")
-        
+
+        # Use 'python' on Windows, 'python3' on Linux/Mac
+        python_cmd = 'python' if os.name == 'nt' else 'python3'
+
         success, output = self.run_command(
-            'python3 message_gen.py',
+            f'{python_cmd} message_gen.py {game_id}',
             "Tweet generation"
         )
-        
+
         if success:
             # Find the tweet drafts file
             try:
@@ -216,17 +175,17 @@ class PWHLPipeline:
                     # Get most recent
                     draft_files.sort(key=os.path.getmtime, reverse=True)
                     latest_draft = draft_files[0]
-                    
+
                     with open(latest_draft, 'r') as f:
                         drafts = json.load(f)
-                    
+
                     self.log(f"  ✅ Generated {len(drafts)} tweet draft(s)")
                     self.results['tweets_generated'] = drafts
-                    
+
                     return True, drafts
             except Exception as e:
                 self.log(f"  ⚠️  Could not load draft files: {e}")
-        
+
         return success, []
     
     def step4_post_to_twitter(self, drafts):
@@ -353,52 +312,55 @@ class PWHLPipeline:
     def run(self):
         """Run the complete pipeline"""
         self.log("\n" + "🚀"*30)
-        self.log("🚀 PWHL ANALYTICS PIPELINE - STARTING")
+        self.log("🚀 PWHL ANALYTICS PIPELINE - STARTING (DATABASE MODE)")
         self.log("🚀"*30)
         self.log(f"\nMode: {'DRY RUN' if self.dry_run else 'LIVE'}")
         self.log(f"Auto-post: {'ENABLED' if AUTO_POST_VALID_TWEETS else 'DISABLED'}")
         self.log(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        
-        # Step 1: Update data
-        if not self.step1_update_data():
-            self.log("\n❌ Pipeline failed at Step 1 (Data Update)")
+
+        # Step 1: Get most recent game from database
+        success, game_info = self.step1_get_recent_game()
+        if not success:
+            self.log("\n❌ Pipeline failed at Step 1 (Get Recent Game)")
             self.save_results()
             return False
-        
-        # Step 2: Analyze games
-        if not self.step2_analyze_games():
-            self.log("\n❌ Pipeline failed at Step 2 (Game Analysis)")
+
+        game_id = game_info['game_id']
+
+        # Step 2: Ensure game data is in database
+        if not self.step2_ensure_game_data(game_id):
+            self.log("\n❌ Pipeline failed at Step 2 (Ensure Game Data)")
             self.save_results()
             return False
-        
+
         # Step 3: Generate tweets
-        success, drafts = self.step3_generate_tweets()
+        success, drafts = self.step3_generate_tweets(game_id)
         if not success:
             self.log("\n❌ Pipeline failed at Step 3 (Tweet Generation)")
             self.save_results()
             return False
-        
+
         # Step 4: Post to Twitter
         if not self.step4_post_to_twitter(drafts):
             self.log("\n❌ Pipeline failed at Step 4 (Twitter Posting)")
             self.save_results()
             return False
-        
+
         # Success!
         self.log("\n" + "✅"*30)
         self.log("✅ PIPELINE COMPLETED SUCCESSFULLY")
         self.log("✅"*30)
-        
+
         # Summary
         self.log("\n📊 SUMMARY:")
         self.log(f"  Games analyzed: {len(self.results['games_analyzed'])}")
         self.log(f"  Tweets generated: {len(self.results['tweets_generated'])}")
         self.log(f"  Tweets posted: {len(self.results['tweets_posted'])}")
         self.log(f"  Errors: {len(self.results['errors'])}")
-        
+
         # Save results
         self.save_results()
-        
+
         return True
 
 

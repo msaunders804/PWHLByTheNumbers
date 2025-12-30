@@ -1,33 +1,17 @@
 [
   {
     "type": "game_summary",
-    "tweet": "SEA 3 @ NY 4 \ud83c\udfd2\n\nCASEY O'BRIEN DOMINANCE! Hat trick + 2 PPG + GWG powers NY past Seattle in a thriller! O'Brien's clutch performance backed by Bourbonnais' 3 assists and Osborne's 30 saves. Murphy stood tall with 37 saves but couldn't stop the O'Brien show! \ud83d\udd25\u2b50 #PWHL",
+    "tweet": "SEA 3 @ NY 4 \ud83c\udfd2\n\nWhat a THRILLER in New York! Casey O'Brien's hat trick powers NY to victory while Jaime Bourbonnais dishes out 3 assists for a monster night! \ud83d\udd25 \n\nHannah Murphy stood tall with 37 saves in the losing effort. High-octane hockey at its finest! \u26a1\n\n#PWHL",
     "valid": true,
     "issues": [],
-    "timestamp": "2025-12-30T10:13:59.011533"
-  },
-  {
-    "type": "hot_player",
-    "player": "Jaime Bourbonnais",
-    "tweet": "\ud83c\udfaf TRIPLE THREAT! Jaime Bourbonnais (#14) was the puppet master in NY's 4-3 victory, racking up 3 assists to fuel the comeback! Every scoring play had her fingerprints on it. That's how you control the game without lighting the lamp! \ud83d\udd25\u26a1 #PWHL",
-    "valid": true,
-    "issues": [],
-    "timestamp": "2025-12-30T10:14:02.618681"
-  },
-  {
-    "type": "goalie_spotlight",
-    "goalie": "Kayle Osborne",
-    "tweet": "\ud83e\uddf1 WALL ALERT! Kayle Osborne (#82) was DOMINANT between the pipes for NY, stopping 30 of 33 shots (.909 SV%) in a thrilling 4-3 victory over Seattle! \n\n30 saves in 60 minutes = pure excellence when it mattered most \ud83d\udd25\n\n#PWHL #GoalieGoals",
-    "valid": true,
-    "issues": [],
-    "timestamp": "2025-12-30T10:14:06.683150"
+    "timestamp": "2025-12-30T15:42:24.711787"
   },
   {
     "type": "high_attendance",
     "attendance": 8514,
-    "tweet": "\ud83d\udd25 WOW! 8,514 fans packed American Airlines Center in Dallas tonight as NY edged SEA 4-3! The energy was ELECTRIC and the crowd was LOUD! This is what growing the game looks like - fans showing up and showing OUT! You're witnessing history, #PWHL family! \ud83d\ude4c #PWHLGrowth",
+    "tweet": "\ud83d\udd25 ANOTHER ELECTRIC CROWD! 8,514 fans packed the house for SEA @ NY's thrilling 4-3 finish! The energy was UNMATCHED as fans witnessed pure hockey magic. This is what growing the game looks like - YOU are making history every single game! \ud83c\udfd2 #PWHL",
     "valid": true,
     "issues": [],
-    "timestamp": "2025-12-30T10:14:10.374806"
+    "timestamp": "2025-12-30T15:42:28.647428"
   }
 ]

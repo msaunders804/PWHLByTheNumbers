@@ -5,41 +5,23 @@ DRAFT #1 - GAME_SUMMARY
 ------------------------------------------------------------
 SEA 3 @ NY 4 🏒
 
-CASEY O'BRIEN DOMINANCE! Hat trick + 2 PPG + GWG powers NY past Seattle in a thriller! O'Brien's clutch performance backed by Bourbonnais' 3 assists and Osborne's 30 saves. Murphy stood tall with 37 saves but couldn't stop the O'Brien show! 🔥⭐ #PWHL
+What a THRILLER in New York! Casey O'Brien's hat trick powers NY to victory while Jaime Bourbonnais dishes out 3 assists for a monster night! 🔥 
+
+Hannah Murphy stood tall with 37 saves in the losing effort. High-octane hockey at its finest! ⚡
+
+#PWHL
 
 ✅ Valid
 Length: 265 characters
 
 ============================================================
 
-DRAFT #2 - HOT_PLAYER
+DRAFT #2 - HIGH_ATTENDANCE
 ------------------------------------------------------------
-🎯 TRIPLE THREAT! Jaime Bourbonnais (#14) was the puppet master in NY's 4-3 victory, racking up 3 assists to fuel the comeback! Every scoring play had her fingerprints on it. That's how you control the game without lighting the lamp! 🔥⚡ #PWHL
+🔥 ANOTHER ELECTRIC CROWD! 8,514 fans packed the house for SEA @ NY's thrilling 4-3 finish! The energy was UNMATCHED as fans witnessed pure hockey magic. This is what growing the game looks like - YOU are making history every single game! 🏒 #PWHL
 
 ✅ Valid
-Length: 241 characters
-
-============================================================
-
-DRAFT #3 - GOALIE_SPOTLIGHT
-------------------------------------------------------------
-🧱 WALL ALERT! Kayle Osborne (#82) was DOMINANT between the pipes for NY, stopping 30 of 33 shots (.909 SV%) in a thrilling 4-3 victory over Seattle! 
-
-30 saves in 60 minutes = pure excellence when it mattered most 🔥
-
-#PWHL #GoalieGoals
-
-✅ Valid
-Length: 235 characters
-
-============================================================
-
-DRAFT #4 - HIGH_ATTENDANCE
-------------------------------------------------------------
-🔥 WOW! 8,514 fans packed American Airlines Center in Dallas tonight as NY edged SEA 4-3! The energy was ELECTRIC and the crowd was LOUD! This is what growing the game looks like - fans showing up and showing OUT! You're witnessing history, #PWHL family! 🙌 #PWHLGrowth
-
-✅ Valid
-Length: 267 characters
+Length: 245 characters
 
 ============================================================
 

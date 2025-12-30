@@ -1,6 +1,6 @@
 """
 Main Tweet Generator
-Analyzes a game and generates tweet drafts
+Analyzes a game and generates tweet drafts using database
 """
 
 import json
@@ -15,109 +15,52 @@ from prompts import (
     build_attendance_highlight_prompt
 )
 from config import SAVE_DRAFTS, DRAFTS_FOLDER
+from db_queries import get_most_recent_completed_game, get_game_analysis, ensure_game_in_db
 
-def find_most_recent_game_from_schedule():
+def find_most_recent_game_from_db():
     """
-    Find the most recently completed game from the schedule
-    Same logic as game_analysis.py
-    
+    Find the most recently completed game from the database
+
     Returns:
         Tuple of (game_id, game_info_dict) or (None, None) if not found
     """
-    from datetime import datetime, timedelta
-    
-    # Try multiple possible schedule locations
-    possible_paths = [
-        'raw_data/schedule.json',
-        '../raw_data/schedule.json',
-        'schedule.json'
-    ]
-    
-    schedule_data = None
-    
-    for path in possible_paths:
-        try:
-            with open(path, 'r', encoding='utf-8-sig') as f:
-                schedule_data = json.load(f)
-                break
-        except FileNotFoundError:
-            continue
-        except Exception as e:
-            print(f"  ⚠️  Error reading {path}: {e}")
-            continue
-    
-    if not schedule_data:
-        print("  ❌ Could not find schedule.json")
-        return None, None
-    
     try:
-        # Calculate cutoff date (last 7 days)
-        cutoff_date = datetime.now() - timedelta(days=7)
-        
-        completed_games = []
-        if 'SiteKit' in schedule_data and 'Scorebar' in schedule_data['SiteKit']:
-            for game in schedule_data['SiteKit']['Scorebar']:
-                # GameStatus: 4=Final
-                if game.get('GameStatus') == '4' and game.get('ID'):
-                    game_date_str = game.get('Date', '')
-                    
-                    # Parse game date (format: YYYY-MM-DD)
-                    try:
-                        game_date = datetime.strptime(game_date_str, '%Y-%m-%d')
-                        
-                        # Only include games within the last 7 days
-                        if game_date >= cutoff_date:
-                            completed_games.append({
-                                'game_id': game['ID'],
-                                'date': game_date_str,
-                                'date_obj': game_date,
-                                'home_team': game.get('HomeCode', ''),
-                                'visitor_team': game.get('VisitorCode', ''),
-                                'home_score': game.get('HomeGoals', 0),
-                                'visitor_score': game.get('VisitorGoals', 0)
-                            })
-                    except ValueError:
-                        # Skip games with invalid dates
-                        continue
-        
-        # Sort by date (most recent first)
-        completed_games.sort(key=lambda x: x['date_obj'], reverse=True)
-        
-        if not completed_games:
+        game_info = get_most_recent_completed_game()
+
+        if not game_info:
             return None, None
-        
-        # Return most recent game
-        most_recent = completed_games[0]
-        
-        return most_recent['game_id'], most_recent
-    
+
+        return game_info['game_id'], game_info
+
     except Exception as e:
-        print(f"  ❌ Error parsing schedule: {e}")
+        print(f"  ❌ Error querying database: {e}")
         return None, None
 
 
 def load_game_analysis(game_id):
     """
-    Load analysis from game_analysis.py output
-    
+    Load analysis from database
+
     Args:
         game_id: Game ID number
-    
+
     Returns:
         Dict with parsed analysis data
     """
-    
-    filepath = f"outputs/game_analysis_{game_id}.json"
-    
-    # Check if file exists
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Analysis file not found: {filepath}")
-    
-    # Load and parse JSON
-    with open(filepath, 'r') as f:
-        data = json.load(f)
-    
-    return data
+    try:
+        # Ensure game is in database
+        ensure_game_in_db(game_id)
+
+        # Get analysis from database
+        analysis = get_game_analysis(game_id)
+
+        if not analysis:
+            raise ValueError(f"Could not analyze game {game_id}")
+
+        return analysis
+
+    except Exception as e:
+        raise FileNotFoundError(f"Error loading game {game_id} from database: {e}")
 
 
 def generate_tweet_drafts(analysis_data):
@@ -209,7 +152,7 @@ def generate_tweet_drafts(analysis_data):
     
     # If attendance is over 7,000, generate special tweet
 
-    HIGH_ATTENDANCE_THRESHOLD = 7000  # Adjust based on your data
+    HIGH_ATTENDANCE_THRESHOLD = 10000  # Adjust based on your data
     
     if attendance_num >= HIGH_ATTENDANCE_THRESHOLD:
         print("Generating high attendance tweet...")
@@ -276,77 +219,51 @@ def save_drafts(drafts, game_id):
 def main():
     """Main function"""
     import sys
-    
-    print("🤖 AI Tweet Draft Generator")
+
+    print("🤖 AI Tweet Draft Generator (Database Mode)")
     print("=" * 60)
-    
+
     # Check for game ID argument
     if len(sys.argv) < 2:
-        # AUTO MODE - Find most recent game from schedule
-        print("\n🔍 AUTO MODE - Finding most recent completed game from schedule...")
-        game_id, game_info = find_most_recent_game_from_schedule()
-        
+        # AUTO MODE - Find most recent game from database
+        print("\n🔍 AUTO MODE - Finding most recent completed game from database...")
+        game_id, game_info = find_most_recent_game_from_db()
+
         if not game_id:
-            print("❌ No recent completed games found in schedule")
-            print("\n💡 Make sure raw_data/schedule.json exists and is up to date")
-            print("   Run: ./data_extract.ps1  (to update schedule)")
+            print("❌ No recent completed games found in database")
+            print("\n💡 Make sure the database is populated with game data")
             return
-        
+
         print(f"✓ Found most recent game: Game #{game_id}")
-        print(f"  {game_info['visitor_team']} @ {game_info['home_team']}")
-        print(f"  Final: {game_info['visitor_score']}-{game_info['home_score']}")
+        print(f"  {game_info['away_team']} @ {game_info['home_team']}")
+        print(f"  Final: {game_info['away_score']}-{game_info['home_score']}")
         print(f"  Date: {game_info['date']}")
-        
-        # Check if analysis exists for this game
-        analysis_file = f"outputs/game_analysis_{game_id}.json"
-        if not os.path.exists(analysis_file):
-            print(f"\n⚠️  Game analysis not found for game #{game_id}")
-            print(f"   Running game analysis first...")
-            print()
-            
-            # Import and run game analysis
-            try:
-                import subprocess
-                result = subprocess.run(['python3', 'game_analysis.py'], 
-                                     capture_output=False, 
-                                     text=True)
-                
-                if result.returncode != 0:
-                    print(f"\n❌ Game analysis failed")
-                    return
-                    
-                print("\n✓ Game analysis complete!")
-                
-            except Exception as e:
-                print(f"\n❌ Could not run game analysis: {e}")
-                print(f"   Please run manually: python3 game_analysis.py")
-                return
     else:
         # MANUAL MODE - Use provided game ID
         game_id = sys.argv[1]
         print(f"\n🎯 MANUAL MODE - Generating tweets for Game #{game_id}")
-    
-    # Load analysis
-    print("\n📊 Loading game analysis...")
+
+    # Load analysis from database
+    print("\n📊 Loading game analysis from database...")
     try:
         analysis = load_game_analysis(game_id)
-        
+
         # Show game details
         game_info = analysis['game_info']
         print(f"✓ Loaded game data:")
         print(f"  {game_info['visitor_team']} @ {game_info['home_team']}")
         print(f"  Final: {game_info['final_score']}")
         print(f"  Date: {game_info['date']}")
-        
-    except FileNotFoundError as e:
+
+    except (FileNotFoundError, ValueError) as e:
         print(f"❌ {e}")
-        print(f"\n💡 Run game analysis first: python3 game_analysis.py")
+        print(f"\n💡 Make sure game {game_id} is in the database")
         return
-    
+
     # Generate tweets
     print("\n✍️ Generating tweet drafts...")
     drafts = generate_tweet_drafts(analysis)
-    
+
     # Display results
     print(f"\n📝 Generated {len(drafts)} tweet draft(s):")
     for i, draft in enumerate(drafts, 1):
@@ -354,11 +271,11 @@ def main():
         print(draft['tweet'])
         if not draft['valid']:
             print(f"⚠️  Issues: {', '.join(draft['issues'])}")
-    
+
     # Save
     if SAVE_DRAFTS:
         save_drafts(drafts, game_id)
-    
+
     print("\n✅ Complete!")
 
 
