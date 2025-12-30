@@ -103,14 +103,14 @@ class PWHLPipeline:
         self.log("\n" + "="*60, "update_data")
         self.log("📡 STEP 1: UPDATING DATA FROM API", "update_data")
         self.log("="*60, "update_data")
-        
         # Check if PowerShell script exists AND we're on Windows (not WSL)
         is_wsl = 'microsoft' in os.uname().release.lower() if hasattr(os, 'uname') else False
-        
-        if os.path.exists('data_extract.ps1') and not is_wsl and os.name == 'nt':
+        script_path = os.path.join('data processing', 'data_extract.ps1')
+
+        if os.path.exists(script_path) and not is_wsl and os.name == 'nt':
             self.log("Running PowerShell data extraction script...")
             success, output = self.run_command(
-                'powershell -ExecutionPolicy Bypass -File data_extract.ps1',
+                f'powershell -ExecutionPolicy Bypass -File "{script_path}"',
                 "Data extraction (PowerShell)"
             )
         else:
@@ -177,7 +177,7 @@ class PWHLPipeline:
         python_cmd = 'python' if os.name == 'nt' else 'python3'
         
         success, output = self.run_command(
-            f'{python_cmd} game_analysis.py',
+            f'{python_cmd} "data processing/game_analysis.py"',
             "Game analysis"
         )
         

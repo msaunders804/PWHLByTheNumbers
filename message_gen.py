@@ -154,7 +154,7 @@ def generate_tweet_drafts(analysis_data):
         'timestamp': datetime.now().isoformat()
     })
     
-    # Generate hot player tweet (if we have hot players)
+    ''' # Generate hot player tweet (if we have hot players)
     if hot_players and len(hot_players) > 0:
         print("Generating hot player tweet...")
         
@@ -197,7 +197,7 @@ def generate_tweet_drafts(analysis_data):
             'issues': issues,
             'timestamp': datetime.now().isoformat()
         })
-    
+    '''
     # Check if attendance is noteworthy
     attendance = game_info.get('attendance', 'N/A')
     
@@ -208,6 +208,7 @@ def generate_tweet_drafts(analysis_data):
         attendance_num = 0
     
     # If attendance is over 7,000, generate special tweet
+
     HIGH_ATTENDANCE_THRESHOLD = 7000  # Adjust based on your data
     
     if attendance_num >= HIGH_ATTENDANCE_THRESHOLD:
