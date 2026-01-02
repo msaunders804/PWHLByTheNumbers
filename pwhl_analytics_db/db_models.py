@@ -5,7 +5,7 @@ Base = declarative_base()
 
 class Game(Base):
     __tablename__ = 'games'
-    
+
     game_id = Column(Integer, primary_key=True)
     season_id = Column(Integer)
     date = Column(Date)
@@ -15,6 +15,7 @@ class Game(Base):
     away_score = Column(Integer)
     game_status = Column(String)
     attendance = Column(Integer, nullable=True)
+    venue = Column(String, nullable=True)
 
 class Team(Base):
     __tablename__ = 'teams'

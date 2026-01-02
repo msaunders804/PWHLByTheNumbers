@@ -16,6 +16,29 @@ from sqlalchemy.orm import sessionmaker
 from db_models import Game, Team, Player, PlayerGameStats, GoalieGameStats
 from load_data import load_game_data
 from datetime import datetime, timedelta
+from firsts_detector import get_all_firsts_for_game
+
+# PWHL home venues (from takeover_analysis.py)
+PWHL_HOME_VENUES = [
+    'Place Bell',                # Montreal
+    "Bell Centre",             # Montreal
+    "Verdun Auditorium",      # Montreal
+    'Coca-Cola Coliseum',        # Toronto
+    "Mattamy Athletic Centre", # Toronto
+    "Scotiabank Arena",          # Toronto
+    'Tsongas Center',            # Boston
+    'Agganis Arena',          # Boston
+    'TD Place',            # Ottawa
+    "Grand Casino Arena", #St Paul/MIN
+    "Canadian Tire Centre",    # Ottawa
+    'Prudential Center',         # NY Sirens
+    'Xcel Energy Center',        # Minnesota
+    'Climate Pledge Arena',      # Seattle
+    'Pacific Coliseum',           # Vancouver
+    'Total Mortgage Arena',      # CT/NY
+    'UBS Arena',              # NY
+    '3M Arena at Mariucci',    # Minnesota
+]
 
 # Database configuration
 DATABASE_URL = 'postgresql://postgres:SecurePassword@localhost/pwhl_analytics'
@@ -130,6 +153,31 @@ def get_game_analysis(game_id):
             winner = away_team.team_code
             loser = home_team.team_code
 
+        # Fetch venue from API
+        venue = 'Unknown'
+        is_takeover = False
+        takeover_city = None
+
+        try:
+            from fetch_data import fetch_game_summary
+            api_data = fetch_game_summary(game_id)
+            if 'GC' in api_data and 'Gamesummary' in api_data['GC']:
+                venue = api_data['GC']['Gamesummary'].get('venue', 'Unknown')
+
+                # Check if this is a takeover game
+                venue_name = venue.split('|')[0].strip() if '|' in venue else venue.strip()
+                is_home_venue = any(home_venue.lower() in venue_name.lower()
+                                   for home_venue in PWHL_HOME_VENUES)
+
+                if not is_home_venue:
+                    is_takeover = True
+                    # Extract city from venue
+                    if '|' in venue:
+                        location = venue.split('|')[1].strip()
+                        takeover_city = location.split(',')[0].strip()
+        except:
+            pass  # Silently fail if API call fails
+
         # Game info
         game_info = {
             'game_id': str(game.game_id),
@@ -139,10 +187,12 @@ def get_game_analysis(game_id):
             'home_score': game.home_score,
             'visitor_score': game.away_score,
             'final_score': f"{game.away_score}-{game.home_score}",
-            'venue': 'Unknown',  # Not stored in DB
+            'venue': venue,
             'attendance': game.attendance if game.attendance else 'N/A',
             'winner': winner,
-            'loser': loser
+            'loser': loser,
+            'is_takeover': is_takeover,
+            'takeover_city': takeover_city
         }
 
         # Get hot players (players with strong performances)
@@ -251,12 +301,16 @@ def get_game_analysis(game_id):
                     'team': team.team_code if team else 'UNK'
                 })
 
+        # Detect historical firsts
+        firsts = get_all_firsts_for_game(game_id)
+
         return {
             'game_info': game_info,
             'hot_players': hot_players,
             'hot_goalies': hot_goalies,
             'period_analysis': {},  # Not stored in current DB schema
-            'mvps': []  # Not stored in current DB schema
+            'mvps': [],  # Not stored in current DB schema
+            'firsts': firsts  # Historical achievements
         }
 
     finally:

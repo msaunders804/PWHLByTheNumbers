@@ -15,7 +15,7 @@ from db_queries import get_most_recent_completed_game, ensure_game_in_db, get_ga
 # Configuration
 DRY_RUN = True  # Set to False to actually post to Twitter
 AUTO_POST_VALID_TWEETS = True  # Auto-post tweets with no issues
-REQUIRE_ATTENDANCE_THRESHOLD = 7000  # Only post attendance tweets above this
+REQUIRE_ATTENDANCE_THRESHOLD = 10000  # Only post attendance tweets above this
 
 class PWHLPipeline:
     def __init__(self, dry_run=True):

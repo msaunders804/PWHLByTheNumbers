@@ -75,15 +75,16 @@ def generate_tweet_drafts(analysis_data):
     """
     
     drafts = []
-    
+
     # Extract data
     game_info = analysis_data['game_info']
     hot_players = analysis_data['hot_players']
     hot_goalies = analysis_data['hot_goalies']
-    
+    firsts = analysis_data.get('firsts', None)
+
     # Generate game summary tweet
     print("Generating game summary tweet...")
-    summary_prompt = build_game_summary_prompt(game_info, hot_players, hot_goalies)  
+    summary_prompt = build_game_summary_prompt(game_info, hot_players, hot_goalies, firsts)
     summary_tweet = call_ai(summary_prompt) 
 
     # Validate

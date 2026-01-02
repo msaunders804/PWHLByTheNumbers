@@ -52,10 +52,15 @@ def load_game_data(game_id, session=None):
             home_score=int(meta['home_goal_count']),
             away_score=int(meta['visiting_goal_count']),
             game_status='final' if meta['final'] == '1' else 'in_progress',
-            attendance=int(meta['attendance']) if meta['attendance'] else None
+            attendance=int(meta['attendance']) if meta['attendance'] else None,
+            venue=summary.get('venue', None)
         )
         session.merge(game)
-        
+
+        # Delete existing stats for this game to prevent duplicates
+        session.query(PlayerGameStats).filter(PlayerGameStats.game_id == int(meta['id'])).delete()
+        session.query(GoalieGameStats).filter(GoalieGameStats.game_id == int(meta['id'])).delete()
+
         # Load home team skaters
         for player_data in summary['home_team_lineup']['players']:
             player = Player(

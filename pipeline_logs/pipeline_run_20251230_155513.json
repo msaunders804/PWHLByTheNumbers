@@ -1,65 +1,65 @@
 {
-  "timestamp": "2025-12-30T15:42:10.278552",
+  "timestamp": "2025-12-30T15:55:03.500851",
   "steps": [
     {
       "step": "get_recent_game",
       "message": "\n============================================================",
-      "timestamp": "2025-12-30T15:42:10.278727"
+      "timestamp": "2025-12-30T15:55:03.500980"
     },
     {
       "step": "get_recent_game",
       "message": "\ud83d\udd0d STEP 1: FINDING MOST RECENT GAME",
-      "timestamp": "2025-12-30T15:42:10.278734"
+      "timestamp": "2025-12-30T15:55:03.500999"
     },
     {
       "step": "get_recent_game",
       "message": "============================================================",
-      "timestamp": "2025-12-30T15:42:10.278738"
+      "timestamp": "2025-12-30T15:55:03.501005"
     },
     {
       "step": "ensure_game_data",
       "message": "\n============================================================",
-      "timestamp": "2025-12-30T15:42:10.423005"
+      "timestamp": "2025-12-30T15:55:03.556218"
     },
     {
       "step": "ensure_game_data",
       "message": "\ud83d\udce5 STEP 2: ENSURING GAME DATA IN DATABASE",
-      "timestamp": "2025-12-30T15:42:10.423035"
+      "timestamp": "2025-12-30T15:55:03.556248"
     },
     {
       "step": "ensure_game_data",
       "message": "============================================================",
-      "timestamp": "2025-12-30T15:42:10.423043"
+      "timestamp": "2025-12-30T15:55:03.556257"
     },
     {
       "step": "generate_tweets",
       "message": "\n============================================================",
-      "timestamp": "2025-12-30T15:42:10.424376"
+      "timestamp": "2025-12-30T15:55:03.557459"
     },
     {
       "step": "generate_tweets",
       "message": "\u270d\ufe0f  STEP 3: GENERATING TWEET DRAFTS",
-      "timestamp": "2025-12-30T15:42:10.424405"
+      "timestamp": "2025-12-30T15:55:03.557465"
     },
     {
       "step": "generate_tweets",
       "message": "============================================================",
-      "timestamp": "2025-12-30T15:42:10.424435"
+      "timestamp": "2025-12-30T15:55:03.557482"
     },
     {
       "step": "post_tweets",
       "message": "\n============================================================",
-      "timestamp": "2025-12-30T15:42:28.810002"
+      "timestamp": "2025-12-30T15:55:13.125612"
     },
     {
       "step": "post_tweets",
       "message": "\ud83d\udc26 STEP 4: POSTING TO TWITTER",
-      "timestamp": "2025-12-30T15:42:28.810029"
+      "timestamp": "2025-12-30T15:55:13.125640"
     },
     {
       "step": "post_tweets",
       "message": "============================================================",
-      "timestamp": "2025-12-30T15:42:28.810048"
+      "timestamp": "2025-12-30T15:55:13.125664"
     }
   ],
   "games_analyzed": [
@@ -68,18 +68,10 @@
   "tweets_generated": [
     {
       "type": "game_summary",
-      "tweet": "SEA 3 @ NY 4 \ud83c\udfd2\n\nWhat a THRILLER in New York! Casey O'Brien's hat trick powers NY to victory while Jaime Bourbonnais dishes out 3 assists for a monster night! \ud83d\udd25 \n\nHannah Murphy stood tall with 37 saves in the losing effort. High-octane hockey at its finest! \u26a1\n\n#PWHL",
+      "tweet": "\ud83d\udea8 SEA 3 @ NY 4 - WINNER: NY \ud83d\udea8\n\nHISTORIC NIGHT! Casey O'Brien scores the FIRST HAT TRICK OF THE SEASON, leading NY's comeback! Jaime Bourbonnais with 3 assists in the victory. Hannah Murphy stood tall with 37 saves but couldn't stop the O'Brien show! \u26a1\n\n#PWHL",
       "valid": true,
       "issues": [],
-      "timestamp": "2025-12-30T15:42:24.711787"
-    },
-    {
-      "type": "high_attendance",
-      "attendance": 8514,
-      "tweet": "\ud83d\udd25 ANOTHER ELECTRIC CROWD! 8,514 fans packed the house for SEA @ NY's thrilling 4-3 finish! The energy was UNMATCHED as fans witnessed pure hockey magic. This is what growing the game looks like - YOU are making history every single game! \ud83c\udfd2 #PWHL",
-      "valid": true,
-      "issues": [],
-      "timestamp": "2025-12-30T15:42:28.647428"
+      "timestamp": "2025-12-30T15:55:12.992950"
     }
   ],
   "tweets_posted": [],
