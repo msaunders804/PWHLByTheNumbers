@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-12-30T20:23:42.939059",
+  "steps": [
+    {
+      "step": "get_recent_game",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:23:42.939153"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "\ud83d\udd0d STEP 1: FINDING MOST RECENT GAME",
+      "timestamp": "2025-12-30T20:23:42.939160"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:23:42.939163"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:23:42.994245"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\ud83d\udce5 STEP 2: ENSURING GAME DATA IN DATABASE",
+      "timestamp": "2025-12-30T20:23:42.994269"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:23:42.994278"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:23:42.995454"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\u270d\ufe0f  STEP 3: GENERATING TWEET DRAFTS",
+      "timestamp": "2025-12-30T20:23:42.995482"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:23:42.995511"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:23:56.825438"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\ud83d\udc26 STEP 4: POSTING TO TWITTER",
+      "timestamp": "2025-12-30T20:23:56.825455"
+    },
+    {
+      "step": "post_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:23:56.825459"
+    }
+  ],
+  "games_analyzed": [
+    "240"
+  ],
+  "tweets_generated": [
+    {
+      "type": "game_summary",
+      "tweet": "\ud83d\udea8 SEA 3 @ NY 4 - Winner: NY\n\nTAKEOVER TOUR DALLAS delivers DRAMA! \ud83d\udd25 Casey O'Brien's first hat trick of the season powers NY to victory while Jaime Bourbonnais adds 3 assists! Epic goalie duel: Murphy (37 saves) vs Osborne (30 saves). What a show in Texas! \u2b50\n\n#PWHL",
+      "valid": true,
+      "issues": [],
+      "timestamp": "2025-12-30T20:23:56.677624"
+    }
+  ],
+  "tweets_posted": [],
+  "errors": []
+}

@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-12-30T20:33:35.092464",
+  "steps": [
+    {
+      "step": "get_recent_game",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:33:35.092571"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "\ud83d\udd0d STEP 1: FINDING MOST RECENT GAME",
+      "timestamp": "2025-12-30T20:33:35.092578"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:33:35.092581"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:33:35.151469"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\ud83d\udce5 STEP 2: ENSURING GAME DATA IN DATABASE",
+      "timestamp": "2025-12-30T20:33:35.151497"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:33:35.151503"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:33:35.152629"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\u270d\ufe0f  STEP 3: GENERATING TWEET DRAFTS",
+      "timestamp": "2025-12-30T20:33:35.152649"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:33:35.152657"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T20:33:45.833093"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\ud83d\udc26 STEP 4: POSTING TO TWITTER",
+      "timestamp": "2025-12-30T20:33:45.833119"
+    },
+    {
+      "step": "post_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T20:33:45.833138"
+    }
+  ],
+  "games_analyzed": [
+    "241"
+  ],
+  "tweets_generated": [
+    {
+      "type": "game_summary",
+      "tweet": "\ud83d\udea8 MIN 5 @ TOR 1 \ud83d\udea8\n\nDOMINANT road performance by Minnesota! Kendall Coyne Schofield absolutely took over with 2G+1A while Taylor Heise dished out 3 assists! \ud83d\udd25\n\nNicole Hensley was a WALL in net - 31 saves on a ridiculous 96.9% save percentage!\n\nComplete team effort! \u26a1\n\n#PWHL",
+      "valid": true,
+      "issues": [],
+      "timestamp": "2025-12-30T20:33:45.704250"
+    }
+  ],
+  "tweets_posted": [],
+  "errors": []
+}

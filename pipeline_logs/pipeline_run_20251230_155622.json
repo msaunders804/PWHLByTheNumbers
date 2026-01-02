@@ -1,0 +1,79 @@
+{
+  "timestamp": "2025-12-30T15:56:12.910676",
+  "steps": [
+    {
+      "step": "get_recent_game",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T15:56:12.910790"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "\ud83d\udd0d STEP 1: FINDING MOST RECENT GAME",
+      "timestamp": "2025-12-30T15:56:12.910797"
+    },
+    {
+      "step": "get_recent_game",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T15:56:12.910814"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T15:56:12.969464"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "\ud83d\udce5 STEP 2: ENSURING GAME DATA IN DATABASE",
+      "timestamp": "2025-12-30T15:56:12.969489"
+    },
+    {
+      "step": "ensure_game_data",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T15:56:12.969496"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T15:56:12.970920"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "\u270d\ufe0f  STEP 3: GENERATING TWEET DRAFTS",
+      "timestamp": "2025-12-30T15:56:12.970941"
+    },
+    {
+      "step": "generate_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T15:56:12.970961"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\n============================================================",
+      "timestamp": "2025-12-30T15:56:22.448165"
+    },
+    {
+      "step": "post_tweets",
+      "message": "\ud83d\udc26 STEP 4: POSTING TO TWITTER",
+      "timestamp": "2025-12-30T15:56:22.448196"
+    },
+    {
+      "step": "post_tweets",
+      "message": "============================================================",
+      "timestamp": "2025-12-30T15:56:22.448204"
+    }
+  ],
+  "games_analyzed": [
+    "240"
+  ],
+  "tweets_generated": [
+    {
+      "type": "game_summary",
+      "tweet": "\ud83d\udea8 SEA 3 @ NY 4 - NY WINS! \n\nCasey O'Brien lights the lamp for her first hat trick of the season, with Jaime Bourbonnais dishing out 3 assists in a dominant performance! Hannah Murphy stood tall with 37 saves but NY's offense was unstoppable. What a game! \ud83d\udd25\ud83c\udfd2\n\n#PWHL",
+      "valid": true,
+      "issues": [],
+      "timestamp": "2025-12-30T15:56:22.320753"
+    }
+  ],
+  "tweets_posted": [],
+  "errors": []
+}
