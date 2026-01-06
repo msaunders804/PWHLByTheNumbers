@@ -5,17 +5,22 @@ Analyzes a game and generates tweet drafts using database
 
 import json
 import os
+import sys
 import glob
 from datetime import datetime
-from ai_client import call_ai, validate_tweet
-from prompts import (
+
+# Add project root to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+
+from src.clients.ai_client import call_ai, validate_tweet
+from src.content.prompts import (
     build_game_summary_prompt,
     build_hot_player_prompt,
     build_goalie_spotlight_prompt,
     build_attendance_highlight_prompt
 )
 from config import SAVE_DRAFTS, DRAFTS_FOLDER
-from db_queries import get_most_recent_completed_game, get_game_analysis, ensure_game_in_db
+from src.database.db_queries import get_most_recent_completed_game, get_game_analysis, ensure_game_in_db
 
 def find_most_recent_game_from_db():
     """
@@ -192,92 +197,97 @@ def save_drafts(drafts, game_id):
     with open(filename, 'w') as f:
         json.dump(drafts, f, indent=2)
     
-    print(f"\n💾 Drafts saved to: {filename}")
-    
+    print(f"\n[SAVE] Drafts saved to: {filename}")
+
     # Also save as readable text
     text_filename = f"{DRAFTS_FOLDER}/game_{game_id}_tweets.txt"
-    
-    with open(text_filename, 'w') as f:
+
+    with open(text_filename, 'w', encoding='utf-8') as f:
         f.write(f"Tweet Drafts for Game #{game_id}\n")
         f.write("=" * 60 + "\n\n")
-        
+
         for i, draft in enumerate(drafts, 1):
             f.write(f"DRAFT #{i} - {draft['type'].upper()}\n")
             f.write("-" * 60 + "\n")
             f.write(f"{draft['tweet']}\n\n")
-            
+
             if draft['valid']:
-                f.write("✅ Valid\n")
+                f.write("[OK] Valid\n")
             else:
-                f.write(f"❌ Issues: {', '.join(draft['issues'])}\n")
-            
+                f.write(f"[WARN] Issues: {', '.join(draft['issues'])}\n")
+
             f.write(f"Length: {len(draft['tweet'])} characters\n")
             f.write("\n" + "=" * 60 + "\n\n")
-    
-    print(f"💾 Text version saved to: {text_filename}")
+
+    print(f"[SAVE] Text version saved to: {text_filename}")
 
 
 def main():
     """Main function"""
     import sys
 
-    print("🤖 AI Tweet Draft Generator (Database Mode)")
+    # Set UTF-8 encoding for Windows console
+    if sys.platform == 'win32':
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
+    print("[AI] Tweet Draft Generator (Database Mode)")
     print("=" * 60)
 
     # Check for game ID argument
     if len(sys.argv) < 2:
         # AUTO MODE - Find most recent game from database
-        print("\n🔍 AUTO MODE - Finding most recent completed game from database...")
+        print("\n[AUTO] Finding most recent completed game from database...")
         game_id, game_info = find_most_recent_game_from_db()
 
         if not game_id:
-            print("❌ No recent completed games found in database")
-            print("\n💡 Make sure the database is populated with game data")
+            print("[ERROR] No recent completed games found in database")
+            print("\n[INFO] Make sure the database is populated with game data")
             return
 
-        print(f"✓ Found most recent game: Game #{game_id}")
+        print(f"[OK] Found most recent game: Game #{game_id}")
         print(f"  {game_info['away_team']} @ {game_info['home_team']}")
         print(f"  Final: {game_info['away_score']}-{game_info['home_score']}")
         print(f"  Date: {game_info['date']}")
     else:
         # MANUAL MODE - Use provided game ID
         game_id = sys.argv[1]
-        print(f"\n🎯 MANUAL MODE - Generating tweets for Game #{game_id}")
+        print(f"\n[MANUAL] Generating tweets for Game #{game_id}")
 
     # Load analysis from database
-    print("\n📊 Loading game analysis from database...")
+    print("\n[LOAD] Loading game analysis from database...")
     try:
         analysis = load_game_analysis(game_id)
 
         # Show game details
         game_info = analysis['game_info']
-        print(f"✓ Loaded game data:")
+        print(f"[OK] Loaded game data:")
         print(f"  {game_info['visitor_team']} @ {game_info['home_team']}")
         print(f"  Final: {game_info['final_score']}")
         print(f"  Date: {game_info['date']}")
 
     except (FileNotFoundError, ValueError) as e:
-        print(f"❌ {e}")
-        print(f"\n💡 Make sure game {game_id} is in the database")
+        print(f"[ERROR] {e}")
+        print(f"\n[INFO] Make sure game {game_id} is in the database")
         return
 
     # Generate tweets
-    print("\n✍️ Generating tweet drafts...")
+    print("\n[GEN] Generating tweet drafts...")
     drafts = generate_tweet_drafts(analysis)
 
     # Display results
-    print(f"\n📝 Generated {len(drafts)} tweet draft(s):")
+    print(f"\n[RESULTS] Generated {len(drafts)} tweet draft(s):")
     for i, draft in enumerate(drafts, 1):
         print(f"\n--- DRAFT #{i} ({draft['type']}) ---")
         print(draft['tweet'])
         if not draft['valid']:
-            print(f"⚠️  Issues: {', '.join(draft['issues'])}")
+            print(f"[WARN] Issues: {', '.join(draft['issues'])}")
 
     # Save
     if SAVE_DRAFTS:
         save_drafts(drafts, game_id)
 
-    print("\n✅ Complete!")
+    print("\n[OK] Complete!")
 
 
 if __name__ == "__main__":

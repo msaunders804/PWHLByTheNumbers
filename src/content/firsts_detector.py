@@ -5,16 +5,14 @@ Analyzes game data against historical records to identify notable "firsts"
 
 import sys
 import os
+from datetime import datetime
 
-# Add pwhl_analytics_db to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(script_dir, 'pwhl_analytics_db')
-sys.path.insert(0, db_path)
+# Add project root to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from sqlalchemy import create_engine, func, and_
 from sqlalchemy.orm import sessionmaker
-from db_models import Game, Team, Player, PlayerGameStats, GoalieGameStats
-from datetime import datetime
+from src.database.db_models import Game, Team, Player, PlayerGameStats, GoalieGameStats
 
 # Database configuration
 DATABASE_URL = 'postgresql://postgres:SecurePassword@localhost/pwhl_analytics'

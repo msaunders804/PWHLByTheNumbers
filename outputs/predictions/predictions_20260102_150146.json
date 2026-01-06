@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-01-02T15:01:46.384786",
+  "model_path": "data/models/pwhl_model.pkl",
+  "predictions": [
+    {
+      "home_team_id": 5,
+      "away_team_id": 9,
+      "home_team_name": "Ottawa Charge",
+      "away_team_name": "Vancouver Goldeneyes",
+      "game_date": "2026-01-04",
+      "home_win_probability": 0.6836914121255403,
+      "away_win_probability": 0.3163085878744597,
+      "predicted_winner": "Ottawa Charge",
+      "confidence": 0.6836914121255403,
+      "features": {
+        "home_goals_per_game": 1.5,
+        "away_goals_per_game": 1.4285714285714286,
+        "home_goals_against_per_game": 3.1666666666666665,
+        "away_goals_against_per_game": 2.7142857142857144,
+        "away_goal_differential": -1.2857142857142858,
+        "home_h2h_win_pct": 0.5,
+        "away_win_pct_on_road": 0.0
+      }
+    }
+  ]
+}
