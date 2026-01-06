@@ -4,7 +4,14 @@
       "Bash(cat:*)",
       "Bash(python3:*)",
       "Bash(git check-ignore:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(python:*)",
+      "Bash(python pipeline.py:*)",
+      "Bash(timeout 120 python3:*)",
+      "Bash(head:*)",
+      "Bash(ls:*)",
+      "Bash(curl:*)",
+      "Bash(del test_game_245.py test_load_new_games.py debug_schedule.py)"
     ]
   }
 }

@@ -2,7 +2,13 @@
 AI Client - Communicates with Claude or GPT
 """
 
+import sys
+import os
 import json
+
+# Add project root to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+
 from config import *
 
 def call_ai(prompt, provider=AI_PROVIDER):

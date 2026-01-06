@@ -1,16 +1,11 @@
 Game ID,Date,Home Team,Visitor Team,City,Venue,Attendance,Final Score
-65,2024-03-16,BOS,OTT,Detroit,Little Caesars Arena | Detroit,13736,1-2
 66,2024-03-17,MTL,TOR,Pittsburgh,PPG Paints Arena | Pittsburgh,8850,2-1
-173,2025-01-05,BOS,MTL,Seattle,Climate Pledge Arena | Seattle,12608,2-3
 174,2025-01-08,TOR,MTL,Vancouver,Rogers Arena | Vancouver,19038,4-2
 175,2025-01-12,MIN,MTL,Denver,Ball Arena | Denver,14018,2-4
 176,2025-01-19,MTL,OTT,Quebec City,Videotron Centre | Quebec City,18259,1-2
-178,2025-02-16,OTT,TOR,Edmonton,Rogers Place | Edmonton,17518,3-2
-179,2025-02-23,NY,BOS,Buffalo,KeyBank Center | Buffalo,8512,3-2
 181,2025-03-07,MIN,OTT,Raleigh,Lenovo Center | Raleigh,10782,0-5
 183,2025-03-16,NY,MIN,Detroit,Little Caesars Arena | Detroit,14288,1-4
 185,2025-03-29,BOS,OTT,St. Louis,Enterprise Center | St. Louis,8578,2-1
-227,2025-12-17,TOR,MTL,Halifax,Scotiabank Centre | Halifax,10438,2-1
-233,2025-12-21,MIN,OTT,Chicago,Allstate Arena | Chicago,7238,3-2
-239,2025-12-27,VAN,MIN,Edmonton,Rogers Place | Edmonton,10264,2-1
 240,2025-12-28,NY,SEA,Dallas,American Airlines Center | Dallas,8514,3-4
+245,2026-01-03,TOR,SEA,Hamilton,TD Coliseum | Hamilton,16012,3-2
+246,2026-01-03,BOS,VAN,Detroit,Little Caesars Arena | Detroit,9624,4-3

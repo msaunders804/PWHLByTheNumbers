@@ -5,18 +5,16 @@ Provides functions to query the PostgreSQL database for game data
 
 import sys
 import os
+from datetime import datetime, timedelta
 
-# Add pwhl_analytics_db to path (works on both Windows and WSL)
-script_dir = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(script_dir, 'pwhl_analytics_db')
-sys.path.insert(0, db_path)
+# Add parent directory to path for relative imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, desc, func
 from sqlalchemy.orm import sessionmaker
-from db_models import Game, Team, Player, PlayerGameStats, GoalieGameStats
-from load_data import load_game_data
-from datetime import datetime, timedelta
-from firsts_detector import get_all_firsts_for_game
+from database.db_models import Game, Team, Player, PlayerGameStats, GoalieGameStats
+from database.load_data import load_game_data
+from content.firsts_detector import get_all_firsts_for_game
 
 # PWHL home venues (from takeover_analysis.py)
 PWHL_HOME_VENUES = [
@@ -55,10 +53,10 @@ def get_most_recent_completed_game():
     """
     session = Session()
     try:
-        # Query for most recent game
+        # Query for most recent game (order by date DESC, then game_id DESC for same-day games)
         game = session.query(Game).filter(
             Game.game_status == 'final'
-        ).order_by(desc(Game.date)).first()
+        ).order_by(desc(Game.date), desc(Game.game_id)).first()
 
         if not game:
             return None
@@ -111,16 +109,16 @@ def ensure_game_in_db(game_id):
         Boolean indicating success
     """
     if check_game_exists_in_db(game_id):
-        print(f"  ✓ Game {game_id} already in database")
+        print(f"  [OK] Game {game_id} already in database")
         return True
 
-    print(f"  📥 Game {game_id} not in database, fetching from API...")
+    print(f"  [FETCH] Game {game_id} not in database, fetching from API...")
     try:
         load_game_data(game_id)
-        print(f"  ✓ Game {game_id} loaded successfully")
+        print(f"  [OK] Game {game_id} loaded successfully")
         return True
     except Exception as e:
-        print(f"  ❌ Error loading game {game_id}: {e}")
+        print(f"  [ERROR] Error loading game {game_id}: {e}")
         return False
 
 
