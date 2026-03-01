@@ -103,3 +103,10 @@ debug_*.py
 fix_*.py
 *_temp.py
 *.env
+oauth_credentials.json
+oauth_tokens.json
+output/
+pwhl/lib/
+__pycache__/
+*.pyc
+*.pyo
