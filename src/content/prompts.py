@@ -54,24 +54,33 @@ Winner: {winner}
     # Add firsts section (IMPORTANT!)
     if firsts:
         high_significance_firsts = []
+        all_firsts = []
 
         # Collect high significance firsts
         for first in firsts.get('players', []):
             if first.get('significance') == 'high':
                 high_significance_firsts.append(f"- {first['description']} ({first['detail']})")
+            all_firsts.append(f"- {first['description']} ({first['detail']})")
 
         for first in firsts.get('goalies', []):
             if first.get('significance') == 'high':
                 high_significance_firsts.append(f"- {first['description']} ({first['detail']})")
+            all_firsts.append(f"- {first['description']} ({first['detail']})")
 
         for first in firsts.get('teams', {}).get('home', []) + firsts.get('teams', {}).get('away', []):
             if first.get('significance') == 'high':
                 high_significance_firsts.append(f"- {first['description']} ({first['detail']})")
+            all_firsts.append(f"- {first['description']} ({first['detail']})")
 
         if high_significance_firsts:
             prompt += "\n🎯 CRITICAL - Historical Firsts (MUST MENTION EXACTLY AS WRITTEN):\n"
             prompt += "\n".join(high_significance_firsts)
             prompt += "\n\nIMPORTANT: Use the EXACT wording above for these achievements. If it says 'First hat trick of the season for [Player Name]', DO NOT change it to 'FIRST HAT TRICK OF THE SEASON'. The distinction matters - personal firsts vs league-wide firsts are different!\n"
+        elif all_firsts and not hot_players and not hot_goalies:
+            # If there are no hot players/goalies but there ARE firsts, include them even if low significance
+            prompt += "\n📊 Notable Milestones (mention if relevant):\n"
+            prompt += "\n".join(all_firsts)
+            prompt += "\n"
 
     # Add instructions for the AI
     prompt += """
@@ -194,17 +203,94 @@ Tweet:"""
     return prompt
 
 
-def build_attendance_highlight_prompt(game_data):
+def build_firsts_spotlight_prompt(firsts_data, game_data):
     """
-    Build a prompt for highlighting high attendance
-    
+    Build a prompt specifically focused on historical firsts/milestones
+
     Args:
-        game_data: Dict with game info including attendance
-    
+        firsts_data: Dict with firsts (players, goalies, teams)
+        game_data: Dict with game info (teams, score, date)
+
     Returns:
         String prompt for the AI
     """
-    
+
+    # Extract game info
+    visitor = game_data['visitor_team']
+    home = game_data['home_team']
+    visitor_score = game_data['visitor_score']
+    home_score = game_data['home_score']
+    winner = game_data['winner']
+
+    prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account.
+Focus on highlighting historical firsts and milestones from this game. These are the stories that matter most!
+
+Game Result:
+{visitor} {visitor_score} @ {home} {home_score}
+Winner: {winner}
+
+"""
+
+    # Collect all firsts with significance levels
+    has_high_significance = False
+
+    # Add player firsts
+    if firsts_data.get('players'):
+        prompt += "Player Milestones:\n"
+        for first in firsts_data['players']:
+            significance_marker = "🎯 CRITICAL" if first.get('significance') == 'high' else "📊"
+            prompt += f"{significance_marker} {first['description']} ({first['detail']})\n"
+            if first.get('significance') == 'high':
+                has_high_significance = True
+
+    # Add goalie firsts
+    if firsts_data.get('goalies'):
+        prompt += "\nGoalie Milestones:\n"
+        for first in firsts_data['goalies']:
+            significance_marker = "🎯 CRITICAL" if first.get('significance') == 'high' else "📊"
+            prompt += f"{significance_marker} {first['description']} ({first['detail']})\n"
+            if first.get('significance') == 'high':
+                has_high_significance = True
+
+    # Add team firsts
+    team_firsts = firsts_data.get('teams', {})
+    all_team_firsts = team_firsts.get('home', []) + team_firsts.get('away', [])
+    if all_team_firsts:
+        prompt += "\nTeam Milestones:\n"
+        for first in all_team_firsts:
+            significance_marker = "🎯 CRITICAL" if first.get('significance') == 'high' else "📊"
+            prompt += f"{significance_marker} {first['description']} ({first['detail']})\n"
+            if first.get('significance') == 'high':
+                has_high_significance = True
+
+    prompt += """
+Write a tweet that:
+1. Is under 280 characters
+2. Focuses on the most significant milestone(s) - prioritize 🎯 CRITICAL items
+3. Uses the EXACT wording provided for the milestone description (accuracy is essential!)
+4. Makes the achievement feel special and historic
+5. Uses 1-3 relevant emojis (⭐, 🎯, 📈, 🏆, etc.)
+6. Includes #PWHL hashtag
+7. Is engaging and celebratory
+
+IMPORTANT: Use the EXACT wording for milestone descriptions. If it says "First hat trick of the season for [Player Name]", DO NOT change it to "FIRST HAT TRICK OF THE SEASON". Personal firsts vs league-wide firsts are different!
+
+Tweet:"""
+
+    return prompt
+
+
+def build_attendance_highlight_prompt(game_data):
+    """
+    Build a prompt for highlighting high attendance
+
+    Args:
+        game_data: Dict with game info including attendance
+
+    Returns:
+        String prompt for the AI
+    """
+
     # Extract data
     visitor = game_data['visitor_team']
     home = game_data['home_team']
@@ -212,15 +298,15 @@ def build_attendance_highlight_prompt(game_data):
     home_score = game_data.get('home_score', 0)
     attendance_raw = game_data.get('attendance', 0)
     venue = game_data.get('venue', 'Unknown')
-    
+
     # Parse attendance to int
     try:
         attendance = int(str(attendance_raw).replace(',', ''))
     except:
         attendance = 0
-    
+
     final_score = f"{visitor_score}-{home_score}"
-    
+
     prompt = f"""You are writing exciting but data focused social media content for a PWHL analytics account.
 Highlight the impressive fan turnout and attendance at this game.
 

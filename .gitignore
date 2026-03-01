@@ -71,6 +71,7 @@ config.py
 config.py
 src/utils/config.py
 .secrets
+credentials/google_drive_creds.json
 
 # Python cache
 __pycache__/
@@ -101,3 +102,4 @@ outputs/logs/*.json
 debug_*.py
 fix_*.py
 *_temp.py
+*.env

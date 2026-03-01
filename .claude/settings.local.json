@@ -11,7 +11,8 @@
       "Bash(head:*)",
       "Bash(ls:*)",
       "Bash(curl:*)",
-      "Bash(del test_game_245.py test_load_new_games.py debug_schedule.py)"
+      "Bash(del test_game_245.py test_load_new_games.py debug_schedule.py)",
+      "Bash(printf:*)"
     ]
   }
 }

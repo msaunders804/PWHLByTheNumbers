@@ -17,7 +17,8 @@ from src.content.prompts import (
     build_game_summary_prompt,
     build_hot_player_prompt,
     build_goalie_spotlight_prompt,
-    build_attendance_highlight_prompt
+    build_attendance_highlight_prompt,
+    build_firsts_spotlight_prompt
 )
 from config import SAVE_DRAFTS, DRAFTS_FOLDER
 from src.database.db_queries import get_most_recent_completed_game, get_game_analysis, ensure_game_in_db
@@ -103,36 +104,36 @@ def generate_tweet_drafts(analysis_data):
         'timestamp': datetime.now().isoformat()
     })
     
-    ''' # Generate hot player tweet (if we have hot players)
+    # Generate hot player tweet (if we have hot players)
     if hot_players and len(hot_players) > 0:
         print("Generating hot player tweet...")
-        
+
         # Get the top player
         top_player = hot_players[0]
-        
+
         # Build prompt
         player_prompt = build_hot_player_prompt(top_player, game_info)
-        
+
         # Generate
         player_tweet = call_ai(player_prompt)
 
         # Validate
         is_valid, issues = validate_tweet(player_tweet)
-        
+
         # Add to drafts
         drafts.append({
             'type': 'hot_player',
             'player': top_player['name'],
-            'tweet': player_tweet,  
-            'valid': is_valid, 
-            'issues': issues, 
+            'tweet': player_tweet,
+            'valid': is_valid,
+            'issues': issues,
             'timestamp': datetime.now().isoformat()
         })
-    
+
     # Generate goalie spotlight tweet (if we have hot goalies)
     if hot_goalies and len(hot_goalies) > 0:
         print("Generating goalie spotlight tweet...")
-        
+
         top_goalie = hot_goalies[0]
         goalie_prompt = build_goalie_spotlight_prompt(top_goalie, game_info)
         goalie_tweet = call_ai(goalie_prompt)
@@ -146,7 +147,31 @@ def generate_tweet_drafts(analysis_data):
             'issues': issues,
             'timestamp': datetime.now().isoformat()
         })
-    '''
+
+    # ALWAYS generate a firsts tweet if ANY firsts exist (these are the best stories!)
+    if firsts:
+        # Check if there are any firsts at all
+        has_any_firsts = (
+            len(firsts.get('players', [])) > 0 or
+            len(firsts.get('goalies', [])) > 0 or
+            len(firsts.get('teams', {}).get('home', [])) > 0 or
+            len(firsts.get('teams', {}).get('away', [])) > 0
+        )
+
+        if has_any_firsts:
+            print("Generating firsts/milestones tweet...")
+
+            firsts_prompt = build_firsts_spotlight_prompt(firsts, game_info)
+            firsts_tweet = call_ai(firsts_prompt)
+            is_valid, issues = validate_tweet(firsts_tweet)
+
+            drafts.append({
+                'type': 'firsts_spotlight',
+                'tweet': firsts_tweet,
+                'valid': is_valid,
+                'issues': issues,
+                'timestamp': datetime.now().isoformat()
+            })
     # Check if attendance is noteworthy
     attendance = game_info.get('attendance', 'N/A')
     

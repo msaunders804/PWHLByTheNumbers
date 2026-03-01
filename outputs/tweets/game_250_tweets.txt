@@ -1,0 +1,27 @@
+Tweet Drafts for Game #250
+============================================================
+
+DRAFT #1 - GAME_SUMMARY
+------------------------------------------------------------
+SEA 1 @ BOS 2 ✅
+
+What a thriller in Boston! The home team squeaks out a narrow victory in a defensive battle. First point of the season for Laura Kluge (0G, 1A) - congrats on getting on the board! 🥅
+
+Every goal mattered in this tight contest. Great hockey all around! 🔥
+
+#PWHL
+
+[OK] Valid
+Length: 276 characters
+
+============================================================
+
+DRAFT #2 - FIRSTS_SPOTLIGHT
+------------------------------------------------------------
+🎯 MILESTONE ALERT! First point of the season for Laura Kluge (0G, 1A) as Boston takes down Seattle 2-1! Every journey begins with that first step, and Kluge is officially on the board for 2024! ⭐ #PWHL
+
+[OK] Valid
+Length: 201 characters
+
+============================================================
+

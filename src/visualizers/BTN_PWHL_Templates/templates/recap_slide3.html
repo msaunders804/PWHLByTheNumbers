@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: #08010f;
+    color: #ffffff;
+    font-family: 'Barlow Condensed', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── BACKGROUND LAYERS ── */
+  .bg-photo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .bg-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: saturate(1.15) brightness(0.55);
+  }
+
+  /* fallback gradient when no photo */
+  .bg-photo-fallback {
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at 60% 30%, rgba(140,82,255,0.55) 0%, transparent 55%),
+      radial-gradient(ellipse at 20% 70%, rgba(94,23,235,0.4) 0%, transparent 50%),
+      linear-gradient(160deg, #0d0020 0%, #08010f 60%, #12002a 100%);
+  }
+
+  /* Noise texture overlay */
+  .bg-noise {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+  }
+
+  /* gradient fade — photo bleeds into dark bottom */
+  .bg-fade {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 30%,
+      rgba(8,1,15,0.5) 50%,
+      rgba(8,1,15,0.88) 65%,
+      #08010f 82%
+    );
+  }
+
+  /* neon edge glow */
+  .bg-neon-left {
+    position: absolute;
+    left: -80px; top: 20%;
+    width: 300px; height: 700px;
+    background: radial-gradient(ellipse, rgba(140,82,255,0.3) 0%, transparent 70%);
+    z-index: 2;
+    filter: blur(40px);
+  }
+
+  .bg-neon-right {
+    position: absolute;
+    right: -60px; top: 40%;
+    width: 250px; height: 500px;
+    background: radial-gradient(ellipse, rgba(94,23,235,0.25) 0%, transparent 70%);
+    z-index: 2;
+    filter: blur(30px);
+  }
+
+  /* ── CONTENT ── */
+  .container {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 52px 56px 0;
+  }
+
+  .brand-tag {
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.85);
+    text-transform: uppercase;
+  }
+
+  .season-tag {
+    font-size: 18px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Slide dots */
+  .slide-indicator {
+    display: flex;
+    gap: 10px;
+    padding: 24px 56px 0;
+  }
+
+  .slide-dot { height: 5px; border-radius: 3px; }
+  .slide-dot.active  { width: 32px; background: #8c52ff; }
+  .slide-dot.inactive { width: 16px; background: rgba(255,255,255,0.2); }
+
+  /* Event badge */
+  .event-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 100px;
+    border: 1.5px solid rgba(140,82,255,0.6);
+    background: rgba(140,82,255,0.15);
+    backdrop-filter: blur(8px);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.22em;
+    color: #c89bff;
+    text-transform: uppercase;
+    margin: 32px 56px 0;
+    align-self: flex-start;
+  }
+
+  /* Override badge */
+  .override-tag {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #f6ad55;
+    text-transform: uppercase;
+    border: 1px solid rgba(246,173,85,0.4);
+    border-radius: 6px;
+    padding: 3px 10px;
+    margin: 12px 56px 0;
+    align-self: flex-start;
+  }
+
+  /* ── PHOTO ZONE (upper ~55% of card) ── */
+  /* This is handled by .bg-photo — content floats over it */
+  .photo-spacer { flex: 1; min-height: 420px; }
+
+  /* ── BOTTOM CONTENT PANEL ── */
+  .bottom-panel {
+    padding: 0 56px 56px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Player name strip */
+  .player-strip {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .player-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    line-height: 0.9;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 40px rgba(140,82,255,0.6), 0 2px 20px rgba(0,0,0,0.8);
+  }
+
+  .player-team-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+  }
+
+  .player-team-logo {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px rgba(140,82,255,0.5));
+  }
+
+  .player-team-logo-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(140,82,255,0.2);
+    border: 2px solid rgba(140,82,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: #8c52ff;
+  }
+
+  .player-pos-text {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+  }
+
+  /* Neon divider */
+  .neon-divider {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #8c52ff, #5e17eb, transparent);
+    margin-bottom: 32px;
+    box-shadow: 0 0 12px rgba(140,82,255,0.6);
+  }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(140,82,255,0.25);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(140,82,255,0.8), transparent);
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(140,82,255,0.7);
+  }
+
+  .stat-label {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    color: #8c52ff;
+    text-transform: uppercase;
+  }
+
+  /* HEADLINE */
+  .narrative-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 68px;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    margin-bottom: 22px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  }
+
+  .narrative-headline em {
+    color: #a855f7;
+    font-style: normal;
+    text-shadow: 0 0 20px rgba(168,85,247,0.5);
+  }
+
+  .narrative-body {
+    font-family: 'Barlow', sans-serif;
+    font-size: 28px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.55;
+    margin-bottom: 36px;
+  }
+
+  /* FOOTER */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-handle {
+    font-size: 17px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <!-- BACKGROUND -->
+  <div class="bg-photo">
+    {% if event.player_photo %}
+      <img src="{{ event.player_photo }}" alt="{{ event.player_name }}">
+    {% else %}
+      <div class="bg-photo-fallback"></div>
+    {% endif %}
+  </div>
+  <div class="bg-noise"></div>
+  <div class="bg-fade"></div>
+  <div class="bg-neon-left"></div>
+  <div class="bg-neon-right"></div>
+
+  <!-- CONTENT -->
+  <div class="container">
+    <div class="topbar">
+      <span class="brand-tag">ByTheNumbers</span>
+      <span class="season-tag">{{ season }}</span>
+    </div>
+
+    <div class="slide-indicator">
+      <div class="slide-dot inactive"></div>
+      <div class="slide-dot inactive"></div>
+      <div class="slide-dot inactive"></div>
+      <div class="slide-dot active"></div>
+    </div>
+
+    <div class="event-badge">
+      {{ event.icon }} &nbsp;{{ event.type_label }}
+    </div>
+
+    {% if event.is_override %}
+    <div class="override-tag">⚡ Manual Override</div>
+    {% endif %}
+
+    <!-- Photo takes up the upper portion — spacer pushes content down -->
+    <div class="photo-spacer"></div>
+
+    <!-- BOTTOM PANEL -->
+    <div class="bottom-panel">
+
+      <div class="player-strip">
+        <div class="player-name">{{ event.player_name }}</div>
+        <div class="player-team-badge">
+          {% if event.team_logo %}
+            <img class="player-team-logo" src="{{ event.team_logo }}" alt="{{ event.player_team }}">
+          {% else %}
+            <div class="player-team-logo-placeholder">{{ event.player_team[:3] | upper }}</div>
+          {% endif %}
+          <span class="player-pos-text">{{ event.player_team }} · {{ event.player_position }}</span>
+        </div>
+      </div>
+
+      <div class="neon-divider"></div>
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        {% for stat in event.stats %}
+        <div class="stat-box">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Narrative -->
+      <div class="narrative-headline">{{ event.headline | safe }}</div>
+      <div class="narrative-body">{{ event.body }}</div>
+
+      <div class="footer">
+        <span class="footer-brand">BTN</span>
+        <span class="footer-handle">#PWHL · @ByTheNumbers</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

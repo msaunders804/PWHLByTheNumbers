@@ -359,7 +359,26 @@ def create_weekly_lineup_viz(season_id=8, output_file=None):
     print(f"Visualization saved to: {output_file}")
 
     plt.close()
-    return output_file
+    # Auto-upload to Google Drive for mobile access
+        try:
+            sys.path.insert(0, os.path.join(parent_dir, 'src'))
+            from utils.cloud_uploader import upload_visualization
+    
+            print("
+📤 Uploading to Google Drive for mobile access...")
+            result = upload_visualization(file_path=output_file)
+    
+            if result.get('success'):
+                print(f"✅ {result.get('action', 'Uploaded')} to Google Drive!")
+                print(f"📱 Access on phone: {result.get('web_view_link', 'Check Google Drive app')}")
+            elif 'not enabled' in result.get('error', '').lower():
+                print("ℹ️  Google Drive upload disabled (enable in config.py)")
+            else:
+                print(f"⚠️  Upload skipped: {result.get('error', 'Unknown error')}")
+        except Exception as e:
+            print(f"⚠️  Cloud upload unavailable: {e}")
+
+
 
 
 def main():
