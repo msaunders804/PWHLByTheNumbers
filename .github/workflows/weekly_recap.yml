@@ -20,25 +20,25 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install sqlalchemy pymysql jinja2 playwright google-api-python-client \
-                      google-auth twilio python-dotenv
+          pip install sqlalchemy pymysql jinja2 playwright \
+                      google-api-python-client google-auth
           playwright install chromium --with-deps
 
       - name: Run weekly recap
         env:
-          PWHL_DATABASE_URL:        ${{ secrets.PWHL_DATABASE_URL }}
-          TWILIO_ACCOUNT_SID:       ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN:        ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_FROM:              ${{ secrets.TWILIO_FROM }}
-          TWILIO_TO:                ${{ secrets.TWILIO_TO }}
-          GOOGLE_SERVICE_ACCOUNT:   ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          GOOGLE_DRIVE_FOLDER_ID:   ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python run_weekly.py
+          PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
+          GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          GITHUB_RUN_ID:          ${{ github.run_id }}
+          GITHUB_REPOSITORY:      ${{ github.repository }}
+        run: python run_weekly.py --skip-sms
 
-      - name: Upload slides as workflow artifacts (backup)
+      - name: Upload slides as artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: recap-slides
+          name: recap-slides-${{ github.run_id }}
           path: output/*.png
           retention-days: 7

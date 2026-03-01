@@ -1,25 +1,23 @@
 """
 run_weekly.py — Master weekly recap script.
-Chains: DB update → render slides → upload to Drive → SMS alert
+Chains: DB update → render slides → upload to Drive → SMS link
 
 Usage:
-    python run_weekly.py              # full run
-    python run_weekly.py --skip-sms   # skip SMS (for testing)
-    python run_weekly.py --skip-drive # skip Drive upload
+    python run_weekly.py               # full run
+    python run_weekly.py --skip-drive  # skip Drive upload
+    python run_weekly.py --skip-sms    # skip SMS
 """
 
 import argparse
 import os
 import sys
-from datetime import datetime
 from pathlib import Path
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
 BASE_DIR   = Path(__file__).parent
 OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# Load .env if present (local runs)
+
 def _load_dotenv():
     for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env"]:
         if env_path.exists():
@@ -36,15 +34,15 @@ def _load_dotenv():
 _load_dotenv()
 
 
-def step(label: str):
-    print(f"\n{'='*50}")
-    print(f"  {label}")
-    print(f"{'='*50}")
+def step(label):
+    print(f"\n{'='*50}\n  {label}\n{'='*50}")
 
 
-def run(skip_sms=False, skip_drive=False):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-    errors = []
+def run(skip_drive=False, skip_sms=False):
+    errors     = []
+    week_range = "this week"
+    slide_paths = []
+    drive_links = []
 
     # ── 1. Update DB ──────────────────────────────────────────────────────────
     step("1/4  Updating database")
@@ -63,20 +61,17 @@ def run(skip_sms=False, skip_drive=False):
 
     # ── 2. Render slides ──────────────────────────────────────────────────────
     step("2/4  Rendering slides")
-    slide_paths = []
     try:
         sys.path.insert(0, str(BASE_DIR))
         from render_weekly_recap import get_db_data, render_all
-        data = get_db_data()
+        data        = get_db_data()
+        week_range  = data.get("week_range", "this week")
         slide_paths = render_all(data, OUTPUT_DIR)
-        week_range = data.get("week_range", "this week")
     except Exception as e:
         errors.append(f"Render failed: {e}")
         print(f"  ERROR: {e}")
-        week_range = "this week"
 
     # ── 3. Upload to Google Drive ─────────────────────────────────────────────
-    drive_links = []
     folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
 
     if not skip_drive and slide_paths and folder_id:
@@ -92,7 +87,7 @@ def run(skip_sms=False, skip_drive=False):
 
     # ── 4. Send SMS ───────────────────────────────────────────────────────────
     if not skip_sms:
-        step("4/4  Sending SMS alert")
+        step("4/4  Sending SMS")
         try:
             from notify import send_sms
 
@@ -102,11 +97,15 @@ def run(skip_sms=False, skip_drive=False):
                        f"Check GitHub Actions for details.")
             elif drive_links:
                 msg = (f"✅ BTN Weekly Recap ready — {week_range}\n"
-                       f"{len(slide_paths)} slides uploaded to Drive.\n"
+                       f"{len(slide_paths)} slides in Drive.\n"
                        f"Open: {drive_links[0]}")
             else:
-                msg = (f"✅ BTN Weekly Recap rendered — {week_range}\n"
-                       f"{len(slide_paths)} slides in GitHub Actions artifacts.")
+                run_id = os.environ.get("GITHUB_RUN_ID", "")
+                repo   = os.environ.get("GITHUB_REPOSITORY", "")
+                url    = f"https://github.com/{repo}/actions/runs/{run_id}" if run_id else ""
+                msg    = (f"✅ BTN Weekly Recap — {week_range}\n"
+                          f"{len(slide_paths)} slides rendered.\n"
+                          f"Download artifacts: {url}")
 
             send_sms(msg)
         except Exception as e:
@@ -117,9 +116,8 @@ def run(skip_sms=False, skip_drive=False):
     # ── Summary ───────────────────────────────────────────────────────────────
     print(f"\n{'='*50}")
     print(f"  DONE — {len(slide_paths)} slides | {len(errors)} errors")
-    if errors:
-        for e in errors:
-            print(f"  ✗ {e}")
+    for e in errors:
+        print(f"  ✗ {e}")
     print(f"{'='*50}\n")
 
     return len(errors) == 0
@@ -127,9 +125,9 @@ def run(skip_sms=False, skip_drive=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--skip-sms",   action="store_true")
     parser.add_argument("--skip-drive", action="store_true")
+    parser.add_argument("--skip-sms",   action="store_true")
     args = parser.parse_args()
 
-    success = run(skip_sms=args.skip_sms, skip_drive=args.skip_drive)
+    success = run(skip_drive=args.skip_drive, skip_sms=args.skip_sms)
     sys.exit(0 if success else 1)

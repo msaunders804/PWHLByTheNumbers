@@ -1,26 +1,38 @@
 """
-drive_upload.py — Upload files to Google Drive using a service account.
+drive_upload.py — Upload files to Google Drive using OAuth refresh token.
+Credentials come from environment variables (GitHub Secrets).
 """
 
 import json
 import os
 from pathlib import Path
 
-from google.oauth2 import service_account
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 
 def get_drive_service():
-    """Build Drive service from service account JSON in env var."""
-    sa_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT")
-    if not sa_json:
-        raise ValueError("GOOGLE_SERVICE_ACCOUNT env var not set")
+    """Build Drive service from OAuth credentials in env vars."""
+    client_id     = os.environ.get("GOOGLE_CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+    refresh_token = os.environ.get("GOOGLE_REFRESH_TOKEN")
 
-    info = json.loads(sa_json)
-    creds = service_account.Credentials.from_service_account_info(
-        info, scopes=["https://www.googleapis.com/auth/drive.file"]
+    if not all([client_id, client_secret, refresh_token]):
+        raise ValueError("Missing GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, or GOOGLE_REFRESH_TOKEN")
+
+    creds = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=["https://www.googleapis.com/auth/drive.file"],
     )
+
+    # Refresh to get a valid access token
+    creds.refresh(Request())
     return build("drive", "v3", credentials=creds)
 
 
@@ -47,7 +59,7 @@ def upload_files(file_paths: list[Path], folder_id: str) -> list[str]:
             fields="id, webViewLink"
         ).execute()
 
-        # Make it readable by anyone with the link
+        # Make readable by anyone with the link
         service.permissions().create(
             fileId=file["id"],
             body={"type": "anyone", "role": "reader"},
