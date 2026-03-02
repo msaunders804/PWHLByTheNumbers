@@ -25,23 +25,30 @@ engine  = create_engine(get_db_url())
 Session = sessionmaker(bind=engine)
 
 
-def get_latest_game_date(session) -> date | None:
-    """Returns the date of the most recently loaded final game."""
+def get_latest_game_id(session) -> int:
+    """Returns the highest game_id already loaded."""
     row = session.execute(text("""
-        SELECT MAX(date) AS latest FROM games
-        WHERE game_status = 'final'
-          AND season_id = :sid
+        SELECT MAX(game_id) AS latest FROM games
+        WHERE season_id = :sid
     """), {"sid": SEASON_ID}).fetchone()
-    return row.latest if row else None
+    return int(row.latest) if row and row.latest else 0
 
 
-def get_new_games(since: date) -> list[dict]:
-    """Returns completed games from the schedule that are newer than `since`."""
+def get_new_games(since_id: int) -> list[dict]:
+    """Returns completed games from the schedule with game_id > since_id."""
     print(f"  Fetching season {SEASON_ID} schedule...")
     schedule = fetch_schedule(SEASON_ID)
 
     new = []
     for g in schedule:
+        try:
+            gid = int(g.get("id", 0))
+        except (ValueError, TypeError):
+            continue
+
+        if gid <= since_id:
+            continue
+
         is_final = (
             str(g.get("game_status", "")).lower() == "final"
             or str(g.get("status", "")) == "4"
@@ -50,16 +57,9 @@ def get_new_games(since: date) -> list[dict]:
         if not is_final:
             continue
 
-        from datetime import datetime
-        try:
-            game_date = datetime.strptime(g["date_played"], "%Y-%m-%d").date()
-        except (KeyError, ValueError):
-            continue
+        new.append(g)
 
-        if game_date > since:
-            new.append(g)
-
-    return sorted(new, key=lambda g: g["date_played"])
+    return sorted(new, key=lambda g: int(g.get("id", 0)))
 
 
 def run_update(dry_run: bool = False):
@@ -73,18 +73,18 @@ def run_update(dry_run: bool = False):
     load_teams(SEASON_ID, session)
 
     # Find last loaded game
-    print("\n[2/3] Checking DB for latest game...")
-    latest = get_latest_game_date(session)
-    if latest:
-        print(f"  Latest game in DB: {latest}")
+    print("\n[2/3] Checking DB for latest game ID...")
+    latest_id = get_latest_game_id(session)
+    if latest_id:
+        print(f"  Latest game_id in DB: {latest_id}")
     else:
         print("  No games found in DB — run backfill.py for a full load")
         session.close()
         return
 
     # Find new games
-    print(f"\n[3/3] Fetching games after {latest}...")
-    new_games = get_new_games(since=latest)
+    print(f"\n[3/3] Fetching games with ID > {latest_id}...")
+    new_games = get_new_games(since_id=latest_id)
 
     if not new_games:
         print("  No new games found — DB is up to date")

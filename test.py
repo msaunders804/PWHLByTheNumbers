@@ -1,7 +1,8 @@
-import requests, json
-r = requests.get('https://lscluster.hockeytech.com/feed/index.php', params={
-    'feed': 'gc', 'tab': 'gamesummary', 'game_id': 210,
-    'key': '446521baf8c38984', 'client_code': 'pwhl', 'fmt': 'json'
-})
-gs = r.json()['GC']['Gamesummary']
-print(json.dumps(list(gs['goalies'].keys()), indent=2))
+from db_config import get_db_url
+url = get_db_url()
+print('Connecting to:', url[:50], '...')
+from sqlalchemy import create_engine, text
+engine = create_engine(url)
+with engine.connect() as conn:
+    row = conn.execute(text('SELECT MAX(game_id) FROM games')).fetchone()
+    print('Max game_id in DB:', row[0])
