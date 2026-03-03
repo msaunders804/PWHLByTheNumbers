@@ -14,8 +14,9 @@ from sqlalchemy.orm import sessionmaker
 from db_config import get_db_url
 DATABASE_URL = get_db_url()
 
-engine  = create_engine(DATABASE_URL)
-Session = sessionmaker(bind=engine)
+engine    = create_engine(DATABASE_URL)
+Session   = sessionmaker(bind=engine)
+SEASON_ID = 8
 
 # ── Team logo helper ───────────────────────────────────────────────────────────
 TEAM_CODE_MAP = {
@@ -45,6 +46,11 @@ def _logo_uri(team_code: str) -> str | None:
     if not name:
         return None
     p = Path(__file__).parent / "assets" / "logos" / f"{name}.png"
+    return p.as_uri() if p.exists() else None
+
+
+def _pwhl_logo_uri() -> str | None:
+    p = Path(__file__).parent / "assets" / "logos" / "PWHL_logo.svg"
     return p.as_uri() if p.exists() else None
 
 
@@ -504,7 +510,7 @@ if __name__ == "__main__":
 
 
 # ── Player Spotlight ───────────────────────────────────────────────────────────
-SEASON_ID = 8
+
 def get_spotlight_player():
     """
     Picks a random skater who hasn't been featured yet.
@@ -540,13 +546,20 @@ def get_spotlight_player():
             SELECT p.player_id,
                    CONCAT(p.first_name, ' ', p.last_name) AS player_name,
                    t.team_name,
+                   t.team_code,
                    p.position,
                    p.jersey_number,
                    p.nationality
             FROM players p
-            JOIN teams t ON t.team_id = p.team_id
-            WHERE p.position != 'G'
-              AND p.season_id = :sid
+            JOIN (
+                SELECT s2.player_id, s2.team_id
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid
+                GROUP BY s2.player_id, s2.team_id
+            ) latest ON latest.player_id = p.player_id
+            JOIN teams t ON t.team_id = latest.team_id AND t.season_id = :sid
+            WHERE (p.position IS NULL OR p.position != 'G')
               {exclude_clause}
             ORDER BY RAND()
             LIMIT 1
@@ -565,7 +578,6 @@ def get_spotlight_player():
             SELECT SUM(s.goals)   AS goals,
                    SUM(s.assists) AS assists,
                    SUM(s.shots)   AS shots,
-                   SEC_TO_TIME(SUM(TIME_TO_SEC(s.toi))) AS toi_total,
                    COUNT(s.game_id) AS gp
             FROM player_game_stats s
             JOIN games g ON g.game_id = s.game_id
@@ -576,10 +588,12 @@ def get_spotlight_player():
 
         # League ranks
         def _rank(metric, col):
+            # col uses s2 alias to match the subquery table alias
+            col_fixed = col.replace("s.", "s2.")
             row = session.execute(text(f"""
                 SELECT COUNT(*) + 1 AS rnk
                 FROM (
-                    SELECT s2.player_id, SUM({col}) AS val
+                    SELECT s2.player_id, SUM({col_fixed}) AS val
                     FROM player_game_stats s2
                     JOIN games g2 ON g2.game_id = s2.game_id
                     WHERE g2.season_id = :sid AND g2.game_status = 'final'
@@ -593,29 +607,25 @@ def get_spotlight_player():
         assists = int(stats.assists or 0)
         points  = goals + assists
         shots   = int(stats.shots or 0)
+        gp      = int(stats.gp or 1)
 
-        # Format TOI as avg per game
-        total_seconds = 0
-        if stats.toi_total:
-            parts = str(stats.toi_total).split(":")
-            total_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-        gp = int(stats.gp or 1)
-        avg_seconds = total_seconds // gp
-        toi_str = f"{avg_seconds // 60}:{avg_seconds % 60:02d}"
+        # avg TOI from players table (pre-computed by load_game/add_toi.py)
+        toi_row = session.execute(text("""
+            SELECT avg_toi_seconds FROM players WHERE player_id = :pid
+        """), {"pid": pid}).fetchone()
+        avg_toi_sec = int(toi_row.avg_toi_seconds) if toi_row and toi_row.avg_toi_seconds else None
+        toi_str = f"{avg_toi_sec // 60}:{avg_toi_sec % 60:02d}" if avg_toi_sec else "—"
 
-        # TOI rank
-        toi_rank_row = session.execute(text("""
-            SELECT COUNT(*) + 1 AS rnk
-            FROM (
-                SELECT s2.player_id,
-                       SUM(TIME_TO_SEC(s2.toi)) / COUNT(s2.game_id) AS avg_toi
-                FROM player_game_stats s2
-                JOIN games g2 ON g2.game_id = s2.game_id
-                WHERE g2.season_id = :sid AND g2.game_status = 'final'
-                GROUP BY s2.player_id
-            ) ranked
-            WHERE avg_toi > :val
-        """), {"sid": SEASON_ID, "val": avg_seconds}).fetchone()
+        # TOI rank (only if we have data)
+        if avg_toi_sec:
+            toi_rank_row = session.execute(text("""
+                SELECT COUNT(*) + 1 AS rnk
+                FROM players
+                WHERE avg_toi_seconds > :val AND avg_toi_seconds IS NOT NULL
+            """), {"val": avg_toi_sec}).fetchone()
+            toi_rank_str = f"#{toi_rank_row.rnk} in league"
+        else:
+            toi_rank_str = "—"
 
         # Record as featured
         session.execute(text("""
@@ -635,12 +645,12 @@ def get_spotlight_player():
             "assists":       assists,
             "points":        points,
             "shots":         shots,
-            "toi":           toi_str,
             "goals_rank":    _rank(goals,   "s.goals"),
             "assists_rank":  _rank(assists, "s.assists"),
             "points_rank":   _rank(points,  "s.goals + s.assists"),
             "shots_rank":    _rank(shots,   "s.shots"),
-            "toi_rank":      f"#{toi_rank_row.rnk} in league",
+            "toi":           toi_str,
+            "toi_rank":      toi_rank_str,
             "player_photo":  _official_photo_uri(pid),
             "pwhl_logo":     _pwhl_logo_uri(),
             "season_label":  f"Season {SEASON_ID} • {goals + assists} PTS",
@@ -651,18 +661,18 @@ def get_spotlight_player():
 
 
 def _official_photo_uri(player_id: int) -> str | None:
-    """Look up official PWHL photo from assets/players/official/ by player ID."""
+    """
+    Returns player photo URL. Uses leaguestat CDN (always available),
+    falling back to local assets if present.
+    """
+    # Local file takes priority if it exists
     base = Path(__file__).parent.parent / "assets" / "players" / "official"
     for ext in ["jpg", "jpeg", "png", "webp"]:
         p = base / f"{player_id}.{ext}"
         if p.exists():
             return p.resolve().as_uri()
-    return None
-
-def _pwhl_logo_uri() -> str | None:
-    """URI for official PWHL logo in assets/logos."""
-    p = Path(__file__).parent.parent / "assets" / "logos" / "PWHL_logo.svg"
-    return p.resolve().as_uri() if p.exists() else None
+    # CDN fallback — leaguestat hosts player images at a predictable URL
+    return f"https://assets.leaguestat.com/pwhl/240x240/{player_id}.jpg"
 
 
 def get_spotlight_goalie(player_id: int, session) -> dict:
@@ -671,7 +681,7 @@ def get_spotlight_goalie(player_id: int, session) -> dict:
     stats = session.execute(text("""
         SELECT COUNT(DISTINCT g.game_id)                          AS gp,
                SUM(s.goals_against)                               AS ga,
-               SUM(TIME_TO_SEC(s.minutes_played)) / 60.0          AS toi_min,
+               SUM(s.minutes_played) / 60.0                       AS toi_min,
                SUM(s.saves)                                        AS saves,
                SUM(s.shots_against)                               AS shots_against,
                SUM(CASE WHEN s.decision = 'W' THEN 1 ELSE 0 END)  AS wins,
@@ -700,7 +710,7 @@ def get_spotlight_goalie(player_id: int, session) -> dict:
                 JOIN games g2 ON g2.game_id = s2.game_id
                 WHERE g2.season_id = :sid AND g2.game_status = 'final'
                 GROUP BY s2.player_id
-                HAVING SUM(TIME_TO_SEC(s2.minutes_played)) / 60.0 >= 60
+                HAVING SUM(s2.minutes_played) / 60.0 >= 60
             ) ranked WHERE val {op} :metric
         """), {"sid": SEASON_ID, "metric": metric}).fetchone()
         return f"#{row.rnk}"
@@ -711,8 +721,231 @@ def get_spotlight_goalie(player_id: int, session) -> dict:
         "sv_pct":          f"{sv_pct_val:.3f}",
         "wins":            wins,
         "shutouts":        shutouts,
-        "gaa_rank_num":    _goalie_rank(gaa,       "SUM(s2.goals_against) / (SUM(TIME_TO_SEC(s2.minutes_played)) / 3600.0)", lower_is_better=True),
+        "gaa_rank_num":    _goalie_rank(gaa,       "SUM(s2.goals_against) / (SUM(s2.minutes_played) / 3600.0)", lower_is_better=True),
         "sv_rank_num":     _goalie_rank(sv_pct_val,"SUM(s2.saves) / SUM(s2.shots_against)"),
         "wins_rank_num":   _goalie_rank(wins,      "SUM(CASE WHEN s2.decision='W' THEN 1 ELSE 0 END)"),
         "shutouts_rank_num": _goalie_rank(shutouts,"SUM(CASE WHEN s2.goals_against=0 AND s2.decision='W' THEN 1 ELSE 0 END)"),
     }
+
+
+# ── Weekly Preview ─────────────────────────────────────────────────────────────
+
+def get_upcoming_schedule(start_date, end_date):
+    """
+    Returns games scheduled between start_date and end_date (not yet final).
+    Groups by day for the schedule slide.
+    """
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT g.game_id,
+                   g.date,
+                   g.home_team_id, ht.team_code AS home_code, ht.team_name AS home_name,
+                   g.away_team_id, at.team_code AS away_code, at.team_name AS away_name,
+                   g.game_time, g.broadcast
+            FROM games g
+            JOIN teams ht ON ht.team_id = g.home_team_id AND ht.season_id = :sid
+            JOIN teams at ON at.team_id = g.away_team_id AND at.season_id = :sid
+            WHERE g.season_id  = :sid
+              AND g.date       BETWEEN :start AND :end
+              AND g.game_status != 'final'
+            ORDER BY g.date, g.game_time
+        """), {"sid": SEASON_ID, "start": start_date, "end": end_date}).fetchall()
+
+        # Group by day
+        from collections import OrderedDict
+        from datetime import datetime as _dt
+        days = OrderedDict()
+        for r in rows:
+            d = str(r.date)
+            if d not in days:
+                dt = _dt.strptime(d, "%Y-%m-%d")
+                days[d] = {
+                    "day_name": dt.strftime("%A").upper(),
+                    "date_str": dt.strftime("%b %d").upper(),
+                    "games": []
+                }
+            days[d]["games"].append({
+                "game_id":   r.game_id,
+                "away_team": r.away_code,
+                "home_team": r.home_code,
+                "away_logo": _logo_uri(r.away_code),
+                "home_logo": _logo_uri(r.home_code),
+                "time":      r.game_time or "TBD",
+                "broadcast": r.broadcast or "",
+            })
+        return list(days.values())
+    finally:
+        session.close()
+
+
+def get_game_to_watch(start_date, end_date):
+    """
+    Scores each game this week and returns the best matchup.
+    Scoring: standings closeness + combined points + head-to-head interest.
+    Returns game dict + top players from each team.
+    """
+    session = Session()
+    try:
+        # Current standings (points)
+        standings = session.execute(text("""
+            SELECT t.team_id, t.team_code, t.team_name,
+                   SUM(CASE
+                       WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                            (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                       THEN 2
+                       WHEN g.result_type IN ('OT','SO')
+                        AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score < g.home_score))
+                       THEN 1
+                       ELSE 0 END) AS pts,
+                   COUNT(g.game_id) AS gp,
+                   SUM(CASE
+                       WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                            (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                       THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE
+                       WHEN (g.home_team_id = t.team_id AND g.home_score < g.away_score AND g.result_type = 'REG') OR
+                            (g.away_team_id = t.team_id AND g.away_score < g.home_score AND g.result_type = 'REG')
+                       THEN 1 ELSE 0 END) AS losses,
+                   SUM(CASE
+                       WHEN g.result_type IN ('OT','SO')
+                        AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score < g.home_score))
+                       THEN 1 ELSE 0 END) AS ot_losses
+            FROM teams t
+            LEFT JOIN games g ON (g.home_team_id = t.team_id OR g.away_team_id = t.team_id)
+                              AND g.season_id = :sid AND g.game_status = 'final'
+            WHERE t.season_id = :sid
+            GROUP BY t.team_id, t.team_code, t.team_name
+            ORDER BY pts DESC
+        """), {"sid": SEASON_ID}).fetchall()
+
+        pts_map  = {r.team_id: int(r.pts or 0)      for r in standings}
+        rank_map = {r.team_id: i+1 for i, r in enumerate(standings)}
+        rec_map  = {r.team_id: f"{int(r.wins or 0)}-{int(r.losses or 0)}-{int(r.ot_losses or 0)}"
+                    for r in standings}
+        name_map = {r.team_id: r.team_name for r in standings}
+        code_map = {r.team_id: r.team_code for r in standings}
+
+        # Upcoming games this week
+        games = session.execute(text("""
+            SELECT g.game_id, g.date, g.game_time, g.broadcast,
+                   g.home_team_id, g.away_team_id
+            FROM games g
+            WHERE g.season_id = :sid
+              AND g.date BETWEEN :start AND :end
+              AND g.game_status != 'final'
+            ORDER BY g.date
+        """), {"sid": SEASON_ID, "start": start_date, "end": end_date}).fetchall()
+
+        if not games:
+            return None
+
+        # Score each game
+        best_game = None
+        best_score = -1
+        for g in games:
+            h, a = g.home_team_id, g.away_team_id
+            rank_diff    = abs(rank_map.get(h, 8) - rank_map.get(a, 8))
+            combined_pts = pts_map.get(h, 0) + pts_map.get(a, 0)
+            # Closer in standings = more interesting; higher combined pts = better teams
+            score = combined_pts - (rank_diff * 5)
+            if score > best_score:
+                best_score = score
+                best_game  = g
+
+        if not best_game:
+            return None
+
+        h_id, a_id = best_game.home_team_id, best_game.away_team_id
+
+        # Top 2 players from each team by points this season
+        def _top_players(team_id, n=2):
+            rows = session.execute(text("""
+                SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                       SUM(s.goals)   AS goals,
+                       SUM(s.assists) AS assists,
+                       SUM(s.goals + s.assists) AS points
+                FROM player_game_stats s
+                JOIN players p ON p.player_id = s.player_id
+                JOIN games g ON g.game_id = s.game_id
+                WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+                GROUP BY p.player_id, p.first_name, p.last_name
+                ORDER BY points DESC
+                LIMIT :n
+            """), {"tid": team_id, "sid": SEASON_ID, "n": n}).fetchall()
+            return [{"name": r.name, "team": code_map.get(team_id, ""),
+                     "goals": int(r.goals or 0), "assists": int(r.assists or 0),
+                     "points": int(r.points or 0)} for r in rows]
+
+        from datetime import datetime as _dt
+        date_str = _dt.strptime(str(best_game.date), "%Y-%m-%d").strftime("%a %b %d").upper()
+
+        return {
+            "game_id":        best_game.game_id,
+            "gtw_home_team":  code_map.get(h_id, ""),
+            "gtw_away_team":  code_map.get(a_id, ""),
+            "gtw_home_logo":  _logo_uri(code_map.get(h_id, "")),
+            "gtw_away_logo":  _logo_uri(code_map.get(a_id, "")),
+            "gtw_home_record": rec_map.get(h_id, ""),
+            "gtw_away_record": rec_map.get(a_id, ""),
+            "gtw_date":       date_str,
+            "gtw_time":       best_game.game_time or "TBD",
+            "key_players":    _top_players(a_id) + _top_players(h_id),
+            "why_watch":      None,  # filled by AI in renderer
+        }
+    finally:
+        session.close()
+
+
+def get_preview_standings():
+    """Current standings formatted for the preview standings slide."""
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT t.team_id, t.team_code, t.team_name,
+                   SUM(CASE
+                       WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                            (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                       THEN 2
+                       WHEN g.result_type IN ('OT','SO')
+                        AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score < g.home_score))
+                       THEN 1
+                       ELSE 0 END) AS pts,
+                   COUNT(g.game_id) AS gp,
+                   SUM(CASE WHEN (g.home_team_id=t.team_id AND g.home_score>g.away_score) OR
+                                 (g.away_team_id=t.team_id AND g.away_score>g.home_score)
+                            THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN (g.home_team_id=t.team_id AND g.home_score<g.away_score AND g.result_type='REG') OR
+                                 (g.away_team_id=t.team_id AND g.away_score<g.home_score AND g.result_type='REG')
+                            THEN 1 ELSE 0 END) AS losses,
+                   SUM(CASE WHEN g.result_type IN ('OT','SO')
+                             AND ((g.home_team_id=t.team_id AND g.home_score<g.away_score) OR
+                                  (g.away_team_id=t.team_id AND g.away_score<g.home_score))
+                            THEN 1 ELSE 0 END) AS ot_losses
+            FROM teams t
+            LEFT JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
+                              AND g.season_id=:sid AND g.game_status='final'
+            WHERE t.season_id = :sid
+            GROUP BY t.team_id, t.team_code, t.team_name
+            ORDER BY pts DESC, wins DESC
+        """), {"sid": SEASON_ID}).fetchall()
+
+        result = []
+        for i, r in enumerate(rows):
+            status = "playoff" if i < 4 else ("bubble" if i < 6 else "out")
+            result.append({
+                "name":       r.team_code,
+                "logo":       _logo_uri(r.team_code),
+                "wins":       int(r.wins or 0),
+                "losses":     int(r.losses or 0),
+                "ot_losses":  int(r.ot_losses or 0),
+                "gp":         int(r.gp or 0),
+                "points":     int(r.pts or 0),
+                "status":     status,
+            })
+        return result
+    finally:
+        session.close()

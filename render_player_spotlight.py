@@ -75,7 +75,7 @@ def generate_fun_fact(player_name, team, nationality, goals, assists, points) ->
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=payload,
-            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01"},
+            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": os.environ.get("ANTHROPIC_API_KEY", "")},
             method="POST"
         )
         with urllib.request.urlopen(req) as resp:

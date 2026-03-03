@@ -143,12 +143,29 @@ def load_game(game_id: int, session, resume: bool = False) -> bool:
 
                 goals   = int(p.get("goals", 0))
                 assists = int(p.get("assists", 0))
+                # TOI — field name varies by API version; try known candidates
+                toi_raw = (p.get("toi") or p.get("time_on_ice") or
+                           p.get("shift_time") or p.get("timeOnIce") or
+                           p.get("shiftTime"))
+                toi_sec = None
+                if toi_raw is not None:
+                    try:
+                        toi_sec = int(toi_raw)  # seconds int
+                    except (ValueError, TypeError):
+                        try:
+                            parts = str(toi_raw).split(":")
+                            if len(parts) == 2:
+                                toi_sec = int(parts[0]) * 60 + int(parts[1])
+                        except (ValueError, TypeError):
+                            pass
+
                 session.add(PlayerGameStats(
                     game_id=int(meta["id"]), player_id=pid, team_id=team_id,
                     goals=goals, assists=assists, points=goals + assists,
                     shots=int(p.get("shots", 0)),
                     plus_minus=int(p.get("plus_minus", 0)),
-                    pim=int(p.get("pim", 0))))
+                    pim=int(p.get("pim", 0)),
+                    toi_seconds=toi_sec))
 
         # Goalie stats
         for side, team_key in (("home", "home_team"), ("visitor", "visiting_team")):
@@ -177,8 +194,27 @@ def load_game(game_id: int, session, resume: bool = False) -> bool:
                     game_id=int(meta["id"]), player_id=pid, team_id=team_id,
                     shots_against=shots_against, saves=saves,
                     goals_against=goals_against, save_percentage=save_pct,
-                    minutes_played=int(g.get("secs", 0)) // 60,
+                    minutes_played=int(g.get("secs", 0)),  # stored as seconds
                     decision=decision))
+
+        # Update avg_toi_seconds for all players in this game
+        session.execute(text("""
+            UPDATE players p
+            JOIN (
+                SELECT s.player_id, ROUND(AVG(s.toi_seconds)) AS avg_toi
+                FROM player_game_stats s
+                JOIN games g ON g.game_id = s.game_id
+                WHERE g.season_id = :sid
+                  AND g.game_status = 'final'
+                  AND s.toi_seconds IS NOT NULL
+                  AND s.player_id IN (
+                      SELECT player_id FROM player_game_stats
+                      WHERE game_id = :gid
+                  )
+                GROUP BY s.player_id
+            ) agg ON agg.player_id = p.player_id
+            SET p.avg_toi_seconds = agg.avg_toi
+        """), {"sid": SEASON_ID, "gid": int(meta["id"])})
 
         session.commit()
         return True

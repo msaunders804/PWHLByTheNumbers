@@ -41,11 +41,16 @@ class Team(Base):
 class Player(Base):
     __tablename__ = 'players'
 
-    player_id     = Column(Integer, primary_key=True)
-    first_name    = Column(String(100), nullable=False)
-    last_name     = Column(String(100), nullable=False)
-    position      = Column(String(5),   nullable=True)
-    jersey_number = Column(Integer,     nullable=True)
+    player_id         = Column(Integer, primary_key=True)
+    first_name        = Column(String(100), nullable=False)
+    last_name         = Column(String(100), nullable=False)
+    position          = Column(String(5),   nullable=True)
+    jersey_number     = Column(Integer,     nullable=True)
+    avg_toi_seconds   = Column(Integer,     nullable=True)   # seconds, from statviewtype
+    nationality       = Column(String(100), nullable=True)   # birthcntry
+    hometown          = Column(String(200), nullable=True)
+    height            = Column(String(10),  nullable=True)
+    shoots            = Column(String(1),   nullable=True)
 
 
 class PlayerGameStats(Base):
@@ -61,6 +66,7 @@ class PlayerGameStats(Base):
     shots       = Column(Integer, default=0)
     plus_minus  = Column(Integer, default=0)
     pim         = Column(Integer, default=0)
+    toi_seconds = Column(Integer, default=None)
 
 
 class GoalieGameStats(Base):
@@ -74,5 +80,5 @@ class GoalieGameStats(Base):
     saves           = Column(Integer, default=0)
     goals_against   = Column(Integer, default=0)
     save_percentage = Column(Float,   nullable=True)
-    minutes_played  = Column(Integer, default=0)
+    minutes_played  = Column(Integer, default=0)   # stored as seconds
     decision        = Column(String(5), nullable=True)  # 'W', 'L', 'OTL', 'SOL'

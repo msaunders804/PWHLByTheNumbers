@@ -20,6 +20,7 @@ from backfill import (
     SEASON_ID, RATE_LIMIT,
     fetch_schedule, load_teams, load_game, derive_result_type
 )
+from sync_toi import run_sync as sync_toi
 
 engine  = create_engine(get_db_url())
 Session = sessionmaker(bind=engine)
@@ -118,6 +119,11 @@ def run_update(dry_run: bool = False):
 
     session.close()
     print(f"\nDone: {ok_count} loaded, {fail_count} failed")
+
+    # Refresh TOI averages after loading new games
+    if ok_count > 0:
+        print("\nRefreshing TOI averages...")
+        sync_toi()
 
 
 if __name__ == "__main__":
