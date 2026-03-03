@@ -72,13 +72,15 @@
   }
 
   .player-info { flex: 1; padding-top: 8px; display: flex; flex-direction: column; gap: 14px; }
+  .team-logo-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 4px; }
+  .team-logo { width: 52px; height: 52px; object-fit: contain; }
   .team-name { font-size: 22px; font-weight: 700; letter-spacing: 4px; color: #a97aff; text-transform: uppercase; }
   .player-name { font-family: 'Bebas Neue', sans-serif; font-size: 84px; line-height: 0.88; color: #ffffff; }
 
   .player-meta { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
   .meta-row { display: flex; align-items: center; gap: 14px; }
-  .meta-label { font-size: 17px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.6); text-transform: uppercase; width: 60px; }
-  .meta-value { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.85); }
+  .meta-label { font-size: 22px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.6); text-transform: uppercase; width: 70px; }
+  .meta-value { font-size: 30px; font-weight: 700; color: rgba(255,255,255,0.9); }
 
   .gp-badge {
     display: inline-flex; align-items: center;
@@ -200,7 +202,12 @@
     </div>
 
     <div class="player-info">
-      <div class="team-name">{{ player_team }}</div>
+      <div class="team-logo-wrap">
+        {% if team_logo %}
+        <img class="team-logo" src="{{ team_logo }}" alt="{{ player_team }}">
+        {% endif %}
+        <div class="team-name">{{ player_team }}</div>
+      </div>
       <div class="player-name">{{ player_name }}</div>
       <div class="player-meta">
         <div class="meta-row">

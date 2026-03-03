@@ -638,6 +638,7 @@ def get_spotlight_player():
             "player_id":     pid,
             "player_name":   candidates.player_name,
             "player_team":   candidates.team_name,
+            "team_logo":     _logo_uri(candidates.team_code),
             "position":      candidates.position or "F",
             "jersey_number": candidates.jersey_number or "—",
             "nationality":   candidates.nationality or "—",
