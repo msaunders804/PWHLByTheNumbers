@@ -110,3 +110,4 @@ pwhl/lib/
 __pycache__/
 *.pyc
 *.pyo
+*.claude
