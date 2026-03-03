@@ -1,0 +1,51 @@
+name: PWHL Player Spotlight
+
+on:
+  schedule:
+    - cron: '0 14 * * 3'   # Every Wednesday 9AM CST (14:00 UTC)
+  workflow_dispatch:
+
+jobs:
+  spotlight:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install sqlalchemy pymysql jinja2 playwright \
+                      google-api-python-client google-auth
+          playwright install chromium --with-deps
+
+      - name: Render spotlight
+        env:
+          PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
+          GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: |
+          python render_player_spotlight.py
+          python -c "
+          from pathlib import Path
+          from drive_upload import upload_files
+          slides = sorted(Path('output').glob('spotlight_*.png'))
+          if slides:
+              links = upload_files(slides, '${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}')
+              print('Uploaded:', links)
+          "
+
+      - name: Upload as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotlight-${{ github.run_id }}
+          path: output/spotlight_*.png
+          retention-days: 7
