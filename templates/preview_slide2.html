@@ -4,177 +4,69 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1080">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    width: 1080px; height: 1920px;
-    background: #0a0800; color: #ffffff;
-    font-family: 'Barlow Condensed', sans-serif;
-    overflow: hidden; position: relative;
-  }
-
-  .bg {
-    position: absolute; inset: 0; z-index: 0;
-    background:
-      radial-gradient(ellipse at 50% 30%, rgba(245,166,35,0.3) 0%, transparent 55%),
-      radial-gradient(ellipse at 10% 80%, rgba(140,82,255,0.3) 0%, transparent 45%),
-      radial-gradient(ellipse at 90% 70%, rgba(245,166,35,0.12) 0%, transparent 40%),
-      linear-gradient(165deg, #110a00 0%, #0a0800 50%, #0d0520 100%);
-  }
-  .bg-noise {
-    position: absolute; inset: 0; z-index: 1;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
-    background-size: 200px 200px; opacity: 0.5; mix-blend-mode: overlay;
-  }
-
-  .slide {
-    position: relative; z-index: 10;
-    width: 1080px; height: 1920px;
-    display: flex; flex-direction: column;
-    padding: 72px 72px 60px;
-  }
-
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#f8f6f0; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#f5a623,#8c52ff); }
+  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 80% 30%,rgba(245,166,35,0.12) 0%,transparent 50%), radial-gradient(ellipse at 10% 80%,rgba(140,82,255,0.08) 0%,transparent 45%), #f8f6f0; }
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:80px 80px 72px; }
   /* HEADER */
-  .header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 52px;
-  }
-  .brand { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 5px; color: rgba(255,255,255,0.4); }
-  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 4px; color: #f5a623; }
-
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:56px; }
+  .brand { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(0,0,0,0.22); }
+  .page-title-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:4px; color:#0d0d0d; }
+  .page-title-underline { height:3px; background:linear-gradient(to left,#f5a623,rgba(245,166,35,0.1)); border-radius:2px; }
   /* MATCHUP HERO */
-  .matchup-hero {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 40px; gap: 24px;
-  }
-
-  .team-block {
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
-    flex: 1;
-  }
-  .team-logo-large {
-    width: 160px; height: 160px; object-fit: contain;
-  }
-  .team-logo-placeholder-large {
-    width: 160px; height: 160px; border-radius: 50%;
-    background: rgba(245,166,35,0.1); border: 2px solid rgba(245,166,35,0.25);
-  }
-  .team-name-large {
-    font-family: 'Bebas Neue', sans-serif; font-size: 52px;
-    letter-spacing: 2px; color: #ffffff; text-align: center; line-height: 1;
-  }
-  .team-record {
-    font-size: 24px; font-weight: 600; color: rgba(255,255,255,0.4);
-    letter-spacing: 2px;
-  }
-
-  .vs-block {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    flex-shrink: 0;
-  }
-  .vs-large {
-    font-family: 'Bebas Neue', sans-serif; font-size: 80px;
-    color: rgba(245,166,35,0.25); letter-spacing: 4px;
-  }
-  .game-datetime {
-    font-size: 20px; font-weight: 700; letter-spacing: 2px;
-    color: rgba(245,166,35,0.7); text-transform: uppercase; text-align: center;
-  }
-
-  /* GOLD DIVIDER */
-  .gold-divider {
-    display: flex; align-items: center; gap: 16px; margin-bottom: 40px;
-  }
-  .gold-line { flex: 1; height: 1px; background: linear-gradient(to right, rgba(245,166,35,0.5), transparent); }
-  .gold-line-r { flex: 1; height: 1px; background: linear-gradient(to left, rgba(245,166,35,0.5), transparent); }
-  .gold-diamond { width: 8px; height: 8px; background: #f5a623; transform: rotate(45deg); flex-shrink: 0; }
-
+  .matchup-hero { display:flex; align-items:center; justify-content:space-between; margin-bottom:44px; background:#fff; border:1.5px solid rgba(245,166,35,0.18); border-radius:24px; padding:44px 36px; box-shadow:0 4px 28px rgba(0,0,0,0.06); position:relative; overflow:hidden; }
+  .matchup-hero::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(to right,#f5a623,#8c52ff); }
+  .team-block { display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; }
+  .team-logo-large { width:160px; height:160px; object-fit:contain; }
+  .team-logo-placeholder-large { width:160px; height:160px; background:rgba(0,0,0,0.05); border-radius:20px; }
+  .team-name-large { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:4px; color:#0d0d0d; }
+  .team-record { font-size:24px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.35); }
+  .vs-block { display:flex; flex-direction:column; align-items:center; gap:16px; flex-shrink:0; padding:0 24px; }
+  .vs-large { font-family:'Bebas Neue',sans-serif; font-size:72px; color:rgba(0,0,0,0.1); line-height:1; }
+  .game-datetime { font-size:22px; font-weight:700; letter-spacing:2px; color:#8c52ff; text-align:center; line-height:1.4; }
+  /* DIVIDER */
+  .divider { display:flex; align-items:center; gap:20px; margin-bottom:40px; }
+  .divider-line { flex:1; height:1.5px; background:linear-gradient(to right,#f5a623,rgba(245,166,35,0.05)); }
+  .divider-diamond { width:8px; height:8px; background:#f5a623; transform:rotate(45deg); flex-shrink:0; }
+  .divider-line-r { flex:1; height:1.5px; background:linear-gradient(to left,rgba(140,82,255,0.4),rgba(140,82,255,0.02)); }
   /* WHY WATCH */
-  .why-watch {
-    background: rgba(245,166,35,0.07);
-    border: 1px solid rgba(245,166,35,0.2);
-    border-radius: 20px; padding: 36px 40px;
-    margin-bottom: 40px; position: relative; overflow: hidden;
-  }
-  .why-watch::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, #f5a623, rgba(245,166,35,0.2), transparent);
-  }
-  .why-label {
-    font-size: 18px; font-weight: 700; letter-spacing: 3px;
-    color: #f5a623; text-transform: uppercase; margin-bottom: 14px;
-  }
-  .why-text {
-    font-family: 'Barlow', sans-serif; font-size: 30px;
-    font-weight: 500; line-height: 1.5; color: rgba(255,255,255,0.85);
-  }
-
-  /* KEY PLAYERS */
-  .key-players-title {
-    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-    letter-spacing: 4px; color: rgba(255,255,255,0.5);
-    margin-bottom: 20px;
-  }
-
-  .players-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 16px; margin-bottom: 40px;
-  }
-
-  .player-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 24px 24px;
-    position: relative; overflow: hidden;
-  }
-  .player-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, rgba(245,166,35,0.5), transparent);
-  }
-  .player-card-team {
-    font-size: 16px; font-weight: 700; letter-spacing: 3px;
-    color: rgba(245,166,35,0.6); text-transform: uppercase; margin-bottom: 6px;
-  }
-  .player-card-name {
-    font-family: 'Bebas Neue', sans-serif; font-size: 38px;
-    line-height: 1; color: #ffffff; margin-bottom: 10px;
-  }
-  .player-card-stats {
-    display: flex; gap: 16px;
-  }
-  .player-stat { display: flex; flex-direction: column; gap: 2px; }
-  .player-stat-val {
-    font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-    line-height: 1; color: #f5a623;
-  }
-  .player-stat-lbl {
-    font-size: 14px; font-weight: 700; letter-spacing: 2px;
-    color: rgba(255,255,255,0.35); text-transform: uppercase;
-  }
-
+  .why-watch { background:#fff; border:1.5px solid rgba(140,82,255,0.18); border-radius:20px; padding:32px 36px; margin-bottom:36px; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.05); }
+  .why-watch::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(to right,#8c52ff,rgba(140,82,255,0.15)); }
+  .why-label { font-size:18px; font-weight:700; letter-spacing:3px; color:#8c52ff; text-transform:uppercase; margin-bottom:14px; }
+  .why-text { font-size:28px; font-weight:500; line-height:1.5; color:#1a1a1a; font-family:'Barlow Condensed',sans-serif; }
+  /* PLAYERS */
+  .key-players-title { font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:5px; color:rgba(0,0,0,0.3); text-transform:uppercase; margin-bottom:20px; }
+  .players-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+  .player-card { background:#fff; border:1.5px solid rgba(0,0,0,0.07); border-radius:18px; padding:28px 24px; box-shadow:0 2px 12px rgba(0,0,0,0.04); position:relative; overflow:hidden; }
+  .player-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(to right,#f5a623,rgba(245,166,35,0.15)); }
+  .player-card-team { font-size:17px; font-weight:700; letter-spacing:3px; color:#f5a623; text-transform:uppercase; margin-bottom:4px; }
+  .player-card-name { font-family:'Bebas Neue',sans-serif; font-size:38px; letter-spacing:2px; color:#0d0d0d; margin-bottom:16px; line-height:1; }
+  .player-card-stats { display:flex; gap:20px; }
+  .player-stat { display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .player-stat-val { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; color:#f5a623; }
+  .player-stat-lbl { font-size:16px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.3); }
   /* FOOTER */
-  .footer {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 22px; border-top: 1px solid rgba(245,166,35,0.12);
-    margin-top: auto;
-  }
-  .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 4px; color: rgba(255,255,255,0.2); }
-  .pwhl-logo { height: 34px; opacity: 0.3; }
-  .footer-season { font-size: 19px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:32px; border-top:1.5px solid rgba(0,0,0,0.08); }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
+  .pwhl-logo { height:34px; opacity:0.22; }
+  .footer-season { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.18); text-transform:uppercase; }
 </style>
 </head>
 <body>
+<div class="top-bar"></div>
 <div class="bg"></div>
-<div class="bg-noise"></div>
-
 <div class="slide">
   <div class="header">
     <div class="brand">BTN</div>
-    <div class="page-title">Game to Watch</div>
+    <div class="page-title-wrap">
+      <div class="page-title">Game to Watch</div>
+      <div class="page-title-underline"></div>
+    </div>
   </div>
-
   <div class="matchup-hero">
     <div class="team-block">
       {% if gtw_away_logo %}<img class="team-logo-large" src="{{ gtw_away_logo }}" alt="">
@@ -193,18 +85,15 @@
       <div class="team-record">{{ gtw_home_record }}</div>
     </div>
   </div>
-
-  <div class="gold-divider">
-    <div class="gold-line"></div>
-    <div class="gold-diamond"></div>
-    <div class="gold-line-r"></div>
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-diamond"></div>
+    <div class="divider-line-r"></div>
   </div>
-
   <div class="why-watch">
-    <div class="why-label">🔥 Why Watch</div>
+    <div class="why-label">Why Watch</div>
     <div class="why-text">{{ why_watch }}</div>
   </div>
-
   <div class="key-players-title">Players to Watch</div>
   <div class="players-grid">
     {% for player in key_players %}
@@ -212,23 +101,14 @@
       <div class="player-card-team">{{ player.team }}</div>
       <div class="player-card-name">{{ player.name }}</div>
       <div class="player-card-stats">
-        <div class="player-stat">
-          <div class="player-stat-val">{{ player.goals }}</div>
-          <div class="player-stat-lbl">G</div>
-        </div>
-        <div class="player-stat">
-          <div class="player-stat-val">{{ player.assists }}</div>
-          <div class="player-stat-lbl">A</div>
-        </div>
-        <div class="player-stat">
-          <div class="player-stat-val">{{ player.points }}</div>
-          <div class="player-stat-lbl">PTS</div>
-        </div>
+        <div class="player-stat"><div class="player-stat-val">{{ player.goals }}</div><div class="player-stat-lbl">G</div></div>
+        <div class="player-stat"><div class="player-stat-val">{{ player.assists }}</div><div class="player-stat-lbl">A</div></div>
+        <div class="player-stat"><div class="player-stat-val">{{ player.points }}</div><div class="player-stat-lbl">PTS</div></div>
       </div>
     </div>
     {% endfor %}
   </div>
-
+  <div class="spacer"></div>
   <div class="footer">
     <div class="footer-brand">BY THE NUMBERS</div>
     {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}

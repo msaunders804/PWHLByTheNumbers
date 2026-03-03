@@ -41,16 +41,20 @@ def _player_photo_uri(player_name: str):
             return p.resolve().as_uri()
     return None
 
+# Repo root: prefer explicit env var, fall back to relative path from this file
+_REPO_ROOT = Path(os.environ.get("BTN_REPO_ROOT", "")).resolve() or              Path(__file__).resolve().parent.parent
+
+
 def _logo_uri(team_code: str) -> str | None:
     name = TEAM_CODE_MAP.get(team_code.upper())
     if not name:
         return None
-    p = Path(__file__).parent / "assets" / "logos" / f"{name}.png"
+    p = _REPO_ROOT / "assets" / "logos" / f"{name}.png"
     return p.as_uri() if p.exists() else None
 
 
 def _pwhl_logo_uri() -> str | None:
-    p = Path(__file__).parent / "assets" / "logos" / "PWHL_logo.svg"
+    p = _REPO_ROOT / "assets" / "logos" / "PWHL_logo.svg"
     return p.as_uri() if p.exists() else None
 
 
@@ -667,7 +671,7 @@ def _official_photo_uri(player_id: int) -> str | None:
     falling back to local assets if present.
     """
     # Local file takes priority if it exists
-    base = Path(__file__).parent.parent / "assets" / "players" / "official"
+    base = Path(__file__).parent / "assets" / "players" / "official"
     for ext in ["jpg", "jpeg", "png", "webp"]:
         p = base / f"{player_id}.{ext}"
         if p.exists():
@@ -733,51 +737,68 @@ def get_spotlight_goalie(player_id: int, session) -> dict:
 
 def get_upcoming_schedule(start_date, end_date):
     """
-    Returns games scheduled between start_date and end_date (not yet final).
+    Returns games scheduled between start_date and end_date from the API schedule.
+    Uses API directly since only final games are stored in the DB.
     Groups by day for the schedule slide.
     """
-    session = Session()
-    try:
-        rows = session.execute(text("""
-            SELECT g.game_id,
-                   g.date,
-                   g.home_team_id, ht.team_code AS home_code, ht.team_name AS home_name,
-                   g.away_team_id, at.team_code AS away_code, at.team_name AS away_name,
-                   g.game_time, g.broadcast
-            FROM games g
-            JOIN teams ht ON ht.team_id = g.home_team_id AND ht.season_id = :sid
-            JOIN teams at ON at.team_id = g.away_team_id AND at.season_id = :sid
-            WHERE g.season_id  = :sid
-              AND g.date       BETWEEN :start AND :end
-              AND g.game_status != 'final'
-            ORDER BY g.date, g.game_time
-        """), {"sid": SEASON_ID, "start": start_date, "end": end_date}).fetchall()
+    import requests as _req
+    from collections import OrderedDict
+    from datetime import datetime as _dt
 
-        # Group by day
-        from collections import OrderedDict
-        from datetime import datetime as _dt
-        days = OrderedDict()
-        for r in rows:
-            d = str(r.date)
-            if d not in days:
-                dt = _dt.strptime(d, "%Y-%m-%d")
-                days[d] = {
-                    "day_name": dt.strftime("%A").upper(),
-                    "date_str": dt.strftime("%b %d").upper(),
-                    "games": []
-                }
-            days[d]["games"].append({
-                "game_id":   r.game_id,
-                "away_team": r.away_code,
-                "home_team": r.home_code,
-                "away_logo": _logo_uri(r.away_code),
-                "home_logo": _logo_uri(r.home_code),
-                "time":      r.game_time or "TBD",
-                "broadcast": r.broadcast or "",
-            })
-        return list(days.values())
-    finally:
-        session.close()
+    # Fetch full season schedule from API
+    params = {
+        "feed": "modulekit", "view": "schedule",
+        "season_id": SEASON_ID,
+        "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
+    }
+    resp = _req.get("https://lscluster.hockeytech.com/feed/index.php",
+                    params=params, timeout=15)
+    resp.raise_for_status()
+    schedule = resp.json().get("SiteKit", {}).get("Schedule", [])
+
+    days = OrderedDict()
+    for g in schedule:
+        try:
+            game_date = _dt.strptime(g.get("date_played", ""), "%Y-%m-%d").date()
+        except ValueError:
+            continue
+
+        if not (start_date <= game_date <= end_date):
+            continue
+
+        # Skip completed games
+        is_final = (
+            str(g.get("game_status", "")).lower() == "final"
+            or str(g.get("status", "")) == "4"
+            or str(g.get("final", "0")) == "1"
+        )
+        if is_final:
+            continue
+
+        home_code = g.get("home_team_code", g.get("home_team_name", "")[:3].upper())
+        away_code = g.get("visiting_team_code", g.get("visiting_team_name", "")[:3].upper())
+
+        # Parse game time (API returns local time string)
+        game_time = g.get("game_time") or g.get("start_time") or "TBD"
+
+        d = str(game_date)
+        if d not in days:
+            days[d] = {
+                "day_name": game_date.strftime("%A").upper(),
+                "date_str": game_date.strftime("%b %d").upper(),
+                "games": []
+            }
+        days[d]["games"].append({
+            "game_id":   g.get("id"),
+            "away_team": away_code,
+            "home_team": home_code,
+            "away_logo": _logo_uri(away_code),
+            "home_logo": _logo_uri(home_code),
+            "time":      game_time,
+            "broadcast": g.get("network", "") or "",
+        })
+
+    return list(days.values())
 
 
 def get_game_to_watch(start_date, end_date):
@@ -829,16 +850,51 @@ def get_game_to_watch(start_date, end_date):
         name_map = {r.team_id: r.team_name for r in standings}
         code_map = {r.team_id: r.team_code for r in standings}
 
-        # Upcoming games this week
-        games = session.execute(text("""
-            SELECT g.game_id, g.date, g.game_time, g.broadcast,
-                   g.home_team_id, g.away_team_id
-            FROM games g
-            WHERE g.season_id = :sid
-              AND g.date BETWEEN :start AND :end
-              AND g.game_status != 'final'
-            ORDER BY g.date
-        """), {"sid": SEASON_ID, "start": start_date, "end": end_date}).fetchall()
+        # Upcoming games this week — fetch from API since only finals are in DB
+        import requests as _req
+        from datetime import datetime as _dt2
+        api_params = {
+            "feed": "modulekit", "view": "schedule", "season_id": SEASON_ID,
+            "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
+        }
+        api_schedule = _req.get("https://lscluster.hockeytech.com/feed/index.php",
+                                 params=api_params, timeout=15).json()
+        raw_games = api_schedule.get("SiteKit", {}).get("Schedule", [])
+
+        # Build a simple game list with team IDs for scoring
+        # Use a reverse lookup: team_code -> team_id from standings data
+        code_to_id = {v: k for k, v in code_map.items()}
+
+        class _Game:
+            def __init__(self, gid, date, home_id, away_id, game_time):
+                self.game_id      = gid
+                self.date         = date
+                self.home_team_id = home_id
+                self.away_team_id = away_id
+                self.game_time    = game_time
+
+        games = []
+        for g in raw_games:
+            try:
+                gdate = _dt2.strptime(g.get("date_played", ""), "%Y-%m-%d").date()
+            except ValueError:
+                continue
+            if not (start_date <= gdate <= end_date):
+                continue
+            is_final = (
+                str(g.get("game_status","")).lower() == "final"
+                or str(g.get("status","")) == "4"
+                or str(g.get("final","0")) == "1"
+            )
+            if is_final:
+                continue
+            h_code = g.get("home_team_code", "")
+            a_code = g.get("visiting_team_code", "")
+            h_id   = int(g.get("home_team", 0)) or code_to_id.get(h_code)
+            a_id   = int(g.get("visiting_team", 0)) or code_to_id.get(a_code)
+            if h_id and a_id:
+                games.append(_Game(g.get("id"), gdate, h_id, a_id,
+                                   g.get("game_time") or "TBD"))
 
         if not games:
             return None
@@ -850,7 +906,6 @@ def get_game_to_watch(start_date, end_date):
             h, a = g.home_team_id, g.away_team_id
             rank_diff    = abs(rank_map.get(h, 8) - rank_map.get(a, 8))
             combined_pts = pts_map.get(h, 0) + pts_map.get(a, 0)
-            # Closer in standings = more interesting; higher combined pts = better teams
             score = combined_pts - (rank_diff * 5)
             if score > best_score:
                 best_score = score
@@ -892,7 +947,7 @@ def get_game_to_watch(start_date, end_date):
             "gtw_home_record": rec_map.get(h_id, ""),
             "gtw_away_record": rec_map.get(a_id, ""),
             "gtw_date":       date_str,
-            "gtw_time":       best_game.game_time or "TBD",
+            "gtw_time":       best_game.game_time,
             "key_players":    _top_players(a_id) + _top_players(h_id),
             "why_watch":      None,  # filled by AI in renderer
         }
