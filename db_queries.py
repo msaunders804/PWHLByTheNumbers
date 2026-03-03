@@ -504,7 +504,7 @@ if __name__ == "__main__":
 
 
 # ── Player Spotlight ───────────────────────────────────────────────────────────
-
+SEASON_ID = 8
 def get_spotlight_player():
     """
     Picks a random skater who hasn't been featured yet.
@@ -658,6 +658,11 @@ def _official_photo_uri(player_id: int) -> str | None:
         if p.exists():
             return p.resolve().as_uri()
     return None
+
+def _pwhl_logo_uri() -> str | None:
+    """URI for official PWHL logo in assets/logos."""
+    p = Path(__file__).parent.parent / "assets" / "logos" / "PWHL_logo.svg"
+    return p.resolve().as_uri() if p.exists() else None
 
 
 def get_spotlight_goalie(player_id: int, session) -> dict:
