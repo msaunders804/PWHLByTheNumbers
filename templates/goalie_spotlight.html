@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px; height: 1920px;
+    background: #08010f; color: #ffffff;
+    font-family: 'Barlow Condensed', sans-serif;
+    overflow: hidden; position: relative;
+  }
+
+  .bg-gradient {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 80% 10%, rgba(140,82,255,0.35) 0%, transparent 50%),
+      radial-gradient(ellipse at 10% 60%, rgba(94,23,235,0.25) 0%, transparent 50%),
+      linear-gradient(160deg, #0d0020 0%, #08010f 60%, #0a0018 100%);
+    z-index: 0;
+  }
+  .bg-noise {
+    position: absolute; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    background-size: 200px 200px; opacity: 0.4; mix-blend-mode: overlay;
+  }
+
+  .slide {
+    position: relative; z-index: 10;
+    width: 1080px; height: 1920px;
+    display: flex; flex-direction: column;
+    padding: 72px 72px 60px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 52px;
+  }
+  .brand {
+    font-family: 'Bebas Neue', sans-serif; font-size: 32px;
+    letter-spacing: 4px; color: rgba(255,255,255,0.55);
+  }
+  .label-pill {
+    background: rgba(140,82,255,0.15); border: 1px solid rgba(140,82,255,0.45);
+    border-radius: 100px; padding: 10px 32px;
+    font-size: 22px; font-weight: 700; letter-spacing: 3px;
+    color: #c49fff; text-transform: uppercase;
+  }
+
+  /* PLAYER CARD */
+  .player-card {
+    display: flex; gap: 48px; align-items: flex-start;
+    margin-bottom: 52px;
+  }
+  .player-photo-wrap {
+    width: 320px; height: 380px; flex-shrink: 0;
+    border-radius: 20px; overflow: hidden;
+    border: 2px solid rgba(140,82,255,0.3); position: relative;
+    background: radial-gradient(ellipse at 50% 30%, rgba(140,82,255,0.2) 0%, rgba(8,1,15,0.8) 100%);
+  }
+  .player-photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .player-photo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .player-photo-fallback svg { opacity: 0.2; }
+  .photo-accent {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(to right, #8c52ff, #5e17eb);
+  }
+
+  .player-info { flex: 1; padding-top: 8px; display: flex; flex-direction: column; gap: 14px; }
+  .team-name { font-size: 22px; font-weight: 700; letter-spacing: 4px; color: #a97aff; text-transform: uppercase; }
+  .player-name { font-family: 'Bebas Neue', sans-serif; font-size: 84px; line-height: 0.88; color: #ffffff; }
+
+  .player-meta { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .meta-row { display: flex; align-items: center; gap: 14px; }
+  .meta-label { font-size: 17px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.6); text-transform: uppercase; width: 60px; }
+  .meta-value { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.85); }
+
+  .gp-badge {
+    display: inline-flex; align-items: center;
+    background: rgba(140,82,255,0.15); border: 1px solid rgba(140,82,255,0.3);
+    border-radius: 8px; padding: 6px 16px;
+    font-size: 18px; font-weight: 700; color: #c49fff; letter-spacing: 2px;
+    margin-top: 4px; align-self: flex-start;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, rgba(140,82,255,0.7), rgba(140,82,255,0.1), transparent);
+    margin-bottom: 44px;
+  }
+
+  /* STATS — 2x2 grid for goalies */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 44px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(140,82,255,0.2);
+    border-radius: 20px;
+    padding: 32px 28px 28px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(to right, #5e17eb, #8c52ff, transparent);
+  }
+
+  .stat-card-label {
+    font-size: 22px; font-weight: 700; letter-spacing: 4px;
+    color: rgba(255,255,255,0.82); text-transform: uppercase;
+  }
+
+  .stat-card-bottom {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 16px;
+  }
+
+  .stat-card-value {
+    font-family: 'Bebas Neue', sans-serif; font-size: 100px;
+    line-height: 1; color: #ffffff;
+  }
+  .stat-card-value.decimal { font-size: 72px; }
+
+  .stat-card-rank-badge {
+    display: flex; flex-direction: column; align-items: center;
+    background: rgba(140,82,255,0.15); border: 1px solid rgba(140,82,255,0.4);
+    border-radius: 14px; padding: 12px 20px;
+  }
+  .rank-number {
+    font-family: 'Bebas Neue', sans-serif; font-size: 56px;
+    line-height: 1; color: #a97aff;
+  }
+  .rank-label {
+    font-size: 16px; font-weight: 700; letter-spacing: 2px;
+    color: rgba(255,255,255,0.45); text-transform: uppercase;
+  }
+
+  /* FUN FACT */
+  .fun-fact {
+    background: rgba(140,82,255,0.07); border: 1px solid rgba(140,82,255,0.22);
+    border-radius: 20px; padding: 32px 36px;
+    margin-bottom: 36px; position: relative; overflow: hidden;
+    flex: 1;
+  }
+  .fun-fact::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, #5e17eb, #8c52ff, transparent);
+  }
+  .fun-fact-label { font-size: 17px; font-weight: 700; letter-spacing: 3px; color: #8c52ff; text-transform: uppercase; margin-bottom: 12px; }
+  .fun-fact-text { font-family: 'Barlow', sans-serif; font-size: 28px; font-weight: 500; line-height: 1.45; color: rgba(255,255,255,0.82); }
+
+  /* FOOTER */
+  .footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.07);
+  }
+  .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 4px; color: rgba(255,255,255,0.2); }
+  .pwhl-logo { height: 34px; opacity: 0.3; }
+  .footer-season { font-size: 19px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="bg-noise"></div>
+
+<div class="slide">
+
+  <div class="header">
+    <div class="brand">BTN</div>
+    <div class="label-pill">Player Spotlight</div>
+  </div>
+
+  <div class="player-card">
+    <div class="player-photo-wrap">
+      {% if player_photo %}
+      <img src="{{ player_photo }}" alt="{{ player_name }}">
+      {% else %}
+      <div class="player-photo-fallback">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="white">
+          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+        </svg>
+      </div>
+      {% endif %}
+      <div class="photo-accent"></div>
+    </div>
+
+    <div class="player-info">
+      <div class="team-name">{{ player_team }}</div>
+      <div class="player-name">{{ player_name }}</div>
+      <div class="player-meta">
+        <div class="meta-row">
+          <span class="meta-label">POS</span>
+          <span class="meta-value">Goalie</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">#</span>
+          <span class="meta-value">{{ jersey_number }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">NAT</span>
+          <span class="meta-value">{{ nationality }}</span>
+        </div>
+        {% if college %}
+        <div class="meta-row">
+          <span class="meta-label">COL</span>
+          <span class="meta-value">{{ college }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="gp-badge">{{ gp }} GP THIS SEASON</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 2x2 Stat Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card-label">GAA</div>
+      <div class="stat-card-bottom">
+        <div class="stat-card-value decimal">{{ gaa }}</div>
+        <div class="stat-card-rank-badge">
+          <div class="rank-number">{{ gaa_rank_num }}</div>
+          <div class="rank-label">in league</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">SV%</div>
+      <div class="stat-card-bottom">
+        <div class="stat-card-value decimal">{{ sv_pct }}</div>
+        <div class="stat-card-rank-badge">
+          <div class="rank-number">{{ sv_rank_num }}</div>
+          <div class="rank-label">in league</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Wins</div>
+      <div class="stat-card-bottom">
+        <div class="stat-card-value">{{ wins }}</div>
+        <div class="stat-card-rank-badge">
+          <div class="rank-number">{{ wins_rank_num }}</div>
+          <div class="rank-label">in league</div>
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Shutouts</div>
+      <div class="stat-card-bottom">
+        <div class="stat-card-value">{{ shutouts }}</div>
+        <div class="stat-card-rank-badge">
+          <div class="rank-number">{{ shutouts_rank_num }}</div>
+          <div class="rank-label">in league</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fun-fact">
+    <div class="fun-fact-label">🏒 Did You Know?</div>
+    <div class="fun-fact-text">{{ fun_fact }}</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}
+    <img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">
+    {% endif %}
+    <div class="footer-season">{{ season_label }}</div>
+  </div>
+
+</div>
+</body>
+</html>

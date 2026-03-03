@@ -501,3 +501,213 @@ if __name__ == "__main__":
     print(f"Story:     {data['event']['player_name'] if data['event'] else 'None'}")
     print(f"Upcoming:  {len(data['upcoming'])} games")
     print("\n✅ All queries OK")
+
+
+# ── Player Spotlight ───────────────────────────────────────────────────────────
+
+def get_spotlight_player():
+    """
+    Picks a random skater who hasn't been featured yet.
+    Excludes top 10 in points to surface lesser-known players.
+    Returns dict with player info + season stats + league ranks.
+    Returns None if all players have been featured (resets table).
+    """
+    session = Session()
+    try:
+        # Get already-featured player IDs
+        featured = session.execute(text("""
+            SELECT player_id FROM featured_players
+        """)).fetchall()
+        featured_ids = [r.player_id for r in featured]
+
+        # Get top 10 in points to exclude
+        top10 = session.execute(text("""
+            SELECT s.player_id
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY s.player_id
+            ORDER BY SUM(s.goals + s.assists) DESC
+            LIMIT 10
+        """), {"sid": SEASON_ID}).fetchall()
+        top10_ids = [r.player_id for r in top10]
+
+        exclude_ids = list(set(featured_ids + top10_ids))
+        exclude_clause = f"AND p.player_id NOT IN ({','.join(str(i) for i in exclude_ids)})" if exclude_ids else ""
+
+        # Pick random skater with at least 1 game played
+        candidates = session.execute(text(f"""
+            SELECT p.player_id,
+                   CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                   t.team_name,
+                   p.position,
+                   p.jersey_number,
+                   p.nationality
+            FROM players p
+            JOIN teams t ON t.team_id = p.team_id
+            WHERE p.position != 'G'
+              AND p.season_id = :sid
+              {exclude_clause}
+            ORDER BY RAND()
+            LIMIT 1
+        """), {"sid": SEASON_ID}).fetchone()
+
+        # If everyone has been featured, reset and start again
+        if not candidates:
+            session.execute(text("DELETE FROM featured_players"))
+            session.commit()
+            return get_spotlight_player()
+
+        pid = candidates.player_id
+
+        # Season stats
+        stats = session.execute(text("""
+            SELECT SUM(s.goals)   AS goals,
+                   SUM(s.assists) AS assists,
+                   SUM(s.shots)   AS shots,
+                   SEC_TO_TIME(SUM(TIME_TO_SEC(s.toi))) AS toi_total,
+                   COUNT(s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.player_id = :pid
+              AND g.season_id = :sid
+              AND g.game_status = 'final'
+        """), {"pid": pid, "sid": SEASON_ID}).fetchone()
+
+        # League ranks
+        def _rank(metric, col):
+            row = session.execute(text(f"""
+                SELECT COUNT(*) + 1 AS rnk
+                FROM (
+                    SELECT s2.player_id, SUM({col}) AS val
+                    FROM player_game_stats s2
+                    JOIN games g2 ON g2.game_id = s2.game_id
+                    WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                    GROUP BY s2.player_id
+                ) ranked
+                WHERE val > :metric
+            """), {"sid": SEASON_ID, "metric": metric or 0}).fetchone()
+            return f"#{row.rnk} in league"
+
+        goals   = int(stats.goals or 0)
+        assists = int(stats.assists or 0)
+        points  = goals + assists
+        shots   = int(stats.shots or 0)
+
+        # Format TOI as avg per game
+        total_seconds = 0
+        if stats.toi_total:
+            parts = str(stats.toi_total).split(":")
+            total_seconds = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        gp = int(stats.gp or 1)
+        avg_seconds = total_seconds // gp
+        toi_str = f"{avg_seconds // 60}:{avg_seconds % 60:02d}"
+
+        # TOI rank
+        toi_rank_row = session.execute(text("""
+            SELECT COUNT(*) + 1 AS rnk
+            FROM (
+                SELECT s2.player_id,
+                       SUM(TIME_TO_SEC(s2.toi)) / COUNT(s2.game_id) AS avg_toi
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                GROUP BY s2.player_id
+            ) ranked
+            WHERE avg_toi > :val
+        """), {"sid": SEASON_ID, "val": avg_seconds}).fetchone()
+
+        # Record as featured
+        session.execute(text("""
+            INSERT IGNORE INTO featured_players (player_id, featured_date)
+            VALUES (:pid, CURDATE())
+        """), {"pid": pid})
+        session.commit()
+
+        return {
+            "player_id":     pid,
+            "player_name":   candidates.player_name,
+            "player_team":   candidates.team_name,
+            "position":      candidates.position or "F",
+            "jersey_number": candidates.jersey_number or "—",
+            "nationality":   candidates.nationality or "—",
+            "goals":         goals,
+            "assists":       assists,
+            "points":        points,
+            "shots":         shots,
+            "toi":           toi_str,
+            "goals_rank":    _rank(goals,   "s.goals"),
+            "assists_rank":  _rank(assists, "s.assists"),
+            "points_rank":   _rank(points,  "s.goals + s.assists"),
+            "shots_rank":    _rank(shots,   "s.shots"),
+            "toi_rank":      f"#{toi_rank_row.rnk} in league",
+            "player_photo":  _official_photo_uri(pid),
+            "pwhl_logo":     _pwhl_logo_uri(),
+            "season_label":  f"Season {SEASON_ID} • {goals + assists} PTS",
+        }
+
+    finally:
+        session.close()
+
+
+def _official_photo_uri(player_id: int) -> str | None:
+    """Look up official PWHL photo from assets/players/official/ by player ID."""
+    base = Path(__file__).parent.parent / "assets" / "players" / "official"
+    for ext in ["jpg", "jpeg", "png", "webp"]:
+        p = base / f"{player_id}.{ext}"
+        if p.exists():
+            return p.resolve().as_uri()
+    return None
+
+
+def get_spotlight_goalie(player_id: int, session) -> dict:
+    """Returns goalie season stats + league ranks for spotlight."""
+
+    stats = session.execute(text("""
+        SELECT COUNT(DISTINCT g.game_id)                          AS gp,
+               SUM(s.goals_against)                               AS ga,
+               SUM(TIME_TO_SEC(s.minutes_played)) / 60.0          AS toi_min,
+               SUM(s.saves)                                        AS saves,
+               SUM(s.shots_against)                               AS shots_against,
+               SUM(CASE WHEN s.decision = 'W' THEN 1 ELSE 0 END)  AS wins,
+               SUM(CASE WHEN s.goals_against = 0
+                         AND s.decision = 'W' THEN 1 ELSE 0 END)  AS shutouts
+        FROM goalie_game_stats s
+        JOIN games g ON g.game_id = s.game_id
+        WHERE s.player_id = :pid
+          AND g.season_id = :sid
+          AND g.game_status = 'final'
+    """), {"pid": player_id, "sid": SEASON_ID}).fetchone()
+
+    toi_min      = float(stats.toi_min or 0)
+    gaa          = round((stats.ga or 0) / (toi_min / 60), 2) if toi_min > 0 else 0.0
+    sv_pct_val   = round((stats.saves or 0) / (stats.shots_against or 1), 3)
+    wins         = int(stats.wins or 0)
+    shutouts     = int(stats.shutouts or 0)
+    gp           = int(stats.gp or 0)
+
+    def _goalie_rank(metric, expr, lower_is_better=False):
+        op = "<" if lower_is_better else ">"
+        row = session.execute(text(f"""
+            SELECT COUNT(*) + 1 AS rnk FROM (
+                SELECT s2.player_id, {expr} AS val
+                FROM goalie_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                GROUP BY s2.player_id
+                HAVING SUM(TIME_TO_SEC(s2.minutes_played)) / 60.0 >= 60
+            ) ranked WHERE val {op} :metric
+        """), {"sid": SEASON_ID, "metric": metric}).fetchone()
+        return f"#{row.rnk}"
+
+    return {
+        "gp":              gp,
+        "gaa":             f"{gaa:.2f}",
+        "sv_pct":          f"{sv_pct_val:.3f}",
+        "wins":            wins,
+        "shutouts":        shutouts,
+        "gaa_rank_num":    _goalie_rank(gaa,       "SUM(s2.goals_against) / (SUM(TIME_TO_SEC(s2.minutes_played)) / 3600.0)", lower_is_better=True),
+        "sv_rank_num":     _goalie_rank(sv_pct_val,"SUM(s2.saves) / SUM(s2.shots_against)"),
+        "wins_rank_num":   _goalie_rank(wins,      "SUM(CASE WHEN s2.decision='W' THEN 1 ELSE 0 END)"),
+        "shutouts_rank_num": _goalie_rank(shutouts,"SUM(CASE WHEN s2.goals_against=0 AND s2.decision='W' THEN 1 ELSE 0 END)"),
+    }
