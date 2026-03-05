@@ -30,7 +30,8 @@ TEAM_CODE_MAP = {
     "VAN": "VAN_50x50",
 }
 
-PLAYERS_DIR = Path(__file__).parent / "assets" / "players"
+_THIS_DIR   = Path(__file__).resolve().parent   # root dir (db_queries.py lives here)
+PLAYERS_DIR = _THIS_DIR / "assets" / "players"
 
 def _player_photo_uri(player_name: str):
     # firstname_lastname.jpg — e.g. rebecca_leslie.jpg
@@ -41,21 +42,30 @@ def _player_photo_uri(player_name: str):
             return p.resolve().as_uri()
     return None
 
-# Repo root: prefer explicit env var, fall back to relative path from this file
-_REPO_ROOT = Path(os.environ.get("BTN_REPO_ROOT", "")).resolve() or              Path(__file__).resolve().parent.parent
+_env_root   = os.environ.get("BTN_REPO_ROOT", "").strip()
+_REPO_ROOT  = Path(_env_root).resolve() if _env_root else _THIS_DIR
+
+
+import base64 as _b64
+
+def _file_to_data_uri(path: Path) -> str | None:
+    """Base64-encode a local file into a data URI — works in Playwright on any OS."""
+    if not path.exists():
+        return None
+    mime = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+            ".webp": "image/webp", ".svg": "image/svg+xml"}.get(path.suffix.lower(), "image/png")
+    return f"data:{mime};base64,{_b64.b64encode(path.read_bytes()).decode()}"
 
 
 def _logo_uri(team_code: str) -> str | None:
     name = TEAM_CODE_MAP.get(team_code.upper())
     if not name:
         return None
-    p = _REPO_ROOT / "assets" / "logos" / f"{name}.png"
-    return p.as_uri() if p.exists() else None
+    return _file_to_data_uri(_REPO_ROOT / "assets" / "logos" / f"{name}.png")
 
 
 def _pwhl_logo_uri() -> str | None:
-    p = _REPO_ROOT / "assets" / "logos" / "PWHL_logo.svg"
-    return p.as_uri() if p.exists() else None
+    return _file_to_data_uri(_REPO_ROOT / "assets" / "logos" / "PWHL_logo.svg")
 
 
 # ── Week range helpers ─────────────────────────────────────────────────────────
@@ -735,6 +745,51 @@ def get_spotlight_goalie(player_id: int, session) -> dict:
 
 # ── Weekly Preview ─────────────────────────────────────────────────────────────
 
+def _parse_game_time(raw: str) -> str:
+    """
+    Normalize whatever the API returns into a readable time string like "7:00 PM ET".
+    Handles: "19:00", "7:00 PM", "19:00:00", unix epoch int, blank/None -> "TBD"
+    Note: PWHL API times are typically ET.
+    """
+    import re
+    from datetime import datetime as _dt
+
+    if not raw or str(raw).strip() in ("", "0", "00:00", "00:00:00"):
+        return "TBD"
+
+    s = str(raw).strip()
+
+    # Unix epoch (numeric string)
+    if re.fullmatch(r"\d{9,12}", s):
+        try:
+            return _dt.utcfromtimestamp(int(s)).strftime("%-I:%M %p ET")
+        except Exception:
+            return "TBD"
+
+    # Already has AM/PM — just normalise spacing
+    if re.search(r"[AaPp][Mm]", s):
+        # strip seconds if present: "7:00:00 PM" -> "7:00 PM"
+        s = re.sub(r":(\d{2})\s*([AaPp][Mm])", lambda m: f" {m.group(2).upper()}", s)
+        s = re.sub(r"\s+", " ", s).strip()
+        if "ET" not in s and "CT" not in s:
+            s += " ET"
+        return s
+
+    # 24-hour "HH:MM" or "HH:MM:SS"
+    m = re.match(r"^(\d{1,2}):(\d{2})", s)
+    if m:
+        h, mn = int(m.group(1)), int(m.group(2))
+        if h == 0:
+            return "TBD"
+        period = "AM" if h < 12 else "PM"
+        h12 = h if h <= 12 else h - 12
+        if h12 == 0:
+            h12 = 12
+        return f"{h12}:{mn:02d} {period} ET"
+
+    return "TBD"
+
+
 def get_upcoming_schedule(start_date, end_date):
     """
     Returns games scheduled between start_date and end_date from the API schedule.
@@ -766,6 +821,9 @@ def get_upcoming_schedule(start_date, end_date):
         if not (start_date <= game_date <= end_date):
             continue
 
+        # DEBUG: uncomment to see raw API fields for time diagnosis
+        # import json as _j; print(_j.dumps({k:v for k,v in g.items() if "time" in k.lower() or "start" in k.lower() or "network" in k.lower()}))
+
         # Skip completed games
         is_final = (
             str(g.get("game_status", "")).lower() == "final"
@@ -778,8 +836,10 @@ def get_upcoming_schedule(start_date, end_date):
         home_code = g.get("home_team_code", g.get("home_team_name", "")[:3].upper())
         away_code = g.get("visiting_team_code", g.get("visiting_team_name", "")[:3].upper())
 
-        # Parse game time (API returns local time string)
-        game_time = g.get("game_time") or g.get("start_time") or "TBD"
+        # Parse game time — API may return "19:00", "7:00 PM", epoch int, or be absent
+        raw_time = (g.get("game_time") or g.get("start_time") or
+                    g.get("time") or g.get("scheduled_time") or "")
+        game_time = _parse_game_time(raw_time)
 
         d = str(game_date)
         if d not in days:
@@ -894,7 +954,7 @@ def get_game_to_watch(start_date, end_date):
             a_id   = int(g.get("visiting_team", 0)) or code_to_id.get(a_code)
             if h_id and a_id:
                 games.append(_Game(g.get("id"), gdate, h_id, a_id,
-                                   g.get("game_time") or "TBD"))
+                                   _parse_game_time(g.get("game_time") or g.get("start_time") or "")))
 
         if not games:
             return None
@@ -977,10 +1037,26 @@ def get_preview_standings():
                    SUM(CASE WHEN (g.home_team_id=t.team_id AND g.home_score<g.away_score AND g.result_type='REG') OR
                                  (g.away_team_id=t.team_id AND g.away_score<g.home_score AND g.result_type='REG')
                             THEN 1 ELSE 0 END) AS losses,
-                   SUM(CASE WHEN g.result_type IN ('OT','SO')
+                   SUM(CASE WHEN g.result_type='OT'
                              AND ((g.home_team_id=t.team_id AND g.home_score<g.away_score) OR
                                   (g.away_team_id=t.team_id AND g.away_score<g.home_score))
-                            THEN 1 ELSE 0 END) AS ot_losses
+                            THEN 1 ELSE 0 END) AS otl,
+                   SUM(CASE WHEN g.result_type='SO'
+                             AND ((g.home_team_id=t.team_id AND g.home_score<g.away_score) OR
+                                  (g.away_team_id=t.team_id AND g.away_score<g.home_score))
+                            THEN 1 ELSE 0 END) AS sol,
+                   SUM(CASE WHEN g.result_type='OT'
+                             AND ((g.home_team_id=t.team_id AND g.home_score>g.away_score) OR
+                                  (g.away_team_id=t.team_id AND g.away_score>g.home_score))
+                            THEN 1 ELSE 0 END) AS otw,
+                   /* home splits */
+                   SUM(CASE WHEN g.home_team_id=t.team_id AND g.home_score>g.away_score THEN 1 ELSE 0 END) AS hw,
+                   SUM(CASE WHEN g.home_team_id=t.team_id AND g.home_score<g.away_score AND g.result_type='REG' THEN 1 ELSE 0 END) AS hl,
+                   SUM(CASE WHEN g.home_team_id=t.team_id AND g.result_type IN ('OT','SO') AND g.home_score<g.away_score THEN 1 ELSE 0 END) AS hotl,
+                   /* away splits */
+                   SUM(CASE WHEN g.away_team_id=t.team_id AND g.away_score>g.home_score THEN 1 ELSE 0 END) AS aw,
+                   SUM(CASE WHEN g.away_team_id=t.team_id AND g.away_score<g.home_score AND g.result_type='REG' THEN 1 ELSE 0 END) AS al,
+                   SUM(CASE WHEN g.away_team_id=t.team_id AND g.result_type IN ('OT','SO') AND g.away_score<g.home_score THEN 1 ELSE 0 END) AS aotl
             FROM teams t
             LEFT JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
                               AND g.season_id=:sid AND g.game_status='final'
@@ -993,14 +1069,19 @@ def get_preview_standings():
         for i, r in enumerate(rows):
             status = "playoff" if i < 4 else ("bubble" if i < 6 else "out")
             result.append({
-                "name":       r.team_code,
-                "logo":       _logo_uri(r.team_code),
-                "wins":       int(r.wins or 0),
-                "losses":     int(r.losses or 0),
-                "ot_losses":  int(r.ot_losses or 0),
-                "gp":         int(r.gp or 0),
-                "points":     int(r.pts or 0),
-                "status":     status,
+                "name":         r.team_code,
+                "abbr":         r.team_code,
+                "logo":         _logo_uri(r.team_code),
+                "wins":         int(r.wins or 0),
+                "losses":       int(r.losses or 0),
+                "ot_losses":    int((r.otl or 0) + (r.sol or 0)),
+                "otw":          int(r.otw or 0),
+                "otl":          int((r.otl or 0) + (r.sol or 0)),
+                "gp":           int(r.gp or 0),
+                "points":       int(r.pts or 0),
+                "status":       status,
+                "home_record":  f"{int(r.hw or 0)}-{int(r.hl or 0)}-{int(r.hotl or 0)}",
+                "away_record":  f"{int(r.aw or 0)}-{int(r.al or 0)}-{int(r.aotl or 0)}",
             })
         return result
     finally:

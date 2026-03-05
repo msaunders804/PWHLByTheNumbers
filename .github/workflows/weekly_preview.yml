@@ -1,0 +1,51 @@
+name: PWHL Weekly Preview
+
+on:
+  schedule:
+    - cron: '0 14 * * 0'   # Every Sunday 9:00 AM CST (14:00 UTC)
+  workflow_dispatch:        # Allow manual trigger from Actions tab
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install sqlalchemy pymysql jinja2 playwright requests \
+                      google-api-python-client google-auth
+          playwright install chromium --with-deps
+
+      - name: Render weekly preview
+        env:
+          PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
+          GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: |
+          python render_weekly_preview.py
+          python -c "
+          from pathlib import Path
+          from drive_upload import upload_files
+          slides = sorted(Path('output').glob('preview_*.png'))
+          if slides:
+              links = upload_files(slides, '${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}')
+              print('Uploaded:', links)
+          "
+
+      - name: Upload as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-preview-${{ github.run_id }}
+          path: output/preview_*.png
+          retention-days: 7

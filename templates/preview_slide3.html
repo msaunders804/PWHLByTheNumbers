@@ -4,101 +4,198 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1080">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { width:1080px; height:1920px; background:#f8f6f0; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
-  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#f5a623,#8c52ff); }
-  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 100% 50%,rgba(245,166,35,0.10) 0%,transparent 50%), radial-gradient(ellipse at 0% 100%,rgba(140,82,255,0.08) 0%,transparent 45%), #f8f6f0; }
-  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:80px 80px 72px; }
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --purple: #5e17eb;
+    --deep-purple: #4a0fd4;
+    --bg: #f8f6f0;
+    --text-primary: #0a0a0a;
+    --text-secondary: #666;
+    --divider: rgba(94, 23, 235, 0.15);
+    --playoff-line: rgba(94,23,235,0.5);
+  }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Barlow Condensed', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+
+  .bg-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(94,23,235,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94,23,235,0.04) 1px, transparent 1px);
+    background-size: 54px 54px;
+    z-index: 0;
+  }
+
+  .bg-glow {
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(94,23,235,0.07) 0%, transparent 70%);
+    z-index: 0;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    height: 100%; display: flex; flex-direction: column;
+    padding: 60px 56px;
+  }
+
   /* HEADER */
-  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:56px; }
-  .brand { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(0,0,0,0.22); }
-  .page-title-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
-  .page-title { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:4px; color:#0d0d0d; }
-  .page-title-underline { height:3px; background:linear-gradient(to left,#f5a623,rgba(245,166,35,0.1)); border-radius:2px; }
-  /* TABLE HEADER */
-  .table-header { display:grid; grid-template-columns:52px 1fr 72px 72px 72px 72px 88px; gap:0; padding:0 28px 16px; }
-  .col-hdr { font-size:18px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.3); text-transform:uppercase; text-align:center; }
-  .col-hdr.left { text-align:left; }
-  /* ROWS */
-  .standing-row { display:grid; grid-template-columns:52px 1fr 72px 72px 72px 72px 88px; gap:0; align-items:center; padding:22px 28px; border-radius:16px; margin-bottom:10px; position:relative; overflow:hidden; }
-  .standing-row.playoff { background:#fff; border:1.5px solid rgba(245,166,35,0.25); box-shadow:0 2px 12px rgba(0,0,0,0.05); }
-  .standing-row.playoff::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:#f5a623; border-radius:16px 0 0 16px; }
-  .standing-row.bubble { background:#fff; border:1.5px solid rgba(0,0,0,0.07); box-shadow:0 2px 8px rgba(0,0,0,0.03); }
-  .standing-row.out { background:rgba(0,0,0,0.025); border:1.5px solid rgba(0,0,0,0.05); }
-  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:36px; color:rgba(0,0,0,0.2); text-align:center; }
-  .standing-row.playoff .rank-num { color:#f5a623; }
-  .team-cell { display:flex; align-items:center; gap:14px; }
-  .team-logo-sm { width:44px; height:44px; object-fit:contain; }
-  .team-logo-sm-placeholder { width:44px; height:44px; background:rgba(0,0,0,0.06); border-radius:8px; }
-  .team-name-sm { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:#0d0d0d; }
-  .standing-row.out .team-name-sm { color:rgba(0,0,0,0.4); }
-  .stat-cell { font-family:'Bebas Neue',sans-serif; font-size:32px; color:rgba(0,0,0,0.45); text-align:center; }
-  .stat-cell.pts { font-size:36px; color:#f5a623; font-weight:900; }
-  .standing-row.out .stat-cell { color:rgba(0,0,0,0.25); }
-  .standing-row.out .stat-cell.pts { color:rgba(245,166,35,0.45); }
-  /* PLAYOFF LINE */
-  .cutoff-label { display:flex; align-items:center; gap:16px; margin:12px 0 14px; }
-  .cutoff-line { flex:1; height:1px; background:rgba(245,166,35,0.35); }
-  .cutoff-text { font-size:17px; font-weight:700; letter-spacing:3px; color:rgba(245,166,35,0.6); text-transform:uppercase; flex-shrink:0; }
+  .brand-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .brand-tag { font-weight: 600; font-size: 26px; letter-spacing: 0.2em; color: var(--purple); text-transform: uppercase; }
+  .season-tag { font-size: 24px; color: var(--text-secondary); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .title-eyebrow { font-weight: 600; font-size: 30px; letter-spacing: 0.25em; color: var(--purple); text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .title-main { font-family: 'Bebas Neue', sans-serif; font-size: 124px; line-height: 0.9; color: var(--text-primary); letter-spacing: 0.02em; }
+  .title-main span { color: var(--purple); }
+
+  .header-divider { width: 100%; height: 2px; background: linear-gradient(90deg, var(--purple), var(--deep-purple), transparent); margin-top: 24px; margin-bottom: 16px; }
+
+  .date-range { font-size: 28px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 40px; }
+
+  /* STANDINGS TABLE */
+  .table-wrapper { flex: 1; display: flex; flex-direction: column; }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 40px 280px 58px 1fr 1fr 64px;
+    gap: 0 8px;
+    padding: 0 0 14px 0;
+    border-bottom: 2px solid var(--purple);
+    align-items: center;
+  }
+
+  .col-label { font-weight: 700; font-size: 20px; letter-spacing: 0.15em; color: var(--purple); text-transform: uppercase; text-align: center; }
+  .col-label.team-col { text-align: left; }
+
+  .team-row {
+    display: grid;
+    grid-template-columns: 40px 280px 58px 1fr 1fr 64px;
+    gap: 0 8px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--divider);
+    align-items: center;
+    position: relative;
+  }
+
+  .team-row.playoff-bubble::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0; right: 0;
+    height: 2px; background: var(--playoff-line);
+  }
+  .team-row.playoff-bubble .cutoff-label { display: flex; }
+  .cutoff-label {
+    display: none; position: absolute; bottom: -13px; right: 0;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.15em;
+    color: var(--purple); text-transform: uppercase; opacity: 0.7;
+    background: var(--bg); padding: 0 6px;
+  }
+
+  .rank { font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: var(--text-secondary); text-align: center; opacity: 0.5; }
+  .rank.top { opacity: 1; color: var(--purple); }
+
+  .team-info { display: flex; align-items: center; gap: 14px; }
+  .team-logo { width: 58px; height: 58px; object-fit: contain; filter: drop-shadow(0 1px 4px rgba(0,0,0,0.12)); }
+  .team-logo-placeholder {
+    width: 58px; height: 58px; border-radius: 50%;
+    background: rgba(94,23,235,0.08); border: 2px solid rgba(94,23,235,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--purple);
+  }
+  .team-name-full { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--text-primary); letter-spacing: 0.03em; }
+
+  .cell { font-family: 'Bebas Neue', sans-serif; font-size: 34px; text-align: center; color: var(--text-primary); letter-spacing: 0.02em; }
+  .cell.pts { font-size: 40px; color: var(--purple); font-weight: 900; }
+  .cell.record { font-size: 24px; color: var(--text-primary); letter-spacing: 0; }
+  .cell.gp { font-size: 32px; }
+
+  .team-row.eliminated .team-name-full,
+  .team-row.eliminated .cell { opacity: 0.8; }
+
   /* FOOTER */
-  .footer-note { font-size:18px; font-weight:600; letter-spacing:1px; color:rgba(0,0,0,0.22); text-align:center; margin-top:16px; }
-  .spacer { flex:1; }
-  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:32px; border-top:1.5px solid rgba(0,0,0,0.08); margin-top:24px; }
-  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
-  .pwhl-logo { height:34px; opacity:0.22; }
-  .footer-season { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.18); text-transform:uppercase; }
+  .footer-line { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--purple), transparent); margin-bottom: 24px; margin-top: 24px; opacity: 0.3; }
+  .footer { display: flex; align-items: center; justify-content: space-between; }
+  .footer-brand { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--text-secondary); letter-spacing: 0.1em; opacity: 0.4; }
+  .footer-handle { font-size: 22px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.4; }
 </style>
 </head>
 <body>
-<div class="top-bar"></div>
-<div class="bg"></div>
-<div class="slide">
-  <div class="header">
-    <div class="brand">BTN</div>
-    <div class="page-title-wrap">
-      <div class="page-title">Standings</div>
-      <div class="page-title-underline"></div>
+  <div class="top-bar"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+    <div class="brand-row">
+      <span class="brand-tag">ByTheNumbers</span>
+      <span class="season-tag">Season 8</span>
+    </div>
+
+    <div>
+      <span class="title-eyebrow">League</span>
+      <div class="title-main">STAND<span>INGS</span></div>
+    </div>
+
+    <div class="header-divider"></div>
+    <div class="date-range">Heading into {{ week_label }}</div>
+
+    <div class="table-wrapper">
+      <div class="table-header">
+        <div class="col-label">#</div>
+        <div class="col-label team-col">Team</div>
+        <div class="col-label">GP</div>
+        <div class="col-label">W-L-OT</div>
+        <div class="col-label">H / A</div>
+        <div class="col-label">PTS</div>
+      </div>
+
+      {% for team in standings %}
+      <div class="team-row {% if loop.index == 4 %}playoff-bubble{% endif %} {% if loop.index > 4 %}eliminated{% endif %}">
+        <div class="rank {% if loop.index <= 4 %}top{% endif %}">{{ loop.index }}</div>
+
+        <div class="team-info">
+          {% if team.logo %}
+            <img class="team-logo" src="{{ team.logo }}" alt="{{ team.name }}">
+          {% else %}
+            <div class="team-logo-placeholder">{{ team.abbr }}</div>
+          {% endif %}
+          <span class="team-name-full">{{ team.name }}</span>
+        </div>
+
+        <div class="cell gp">{{ team.gp }}</div>
+        <div class="cell record">{{ team.wins }}-{{ team.losses }}-{{ team.otl }}</div>
+        <div class="cell record">{{ team.home_record }} / {{ team.away_record }}</div>
+        <div class="cell pts">{{ team.points }}</div>
+
+        {% if loop.index == 4 %}
+        <div class="cutoff-label">Playoff Line</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <div class="footer-line"></div>
+      <div class="footer">
+        <span class="footer-brand">BTN</span>
+        <span class="footer-handle">#PWHL · @ByTheNumbers</span>
+      </div>
     </div>
   </div>
-  <div class="table-header">
-    <div class="col-hdr">#</div>
-    <div class="col-hdr left" style="padding-left:58px;">Team</div>
-    <div class="col-hdr">W</div>
-    <div class="col-hdr">L</div>
-    <div class="col-hdr">OT</div>
-    <div class="col-hdr">GP</div>
-    <div class="col-hdr">PTS</div>
-  </div>
-  {% for team in standings %}
-  {% if loop.index0 == 4 %}
-  <div class="cutoff-label">
-    <div class="cutoff-line"></div>
-    <div class="cutoff-text">Playoff Line</div>
-    <div class="cutoff-line"></div>
-  </div>
-  {% endif %}
-  <div class="standing-row {{ team.status }}">
-    <div class="rank-num">{{ loop.index }}</div>
-    <div class="team-cell">
-      {% if team.logo %}<img class="team-logo-sm" src="{{ team.logo }}" alt="">
-      {% else %}<div class="team-logo-sm-placeholder"></div>{% endif %}
-      <div class="team-name-sm">{{ team.name }}</div>
-    </div>
-    <div class="stat-cell">{{ team.wins }}</div>
-    <div class="stat-cell">{{ team.losses }}</div>
-    <div class="stat-cell">{{ team.ot_losses }}</div>
-    <div class="stat-cell">{{ team.gp }}</div>
-    <div class="stat-cell pts">{{ team.points }}</div>
-  </div>
-  {% endfor %}
-  <div class="footer-note">Heading into the week</div>
-  <div class="spacer"></div>
-  <div class="footer">
-    <div class="footer-brand">BY THE NUMBERS</div>
-    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
-    <div class="footer-season">Season 8</div>
-  </div>
-</div>
 </body>
 </html>
