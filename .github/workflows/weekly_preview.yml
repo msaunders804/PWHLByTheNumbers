@@ -24,23 +24,17 @@ jobs:
                       google-api-python-client google-auth
           playwright install chromium --with-deps
 
-      - name: Render weekly preview
+      - name: Clear output directory
+        run: rm -f output/preview_*.png
+
+      - name: Render and upload weekly preview
         env:
           PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
           GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: |
-          python render_weekly_preview.py
-          python -c "
-          from pathlib import Path
-          from drive_upload import upload_files
-          slides = sorted(Path('output').glob('preview_*.png'))
-          if slides:
-              links = upload_files(slides, '${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}')
-              print('Uploaded:', links)
-          "
+        run: python render_weekly_preview.py
 
       - name: Upload as artifact
         if: always()
