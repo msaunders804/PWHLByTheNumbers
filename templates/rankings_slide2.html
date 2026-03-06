@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body { width:1080px; height:1920px; background:#0a0a0a; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .photo-bg { position:absolute; inset:0; z-index:0; background:#111; }
+  .player-photo { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.75; }
+
+  .overlay-top    { position:absolute; top:0; left:0; right:0; height:380px; z-index:1; background:linear-gradient(to bottom,rgba(0,0,0,0.88) 0%,transparent 100%); }
+  .overlay-bottom { position:absolute; bottom:0; left:0; right:0; height:860px; z-index:1; background:linear-gradient(to top,rgba(0,0,0,0.98) 0%,rgba(0,0,0,0.75) 55%,transparent 100%); }
+  .overlay-purple { position:absolute; inset:0; z-index:1; background:linear-gradient(135deg,rgba(94,23,235,0.22) 0%,transparent 60%); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:64px 72px 60px; }
+
+  /* TOP */
+  .top-strip { display:flex; justify-content:space-between; align-items:center; }
+  .brand-tag { font-weight:600; font-size:26px; letter-spacing:0.2em; color:rgba(255,255,255,0.5); text-transform:uppercase; }
+  .hot-badge { display:flex; align-items:center; gap:12px; background:rgba(255,100,50,0.18); border:1.5px solid rgba(255,100,50,0.5); border-radius:100px; padding:10px 30px; }
+  .hot-badge-dot { width:10px; height:10px; border-radius:50%; background:#ff6432; }
+  .hot-badge-text { font-size:22px; font-weight:700; letter-spacing:4px; color:#ff9060; text-transform:uppercase; }
+
+  .spacer { flex:1; }
+
+  /* PLAYER IDENTITY */
+  .player-identity { margin-bottom:28px; }
+  .player-team-row { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
+  .team-logo { width:52px; height:52px; object-fit:contain; }
+  .team-logo-placeholder { width:52px; height:52px; border-radius:8px; background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.4); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:16px; color:#8c52ff; }
+  .team-name-tag { font-size:26px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+  .jersey-tag { font-size:26px; font-weight:700; letter-spacing:2px; color:rgba(140,82,255,0.85); }
+
+  .player-name { font-family:'Bebas Neue',sans-serif; font-size:136px; line-height:0.86; color:#fff; letter-spacing:0.02em; }
+  .player-pos { font-size:32px; font-weight:700; letter-spacing:7px; color:#8c52ff; text-transform:uppercase; margin-top:10px; }
+
+  /* DIVIDER */
+  .rule { width:100%; height:2px; background:linear-gradient(90deg,#5e17eb,rgba(140,82,255,0.2)); margin:28px 0; }
+
+  /* STREAK CALLOUT */
+  .streak-callout { display:flex; align-items:center; gap:24px; margin-bottom:36px; }
+  .streak-fire { font-size:64px; line-height:1; }
+  .streak-headline { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:0.9; color:#ff6432; letter-spacing:2px; }
+  .streak-sub { font-size:28px; font-weight:600; color:rgba(255,255,255,0.45); letter-spacing:2px; text-transform:uppercase; margin-top:6px; }
+
+  /* STATS */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:32px; }
+  .stat-card { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:18px; padding:28px 16px; text-align:center; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#5e17eb,#8c52ff); }
+  .stat-card.highlight { background:rgba(94,23,235,0.22); border-color:rgba(140,82,255,0.45); }
+  .stat-card.highlight::before { background:linear-gradient(90deg,#ff6432,#ff9240); }
+  .stat-val { font-family:'Bebas Neue',sans-serif; font-size:84px; line-height:1; color:#fff; }
+  .stat-val.accent { color:#8c52ff; }
+  .stat-val.fire { color:#ff6432; }
+  .stat-label { font-size:19px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.38); text-transform:uppercase; margin-top:6px; }
+
+  /* BLURB */
+  .blurb-box { background:rgba(255,255,255,0.06); border:1px solid rgba(140,82,255,0.3); border-radius:18px; padding:32px 36px; border-left:5px solid #8c52ff; }
+  .blurb-text { font-size:34px; font-weight:600; color:rgba(255,255,255,0.8); line-height:1.4; font-style:italic; }
+
+  /* FOOTER */
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:32px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.1); }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(255,255,255,0.2); }
+  .footer-handle { font-size:19px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.2); text-transform:uppercase; }
+  .pwhl-logo { height:30px; opacity:0.18; filter:invert(1); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+
+<div class="photo-bg">
+  {% if player_photo %}
+  <img class="player-photo" src="{{ player_photo }}" alt="{{ player_name }}">
+  {% endif %}
+</div>
+<div class="overlay-top"></div>
+<div class="overlay-bottom"></div>
+<div class="overlay-purple"></div>
+
+<div class="slide">
+  <div class="top-strip">
+    <div class="brand-tag">ByTheNumbers</div>
+    <div class="hot-badge">
+      <div class="hot-badge-dot"></div>
+      <div class="hot-badge-text">On Fire</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="player-identity">
+    <div class="player-team-row">
+      {% if team_logo %}
+        <img class="team-logo" src="{{ team_logo }}" alt="{{ team_code }}">
+      {% else %}
+        <div class="team-logo-placeholder">{{ team_code }}</div>
+      {% endif %}
+      <span class="team-name-tag">{{ team_name }}</span>
+      {% if jersey_number %}<span class="jersey-tag">#{{ jersey_number }}</span>{% endif %}
+    </div>
+    <div class="player-name">{{ player_name }}</div>
+    <div class="player-pos">{{ position }}</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="streak-callout">
+    <div class="streak-fire">🔥</div>
+    <div>
+      <div class="streak-headline">{{ last5_pts }} PTS IN LAST 5</div>
+      <div class="streak-sub">{{ last5_goals }}G · {{ last5_assists }}A · Hottest skater in the league</div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card highlight">
+      <div class="stat-val fire">{{ last5_pts }}</div>
+      <div class="stat-label">Last 5 Pts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val accent">{{ season_pts }}</div>
+      <div class="stat-label">Season Pts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ season_goals }}</div>
+      <div class="stat-label">Goals</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">{{ season_assists }}</div>
+      <div class="stat-label">Assists</div>
+    </div>
+  </div>
+
+  <div class="blurb-box">
+    <div class="blurb-text">{{ blurb }}</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+    <div class="footer-handle">#PWHL · @ByTheNumbers</div>
+  </div>
+</div>
+</body>
+</html>

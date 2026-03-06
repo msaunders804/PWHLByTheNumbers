@@ -86,15 +86,15 @@
       </div>
       {% for game in day.games %}
       <div class="game-row">
+        {% if game.away_logo %}<img class="team-logo" src="{{ game.away_logo }}" alt="">
+        {% else %}<div class="team-logo-placeholder">{{ game.away_team }}</div>{% endif %}
         <div class="matchup">
-          {% if game.away_logo %}<img class="team-logo" src="{{ game.away_logo }}" alt="">
-          {% else %}<div class="team-logo-placeholder">{{ game.away_team }}</div>{% endif %}
           <span class="team-name">{{ game.away_team }}</span>
           <span class="at-sign">@</span>
-          {% if game.home_logo %}<img class="team-logo" src="{{ game.home_logo }}" alt="">
-          {% else %}<div class="team-logo-placeholder">{{ game.home_team }}</div>{% endif %}
           <span class="team-name">{{ game.home_team }}</span>
         </div>
+        {% if game.home_logo %}<img class="team-logo" src="{{ game.home_logo }}" alt="">
+        {% else %}<div class="team-logo-placeholder">{{ game.home_team }}</div>{% endif %}
         <div class="game-meta">
           <div class="game-time">{{ game.time }}</div>
           {% if game.broadcast %}<div class="game-broadcast">{{ game.broadcast }}</div>{% endif %}

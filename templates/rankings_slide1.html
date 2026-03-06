@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --mid:#8c52ff; --bg:#ede8fb; --text:#0d0d0d; --muted:#666; }
+  body { width:1080px; height:1920px; background:var(--bg); font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .bg { position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 100% 0%,rgba(140,82,255,0.08) 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(94,23,235,0.06) 0%,transparent 50%),var(--bg); }
+  .slide { position:relative; z-index:10; height:100%; display:flex; flex-direction:column; padding:56px 64px 52px; }
+
+  .brand-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .brand-tag { font-weight:600; font-size:24px; letter-spacing:0.2em; color:var(--purple); text-transform:uppercase; }
+  .season-tag { font-size:22px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+  .title-eyebrow { font-weight:600; font-size:26px; letter-spacing:0.25em; color:var(--purple); text-transform:uppercase; display:block; margin-bottom:2px; }
+  .title-main { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:var(--text); letter-spacing:0.02em; }
+  .title-main span { color:var(--purple); }
+  .header-divider { width:100%; height:2px; background:linear-gradient(90deg,var(--purple),#8c52ff,transparent); margin-top:14px; margin-bottom:10px; }
+  .date-range { font-size:22px; font-weight:600; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:24px; }
+
+  /* CHART */
+  .chart-wrap { flex:1; position:relative; }
+  svg.scatter { width:100%; height:100%; }
+
+  /* LEGEND */
+  .legend { display:grid; grid-template-columns:1fr 1fr; gap:12px 32px; margin-top:20px; }
+  .legend-item { display:flex; align-items:center; gap:10px; }
+  .legend-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .legend-label { font-size:19px; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; }
+
+  /* FOOTER */
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:18px; border-top:1.5px solid rgba(0,0,0,0.08); margin-top:16px; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
+  .footer-note { font-size:15px; font-weight:600; letter-spacing:1px; color:rgba(0,0,0,0.18); font-style:italic; }
+  .pwhl-logo { height:26px; opacity:0.2; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg"></div>
+<div class="slide">
+
+  <div class="brand-row">
+    <span class="brand-tag">ByTheNumbers</span>
+    <span class="season-tag">Season 8</span>
+  </div>
+  <div>
+    <span class="title-eyebrow">Attack vs Defence</span>
+    <div class="title-main">TEAM <span>IDENTITY</span></div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="date-range">{{ week_label }} · Goals For vs Goals Against Per Game</div>
+
+  <div class="chart-wrap">
+    {{ chart_svg }}
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#5e17eb"></div><div class="legend-label">Elite — Score more, concede less</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f5a623"></div><div class="legend-label">Offensive — Score lots, leak goals</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2a9d3a"></div><div class="legend-label">Defensive — Grind out wins</div></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div><div class="legend-label">Struggling — Both ends failing</div></div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-note">Per-game averages · Season {{ season }}</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+  </div>
+</div>
+</body>
+</html>

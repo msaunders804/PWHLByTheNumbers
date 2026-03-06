@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --deep-purple:#4a0fd4; --text-primary:#0a0a0a; --text-secondary:#666; }
+  body { width:1080px; height:1920px; background:#ede8fb; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 85% 5%,rgba(94,23,235,0.14) 0%,transparent 50%), radial-gradient(ellipse at 5% 95%,rgba(94,23,235,0.10) 0%,transparent 50%), #ede8fb; }
+  .watermark { position:absolute; z-index:1; bottom:-60px; right:-40px; font-family:'Bebas Neue',sans-serif; font-size:500px; line-height:1; color:rgba(140,82,255,0.05); pointer-events:none; }
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 80px 72px; text-align:center; }
+
+  .brand { position:absolute; top:80px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(0,0,0,0.2); }
+  .badge { position:absolute; top:72px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.09); border:1.5px solid rgba(140,82,255,0.35); border-radius:100px; padding:10px 28px; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#5e17eb; text-transform:uppercase; }
+
+  .logo-mark { font-family:'Bebas Neue',sans-serif; font-size:56px; letter-spacing:6px; color:#8c52ff; margin-bottom:8px; }
+  .eyebrow { font-weight:600; font-size:28px; letter-spacing:7px; color:rgba(0,0,0,0.3); text-transform:uppercase; margin-bottom:8px; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:180px; line-height:0.85; color:#0d0d0d; }
+  .hero-title-accent { font-family:'Bebas Neue',sans-serif; font-size:180px; line-height:0.85; color:#8c52ff; margin-bottom:32px; }
+  .week-label { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:4px; color:rgba(0,0,0,0.25); margin-bottom:52px; }
+
+  .rule { width:180px; height:2px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:0 auto 52px; }
+
+  .teaser-grid { display:flex; flex-direction:column; gap:0; width:100%; max-width:860px; background:#f7f4ff; border:1.5px solid rgba(140,82,255,0.15); border-radius:20px; overflow:hidden; box-shadow:0 4px 28px rgba(0,0,0,0.07); margin-bottom:64px; }
+  .teaser-row { display:flex; align-items:center; padding:28px 40px; border-bottom:1px solid rgba(140,82,255,0.1); gap:20px; position:relative; }
+  .teaser-row:last-child { border-bottom:none; }
+  .teaser-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(to bottom,#5e17eb,#8c52ff); }
+  .teaser-icon { font-size:32px; width:48px; text-align:center; flex-shrink:0; }
+  .teaser-content { flex:1; text-align:left; }
+  .teaser-label { font-size:19px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.3); text-transform:uppercase; margin-bottom:4px; }
+  .teaser-value { font-family:'Bebas Neue',sans-serif; font-size:52px; color:#0d0d0d; letter-spacing:2px; line-height:1; }
+  .teaser-value em { color:#8c52ff; font-style:normal; }
+
+  .swipe-prompt { display:flex; flex-direction:column; align-items:center; gap:8px; color:rgba(0,0,0,0.2); }
+  .swipe-arrow { font-size:24px; }
+  .swipe-text { font-size:15px; font-weight:700; letter-spacing:4px; text-transform:uppercase; }
+
+  .footer { position:absolute; bottom:72px; left:80px; right:80px; display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid rgba(0,0,0,0.08); padding-top:28px; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
+  .footer-season { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.18); text-transform:uppercase; }
+  .pwhl-logo { height:34px; opacity:0.22; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg"></div>
+<div class="watermark">BTN</div>
+<div class="slide">
+  <div class="brand">BTN</div>
+  <div class="badge"><div class="badge-dot"></div><div class="badge-text">Power Rankings</div></div>
+
+  <div class="logo-mark">BTN</div>
+  <div class="eyebrow">PWHL</div>
+  <div class="hero-title">POWER</div>
+  <div class="hero-title-accent">RANKINGS</div>
+  <div class="week-label">{{ week_label }}</div>
+
+  <div class="rule"></div>
+
+  <div class="teaser-grid">
+    <div class="teaser-row">
+      <div class="teaser-icon">🔥</div>
+      <div class="teaser-content">
+        <div class="teaser-label">#1 This Week</div>
+        <div class="teaser-value"><em>{{ top_team }}</em></div>
+      </div>
+    </div>
+    <div class="teaser-row">
+      <div class="teaser-icon">📈</div>
+      <div class="teaser-content">
+        <div class="teaser-label">Hottest Streak</div>
+        <div class="teaser-value"><em>{{ hot_team }}</em> &nbsp;{{ hot_streak }}</div>
+      </div>
+    </div>
+    <div class="teaser-row">
+      <div class="teaser-icon">📉</div>
+      <div class="teaser-content">
+        <div class="teaser-label">On the Slide</div>
+        <div class="teaser-value"><em>{{ cold_team }}</em> &nbsp;{{ cold_streak }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swipe-prompt">
+    <div class="swipe-arrow">→</div>
+    <div class="swipe-text">Swipe for the full rankings</div>
+  </div>
+</div>
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+  <div class="footer-season">Season 8</div>
+</div>
+</body>
+</html>

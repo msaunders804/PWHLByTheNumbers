@@ -666,7 +666,7 @@ def get_spotlight_player():
             "shots_rank":    _rank(shots,   "s.shots"),
             "toi":           toi_str,
             "toi_rank":      toi_rank_str,
-            "player_photo":  _official_photo_uri(pid),
+            "player_photo":  _official_photo_uri(pid, candidates.player_name),
             "pwhl_logo":     _pwhl_logo_uri(),
             "season_label":  f"Season {SEASON_ID} • {goals + assists} PTS",
         }
@@ -675,18 +675,30 @@ def get_spotlight_player():
         session.close()
 
 
-def _official_photo_uri(player_id: int) -> str | None:
+def _official_photo_uri(player_id: int, player_name: str = "") -> str | None:
     """
-    Returns player photo URL. Uses leaguestat CDN (always available),
-    falling back to local assets if present.
+    Photo resolution order:
+      1. assets/players/{first}_{last}.{ext}   (candid/custom — preferred)
+      2. assets/players/official/{id}.{ext}    (downloaded official headshot)
+      3. CDN URL https://assets.leaguestat.com/pwhl/240x240/{id}.jpg
     """
-    # Local file takes priority if it exists
-    base = Path(__file__).parent / "assets" / "players" / "official"
+    # 1. Candid by name (first_last slug)
+    if player_name:
+        slug = player_name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
+        candid_dir = _THIS_DIR / "assets" / "players"
+        for ext in ["jpg", "jpeg", "png", "webp"]:
+            p = candid_dir / f"{slug}.{ext}"
+            if p.exists():
+                return _file_to_data_uri(p)
+
+    # 2. Official headshot by player_id
+    official_dir = _THIS_DIR / "assets" / "players" / "official"
     for ext in ["jpg", "jpeg", "png", "webp"]:
-        p = base / f"{player_id}.{ext}"
+        p = official_dir / f"{player_id}.{ext}"
         if p.exists():
-            return p.resolve().as_uri()
-    # CDN fallback — leaguestat hosts player images at a predictable URL
+            return _file_to_data_uri(p)
+
+    # 3. CDN fallback
     return f"https://assets.leaguestat.com/pwhl/240x240/{player_id}.jpg"
 
 
@@ -1084,5 +1096,308 @@ def get_preview_standings():
                 "away_record":  f"{int(r.aw or 0)}-{int(r.al or 0)}-{int(r.aotl or 0)}",
             })
         return result
+    finally:
+        session.close()
+
+
+# ── Power Rankings ──────────────────────────────────────────────────────────────
+
+def get_power_rankings() -> list[dict]:
+    """
+    Compute power rankings weighted toward current form (win streak).
+
+    Score = (streak_points * 3) + (ppg * 20) + (last5_gd * 1.5)
+
+    streak_points:
+      positive streak  → +N  (win streak)
+      negative streak  → -N  (loss streak)
+    ppg:    season points per game
+    last5_gd: goal differential in last 5 games
+    """
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT
+                t.team_id, t.team_code,
+                COUNT(g.game_id)                                       AS gp,
+                SUM(CASE
+                    WHEN (g.home_team_id=t.team_id AND g.home_score>g.away_score) OR
+                         (g.away_team_id=t.team_id AND g.away_score>g.home_score) THEN 2
+                    WHEN g.result_type IN ('OT','SO') AND (
+                         (g.home_team_id=t.team_id AND g.home_score<g.away_score) OR
+                         (g.away_team_id=t.team_id AND g.away_score<g.home_score)) THEN 1
+                    ELSE 0 END)                                        AS pts,
+                SUM(CASE
+                    WHEN g.home_team_id=t.team_id THEN g.home_score - g.away_score
+                    ELSE g.away_score - g.home_score END)              AS season_gd
+            FROM teams t
+            LEFT JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
+                              AND g.season_id=:sid AND g.game_status='final'
+            WHERE t.season_id=:sid
+            GROUP BY t.team_id, t.team_code
+        """), {"sid": SEASON_ID}).fetchall()
+
+        # Last 5 games per team — computed in Python to avoid complex SQL
+        last5_map = {tid: {"last5_gd": 0, "last5_wins": 0} for tid in [r.team_id for r in rows]}
+
+        # Win/loss streak per team
+        streak_map = {}
+        all_games = session.execute(text("""
+            SELECT g.game_id, g.date,
+                   g.home_team_id, g.away_team_id,
+                   g.home_score, g.away_score, g.result_type
+            FROM games g
+            WHERE g.season_id=:sid AND g.game_status='final'
+            ORDER BY g.date DESC, g.game_id DESC
+        """), {"sid": SEASON_ID}).fetchall()
+
+        team_ids = [r.team_id for r in rows]
+        for tid in team_ids:
+            streak = 0
+            team_games = [g for g in all_games
+                          if g.home_team_id == tid or g.away_team_id == tid]
+            # Last 5 goal differential
+            for g in team_games[:5]:
+                won = ((g.home_team_id == tid and g.home_score > g.away_score) or
+                       (g.away_team_id == tid and g.away_score > g.home_score))
+                gd = (g.home_score - g.away_score) if g.home_team_id == tid else (g.away_score - g.home_score)
+                last5_map[tid]["last5_gd"]   += gd
+                last5_map[tid]["last5_wins"]  += 1 if won else 0
+            # Streak
+            for g in team_games:
+                won = ((g.home_team_id == tid and g.home_score > g.away_score) or
+                       (g.away_team_id == tid and g.away_score > g.home_score))
+                if streak == 0:
+                    streak = 1 if won else -1
+                elif (streak > 0 and won) or (streak < 0 and not won):
+                    streak += (1 if won else -1)
+                else:
+                    break
+            streak_map[tid] = streak
+
+        # Build ranked list
+        rankings = []
+        for r in rows:
+            gp  = int(r.gp or 0)
+            pts = int(r.pts or 0)
+            ppg = round(pts / gp, 3) if gp else 0
+            l5  = last5_map.get(r.team_id, {"last5_gd": 0, "last5_wins": 0})
+            streak = streak_map.get(r.team_id, 0)
+
+            score = (streak * 3) + (ppg * 20) + (l5["last5_gd"] * 1.5)
+
+            rankings.append({
+                "team_code":   r.team_code,
+                "logo":        _logo_uri(r.team_code),
+                "gp":          gp,
+                "pts":         pts,
+                "ppg":         ppg,
+                "season_gd":   int(r.season_gd or 0),
+                "last5_gd":    l5["last5_gd"],
+                "last5_wins":  l5["last5_wins"],
+                "streak":      streak,
+                "score":       score,
+            })
+
+        rankings.sort(key=lambda x: x["score"], reverse=True)
+
+        # Assign ranks and movement labels
+        for i, team in enumerate(rankings):
+            team["rank"] = i + 1
+            s = team["streak"]
+            team["streak_label"] = f"W{s}" if s > 0 else (f"L{abs(s)}" if s < 0 else "—")
+            team["streak_hot"]   = s >= 3   # on fire
+            team["streak_cold"]  = s <= -3  # struggling
+
+        return rankings
+
+    finally:
+        session.close()
+
+
+# ── Hot Player (for Power Rankings slide 3) ─────────────────────────────────────
+
+def get_hot_player() -> dict | None:
+    """
+    Finds the hottest skater right now: most points in last 5 games.
+    Returns full player card with season stats, last-5 stats, and photo.
+    """
+    session = Session()
+    try:
+        # Get last 5 game IDs per player and sum their points
+        hot = session.execute(text("""
+            SELECT
+                s.player_id,
+                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                t.team_code,
+                t.team_name,
+                p.position,
+                p.jersey_number,
+                SUM(s.goals + s.assists)               AS last5_pts,
+                SUM(s.goals)                            AS last5_goals,
+                SUM(s.assists)                          AS last5_assists
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g ON g.game_id = s.game_id
+            JOIN teams t ON t.team_id = s.team_id AND t.season_id = :sid
+            WHERE g.season_id = :sid
+              AND g.game_status = 'final'
+              AND (p.position IS NULL OR p.position != 'G')
+              AND g.game_id IN (
+                  SELECT game_id FROM (
+                      SELECT gs2.game_id,
+                             ROW_NUMBER() OVER (
+                                 PARTITION BY gs2.player_id
+                                 ORDER BY g2.date DESC, g2.game_id DESC
+                             ) AS rn
+                      FROM player_game_stats gs2
+                      JOIN games g2 ON g2.game_id = gs2.game_id
+                      WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                        AND gs2.player_id = s.player_id
+                  ) recent
+                  WHERE rn <= 5
+              )
+            GROUP BY s.player_id, player_name, t.team_code, t.team_name,
+                     p.position, p.jersey_number
+            ORDER BY last5_pts DESC, last5_goals DESC
+            LIMIT 1
+        """), {"sid": SEASON_ID}).fetchone()
+
+        if not hot:
+            return None
+
+        pid = hot.player_id
+
+        # Full season stats
+        season = session.execute(text("""
+            SELECT SUM(s.goals)   AS goals,
+                   SUM(s.assists) AS assists,
+                   SUM(s.shots)   AS shots,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.player_id = :pid AND g.season_id = :sid
+              AND g.game_status = 'final'
+        """), {"pid": pid, "sid": SEASON_ID}).fetchone()
+
+        goals   = int(season.goals or 0)
+        assists = int(season.assists or 0)
+        gp      = int(season.gp or 1)
+
+        # League rank for points
+        pts_rank = session.execute(text("""
+            SELECT COUNT(*) + 1 AS rnk
+            FROM (
+                SELECT player_id, SUM(goals + assists) AS val
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                GROUP BY player_id
+            ) ranked
+            WHERE val > :v
+        """), {"sid": SEASON_ID, "v": goals + assists}).fetchone()
+
+        # avg TOI
+        toi_row = session.execute(text(
+            "SELECT avg_toi_seconds FROM players WHERE player_id = :pid"
+        ), {"pid": pid}).fetchone()
+        avg_toi_sec = int(toi_row.avg_toi_seconds) if toi_row and toi_row.avg_toi_seconds else None
+        toi_str = f"{avg_toi_sec // 60}:{avg_toi_sec % 60:02d}" if avg_toi_sec else "—"
+
+        return {
+            "player_id":      pid,
+            "player_name":    hot.player_name,
+            "team_code":      hot.team_code,
+            "team_name":      hot.team_name,
+            "team_logo":      _logo_uri(hot.team_code),
+            "position":       hot.position or "F",
+            "jersey_number":  hot.jersey_number or "",
+            "player_photo":   _official_photo_uri(pid, hot.player_name),
+            # Last 5
+            "last5_pts":      int(hot.last5_pts or 0),
+            "last5_goals":    int(hot.last5_goals or 0),
+            "last5_assists":  int(hot.last5_assists or 0),
+            # Season
+            "season_goals":   goals,
+            "season_assists": assists,
+            "season_pts":     goals + assists,
+            "season_gp":      gp,
+            "pts_rank":       int(pts_rank.rnk) if pts_rank else "—",
+            "toi":            toi_str,
+        }
+
+    finally:
+        session.close()
+
+
+# ── Offensive vs Defensive Breakdown ───────────────────────────────────────────
+
+def get_offense_defense_breakdown() -> list[dict]:
+    """
+    Returns GF/GA per game for each team, plus archetype label.
+    Quadrants:
+      High GF + Low GA  → ELITE
+      High GF + High GA → OFFENSIVE CHAOS
+      Low GF  + Low GA  → DEFENSIVE SHELL
+      Low GF  + High GA → REBUILDING
+    """
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT
+                t.team_id, t.team_code,
+                COUNT(g.game_id) AS gp,
+                SUM(CASE WHEN g.home_team_id=t.team_id THEN g.home_score
+                         ELSE g.away_score END) AS gf,
+                SUM(CASE WHEN g.home_team_id=t.team_id THEN g.away_score
+                         ELSE g.home_score END) AS ga
+            FROM teams t
+            JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
+                         AND g.season_id=:sid AND g.game_status='final'
+            WHERE t.season_id=:sid
+            GROUP BY t.team_id, t.team_code
+        """), {"sid": SEASON_ID}).fetchall()
+
+        teams = []
+        for r in rows:
+            gp = int(r.gp or 1)
+            gf = int(r.gf or 0)
+            ga = int(r.ga or 0)
+            gfpg = round(gf / gp, 2)
+            gapg = round(ga / gp, 2)
+            teams.append({
+                "team_code": r.team_code,
+                "logo":      _logo_uri(r.team_code),
+                "gp":        gp,
+                "gf":        gf,
+                "ga":        ga,
+                "gfpg":      gfpg,
+                "gapg":      gapg,
+            })
+
+        # League averages for quadrant lines
+        avg_gfpg = round(sum(t["gfpg"] for t in teams) / len(teams), 2)
+        avg_gapg = round(sum(t["gapg"] for t in teams) / len(teams), 2)
+
+        archetypes = {
+            (True,  True):  ("ELITE",            "#5e17eb"),
+            (True,  False): ("OFFENSIVE",         "#f5a623"),
+            (False, True):  ("DEFENSIVE",         "#2a9d3a"),
+            (False, False): ("STRUGGLING",        "#c0392b"),
+        }
+
+        for t in teams:
+            high_gf = t["gfpg"] >= avg_gfpg
+            low_ga  = t["gapg"] <= avg_gapg
+            label, color = archetypes[(high_gf, low_ga)]
+            t["archetype"]       = label
+            t["archetype_color"] = color
+
+        return {
+            "teams":    teams,
+            "avg_gfpg": avg_gfpg,
+            "avg_gapg": avg_gapg,
+        }
+
     finally:
         session.close()
