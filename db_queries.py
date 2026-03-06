@@ -600,29 +600,32 @@ def get_spotlight_player():
 
 def _official_photo_uri(player_id: int, player_name: str = "") -> str | None:
     """
-    Photo resolution order:
-      1. assets/players/{first}_{last}.{ext}   (candid/custom — preferred)
-      2. assets/players/official/{id}.{ext}    (downloaded official headshot)
-      3. CDN URL https://assets.leaguestat.com/pwhl/240x240/{id}.jpg
+    Returns the official headshot for spotlight use.
+    Checks local assets/players/official/{id} first, then CDN.
+    Does NOT check candid folder — use _candid_photo_uri() for that.
     """
-    # 1. Candid by name (first_last slug)
-    if player_name:
-        slug = player_name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
-        candid_dir = _THIS_DIR / "assets" / "players"
-        for ext in ["jpg", "jpeg", "png", "webp"]:
-            p = candid_dir / f"{slug}.{ext}"
-            if p.exists():
-                return _file_to_data_uri(p)
-
-    # 2. Official headshot by player_id
     official_dir = _THIS_DIR / "assets" / "players" / "official"
     for ext in ["jpg", "jpeg", "png", "webp"]:
         p = official_dir / f"{player_id}.{ext}"
         if p.exists():
-            return _file_to_data_uri(p)
+            return p.resolve().as_uri()
 
-    # 3. CDN fallback
     return f"https://assets.leaguestat.com/pwhl/240x240/{player_id}.jpg"
+
+
+def _candid_photo_uri(player_name: str) -> str | None:
+    """
+    Looks for a candid photo in assets/players/{first}_{last}.{ext}.
+    Returns file:// URI if found, None otherwise.
+    Used by power rankings and recap — NOT spotlight.
+    """
+    slug = player_name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
+    candid_dir = _THIS_DIR / "assets" / "players"
+    for ext in ["jpg", "jpeg", "png", "webp"]:
+        p = candid_dir / f"{slug}.{ext}"
+        if p.exists():
+            return p.resolve().as_uri()
+    return None
 
 
 def _build_spotlight_dict(candidate, session) -> dict:
@@ -1380,7 +1383,7 @@ def get_hot_player() -> dict | None:
             "team_logo":      _logo_uri(hot.team_code),
             "position":       hot.position or "F",
             "jersey_number":  hot.jersey_number or "",
-            "player_photo":   _official_photo_uri(pid, hot.player_name),
+            "player_photo":   _candid_photo_uri(hot.player_name) or f"https://assets.leaguestat.com/pwhl/240x240/{pid}.jpg",
             # Last 5
             "last5_pts":      int(hot.last5_pts or 0),
             "last5_goals":    int(hot.last5_goals or 0),

@@ -418,12 +418,18 @@ def render_slides(data: dict) -> list:
                 ctx["chart_svg"] = _build_scatter_svg(data["breakdown"])
             if label == "hotplayer" and data.get("hot_player"):
                 ctx.update(data["hot_player"])
-            html = template.render(**ctx)
+            html     = template.render(**ctx)
             out_path = OUTPUT_DIR / f"rankings_{label}_{timestamp}.png"
-            page     = browser.new_page(viewport={"width": 1080, "height": 1920})
-            page.set_content(html, wait_until="networkidle")
+
+            tmp_html = OUTPUT_DIR / f"_render_{tmpl_name}"
+            tmp_html.write_text(html, encoding="utf-8")
+
+            page = browser.new_page(viewport={"width": 1080, "height": 1920})
+            page.goto(f"file://{tmp_html.resolve()}")
+            page.wait_for_timeout(800)
             page.screenshot(path=str(out_path), clip={"x": 0, "y": 0, "width": 1080, "height": 1920})
             page.close()
+            tmp_html.unlink(missing_ok=True)
             print(f"  ✅ {out_path.name}")
             outputs.append(out_path)
         browser.close()

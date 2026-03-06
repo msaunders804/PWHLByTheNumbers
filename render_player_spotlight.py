@@ -219,10 +219,13 @@ def render_spotlight(data: dict, output_path: Path) -> Path:
     template_name = "goalie_spotlight.html" if data.get("_is_goalie") else "player_spotlight.html"
     template      = env.get_template(template_name)
     html     = template.render(**data)
+    tmp_html = OUTPUT_DIR / "_render_spotlight.html"
+    tmp_html.write_text(html, encoding="utf-8")
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page    = browser.new_page(viewport={"width": 1080, "height": 1920})
-        page.set_content(html, wait_until="networkidle")
+        page.goto(f"file://{tmp_html.resolve()}")
+        page.wait_for_timeout(800)
         page.screenshot(path=str(output_path), clip={"x": 0, "y": 0, "width": 1080, "height": 1920})
         browser.close()
     print(f"  ✅ {output_path.name}")
