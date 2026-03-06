@@ -585,91 +585,14 @@ def get_spotlight_player():
             session.commit()
             return get_spotlight_player()
 
-        pid = candidates.player_id
-
-        # Season stats
-        stats = session.execute(text("""
-            SELECT SUM(s.goals)   AS goals,
-                   SUM(s.assists) AS assists,
-                   SUM(s.shots)   AS shots,
-                   COUNT(s.game_id) AS gp
-            FROM player_game_stats s
-            JOIN games g ON g.game_id = s.game_id
-            WHERE s.player_id = :pid
-              AND g.season_id = :sid
-              AND g.game_status = 'final'
-        """), {"pid": pid, "sid": SEASON_ID}).fetchone()
-
-        # League ranks
-        def _rank(metric, col):
-            # col uses s2 alias to match the subquery table alias
-            col_fixed = col.replace("s.", "s2.")
-            row = session.execute(text(f"""
-                SELECT COUNT(*) + 1 AS rnk
-                FROM (
-                    SELECT s2.player_id, SUM({col_fixed}) AS val
-                    FROM player_game_stats s2
-                    JOIN games g2 ON g2.game_id = s2.game_id
-                    WHERE g2.season_id = :sid AND g2.game_status = 'final'
-                    GROUP BY s2.player_id
-                ) ranked
-                WHERE val > :metric
-            """), {"sid": SEASON_ID, "metric": metric or 0}).fetchone()
-            return f"#{row.rnk} in league"
-
-        goals   = int(stats.goals or 0)
-        assists = int(stats.assists or 0)
-        points  = goals + assists
-        shots   = int(stats.shots or 0)
-        gp      = int(stats.gp or 1)
-
-        # avg TOI from players table (pre-computed by load_game/add_toi.py)
-        toi_row = session.execute(text("""
-            SELECT avg_toi_seconds FROM players WHERE player_id = :pid
-        """), {"pid": pid}).fetchone()
-        avg_toi_sec = int(toi_row.avg_toi_seconds) if toi_row and toi_row.avg_toi_seconds else None
-        toi_str = f"{avg_toi_sec // 60}:{avg_toi_sec % 60:02d}" if avg_toi_sec else "—"
-
-        # TOI rank (only if we have data)
-        if avg_toi_sec:
-            toi_rank_row = session.execute(text("""
-                SELECT COUNT(*) + 1 AS rnk
-                FROM players
-                WHERE avg_toi_seconds > :val AND avg_toi_seconds IS NOT NULL
-            """), {"val": avg_toi_sec}).fetchone()
-            toi_rank_str = f"#{toi_rank_row.rnk} in league"
-        else:
-            toi_rank_str = "—"
-
         # Record as featured
         session.execute(text("""
             INSERT IGNORE INTO featured_players (player_id, featured_date)
             VALUES (:pid, CURDATE())
-        """), {"pid": pid})
+        """), {"pid": candidates.player_id})
         session.commit()
 
-        return {
-            "player_id":     pid,
-            "player_name":   candidates.player_name,
-            "player_team":   candidates.team_name,
-            "team_logo":     _logo_uri(candidates.team_code),
-            "position":      candidates.position or "F",
-            "jersey_number": candidates.jersey_number or "—",
-            "nationality":   candidates.nationality or "—",
-            "goals":         goals,
-            "assists":       assists,
-            "points":        points,
-            "shots":         shots,
-            "goals_rank":    _rank(goals,   "s.goals"),
-            "assists_rank":  _rank(assists, "s.assists"),
-            "points_rank":   _rank(points,  "s.goals + s.assists"),
-            "shots_rank":    _rank(shots,   "s.shots"),
-            "toi":           toi_str,
-            "toi_rank":      toi_rank_str,
-            "player_photo":  _official_photo_uri(pid, candidates.player_name),
-            "pwhl_logo":     _pwhl_logo_uri(),
-            "season_label":  f"Season {SEASON_ID} • {goals + assists} PTS",
-        }
+        return _build_spotlight_dict(candidates, session)
 
     finally:
         session.close()
@@ -700,6 +623,151 @@ def _official_photo_uri(player_id: int, player_name: str = "") -> str | None:
 
     # 3. CDN fallback
     return f"https://assets.leaguestat.com/pwhl/240x240/{player_id}.jpg"
+
+
+def _build_spotlight_dict(candidate, session) -> dict:
+    """Shared stat builder used by all get_spotlight_player* functions."""
+    pid = candidate.player_id
+
+    stats = session.execute(text("""
+        SELECT SUM(s.goals)   AS goals,
+               SUM(s.assists) AS assists,
+               SUM(s.shots)   AS shots,
+               COUNT(s.game_id) AS gp
+        FROM player_game_stats s
+        JOIN games g ON g.game_id = s.game_id
+        WHERE s.player_id = :pid
+          AND g.season_id = :sid
+          AND g.game_status = 'final'
+    """), {"pid": pid, "sid": SEASON_ID}).fetchone()
+
+    def _rank(metric, col):
+        col_fixed = col.replace("s.", "s2.")
+        row = session.execute(text(f"""
+            SELECT COUNT(*) + 1 AS rnk
+            FROM (
+                SELECT s2.player_id, SUM({col_fixed}) AS val
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid AND g2.game_status = 'final'
+                GROUP BY s2.player_id
+            ) ranked
+            WHERE val > :metric
+        """), {"sid": SEASON_ID, "metric": metric or 0}).fetchone()
+        return f"#{row.rnk} in league"
+
+    goals   = int(stats.goals or 0)
+    assists = int(stats.assists or 0)
+    points  = goals + assists
+    shots   = int(stats.shots or 0)
+    gp      = int(stats.gp or 1)
+
+    toi_row = session.execute(text(
+        "SELECT avg_toi_seconds FROM players WHERE player_id = :pid"
+    ), {"pid": pid}).fetchone()
+    avg_toi_sec = int(toi_row.avg_toi_seconds) if toi_row and toi_row.avg_toi_seconds else None
+    toi_str = f"{avg_toi_sec // 60}:{avg_toi_sec % 60:02d}" if avg_toi_sec else "—"
+
+    if avg_toi_sec:
+        toi_rank_row = session.execute(text("""
+            SELECT COUNT(*) + 1 AS rnk
+            FROM players
+            WHERE avg_toi_seconds > :val AND avg_toi_seconds IS NOT NULL
+        """), {"val": avg_toi_sec}).fetchone()
+        toi_rank_str = f"#{toi_rank_row.rnk} in league"
+    else:
+        toi_rank_str = "—"
+
+    return {
+        "player_id":     pid,
+        "player_name":   candidate.player_name,
+        "player_team":   candidate.team_name,
+        "team_logo":     _logo_uri(candidate.team_code),
+        "position":      candidate.position or "F",
+        "jersey_number": candidate.jersey_number or "—",
+        "nationality":   candidate.nationality or "—",
+        "goals":         goals,
+        "assists":       assists,
+        "points":        points,
+        "shots":         shots,
+        "goals_rank":    _rank(goals,   "s.goals"),
+        "assists_rank":  _rank(assists, "s.assists"),
+        "points_rank":   _rank(points,  "s.goals + s.assists"),
+        "shots_rank":    _rank(shots,   "s.shots"),
+        "toi":           toi_str,
+        "toi_rank":      toi_rank_str,
+        "player_photo":  _official_photo_uri(pid, candidate.player_name),
+        "pwhl_logo":     _pwhl_logo_uri(),
+        "season_label":  f"Season {SEASON_ID} • {points} PTS",
+    }
+
+
+def get_spotlight_player_by_id(player_id: int) -> dict | None:
+    """
+    Fetch spotlight data for a specific player by ID.
+    Bypasses the random selection and featured_players rotation.
+    """
+    session = Session()
+    try:
+        candidate = session.execute(text("""
+            SELECT p.player_id,
+                   CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                   t.team_name, t.team_code,
+                   p.position, p.jersey_number, p.nationality
+            FROM players p
+            JOIN (
+                SELECT s2.player_id, s2.team_id
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid
+                GROUP BY s2.player_id, s2.team_id
+            ) latest ON latest.player_id = p.player_id
+            JOIN teams t ON t.team_id = latest.team_id AND t.season_id = :sid
+            WHERE p.player_id = :pid
+            LIMIT 1
+        """), {"sid": SEASON_ID, "pid": player_id}).fetchone()
+
+        if not candidate:
+            return None
+
+        # Reuse the same stat-building logic
+        return _build_spotlight_dict(candidate, session)
+    finally:
+        session.close()
+
+
+def get_spotlight_player_by_name(name: str) -> dict | None:
+    """
+    Fetch spotlight data for a specific player by partial name match.
+    Case-insensitive. Returns the closest match.
+    """
+    session = Session()
+    try:
+        candidate = session.execute(text("""
+            SELECT p.player_id,
+                   CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                   t.team_name, t.team_code,
+                   p.position, p.jersey_number, p.nationality
+            FROM players p
+            JOIN (
+                SELECT s2.player_id, s2.team_id
+                FROM player_game_stats s2
+                JOIN games g2 ON g2.game_id = s2.game_id
+                WHERE g2.season_id = :sid
+                GROUP BY s2.player_id, s2.team_id
+            ) latest ON latest.player_id = p.player_id
+            JOIN teams t ON t.team_id = latest.team_id AND t.season_id = :sid
+            WHERE CONCAT(p.first_name, ' ', p.last_name) LIKE :name
+            ORDER BY p.last_name
+            LIMIT 1
+        """), {"sid": SEASON_ID, "name": f"%{name}%"}).fetchone()
+
+        if not candidate:
+            return None
+
+        return _build_spotlight_dict(candidate, session)
+    finally:
+        session.close()
 
 
 def get_spotlight_goalie(player_id: int, session) -> dict:

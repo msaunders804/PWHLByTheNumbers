@@ -58,29 +58,60 @@ def _rank_num(rank_str: str) -> str:
     return rank_str.split(" ")[0] if rank_str else "—"
 
 def generate_fun_fact(player_name, team, nationality, goals, assists, points) -> str:
+    """
+    Generates a stats-grounded fun fact. Strictly prohibits biographical
+    claims (college, hometown, etc.) that Claude cannot verify — those
+    require a separate web search workflow outside this inline call.
+    Focuses on what the numbers actually show this season.
+    """
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return f"One of {team}'s key contributors this season with {points} points."
+
     try:
+        system = (
+            "You write short, punchy player facts for BTN, a PWHL analytics account. "
+            "You may ONLY reference the stats provided — goals, assists, points, nationality. "
+            "Do NOT include college, hometown, draft history, or any biographical detail "
+            "not explicitly given to you. If you are tempted to add background, don't. "
+            "Focus entirely on what the numbers show: scoring pace, consistency, impact."
+        )
         prompt = (
-            f"Generate one short, interesting fun fact about PWHL player {player_name} "
-            f"who plays for {team} and is from {nationality}. "
-            f"This season she has {goals} goals, {assists} assists, and {points} points. "
-            f"Focus on her background, career journey, or something unique about her. "
-            f"Keep it to 1-2 sentences, conversational, no emojis, no quotes. "
-            f"Do not start with her name."
+            f"Write one engaging fact about {player_name} ({team}, {nationality}). "
+            f"Season stats: {goals}G, {assists}A, {points}PTS. "
+            f"1-2 sentences max. Conversational, no emojis, no quotes. "
+            f"Do not start with her name. Only reference the stats above."
         )
         payload = json.dumps({
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 150,
+            "system": system,
             "messages": [{"role": "user", "content": prompt}]
         }).encode()
+
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=payload,
-            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": os.environ.get("ANTHROPIC_API_KEY", "")},
+            headers={
+                "Content-Type": "application/json",
+                "anthropic-version": "2023-06-01",
+                "x-api-key": api_key,
+            },
             method="POST"
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=20) as resp:
             data = json.loads(resp.read())
-            return data["content"][0]["text"].strip()
+
+        if data.get("stop_reason") == "max_tokens":
+            print("  [Fun fact] Truncated — using fallback")
+            return f"One of {team}'s key contributors this season with {points} points."
+
+        text_blocks = [b["text"] for b in data["content"] if b.get("type") == "text"]
+        if text_blocks:
+            return text_blocks[-1].strip()
+
+        return f"One of {team}'s key contributors this season with {points} points."
+
     except Exception as e:
         print(f"  [Fun fact] API error: {e}")
         return f"One of {team}'s key contributors this season with {points} points."
@@ -124,14 +155,25 @@ def get_sample_data() -> dict:
     }
 
 
-def get_db_data() -> dict:
+def get_db_data(player: str = None) -> dict | None:
     import sys
     sys.path.insert(0, str(BASE_DIR / "pwhl"))
-    from db_queries import get_spotlight_player
-    data = get_spotlight_player()
-    if not data:
-        print("  No eligible players — using sample data")
-        return get_sample_data()
+    from db_queries import (get_spotlight_player,
+                             get_spotlight_player_by_id,
+                             get_spotlight_player_by_name)
+    if player:
+        # Try numeric ID first, then name match
+        if player.isdigit():
+            data = get_spotlight_player_by_id(int(player))
+        else:
+            data = get_spotlight_player_by_name(player)
+        if not data:
+            return None
+    else:
+        data = get_spotlight_player()
+        if not data:
+            print("  No eligible players — using sample data")
+            return get_sample_data()
 
     toi_parts = data["toi"].split(":")
     toi_sec   = int(toi_parts[0]) * 60 + int(toi_parts[1])
@@ -190,10 +232,22 @@ def render_spotlight(data: dict, output_path: Path) -> Path:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample", action="store_true")
-    args    = parser.parse_args()
+    parser.add_argument("--player", type=str, default=None,
+                        help="Player name (partial match) or numeric ID to spotlight")
+    args      = parser.parse_args()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     out_path  = OUTPUT_DIR / f"spotlight_{timestamp}.png"
-    data = get_sample_data() if args.sample else get_db_data()
+
+    if args.sample:
+        data = get_sample_data()
+    elif args.player:
+        data = get_db_data(player=args.player)
+        if data is None:
+            print(f"  No player found matching \'{args.player}\'")
+            return None
+    else:
+        data = get_db_data()
+
     print(f"\nRendering spotlight: {data['player_name']} ({data['player_team']})")
     render_spotlight(data, out_path)
     print(f"  Saved to {out_path}")
