@@ -2,7 +2,7 @@ name: PWHL Power Rankings
 
 on:
   schedule:
-    - cron: '0 14 * * 4'   # Every Thursday 9:00 AM CST (14:00 UTC)
+    - cron: '0 14 * * 5'   # Every Thursday 9:00 AM CST (14:00 UTC)
   workflow_dispatch:
 
 jobs:
