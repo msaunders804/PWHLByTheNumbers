@@ -2,13 +2,14 @@
 
 ## Overview
 
-Three automated pipelines generate and deliver PWHL content to Google Drive on a weekly schedule.
+Four automated pipelines generate and deliver PWHL content to Google Drive on a weekly schedule.
 
 | Pipeline | Schedule | Workflow |
 |----------|----------|---------|
 | Weekly Recap | Every **Monday** at 9AM CST | `weekly_recap.yml` |
-| Weekly Preview | Every **Sunday** at 9AM CST | `weekly_preview.yml` |
+| Player Spotlight | Every **Wednesday** at 9AM CST | `player_spotlight.yml` |
 | Power Rankings | Every **Thursday** at 9AM CST | `power_rankings.yml` |
+| Weekly Preview | Every **Sunday** at 9AM CST | `weekly_preview.yml` |
 
 ---
 
@@ -42,6 +43,29 @@ GitHub Actions (weekly_recap.yml)
         └─── Step 4: GitHub Actions Artifact Upload
              └── output/recap_*.png saved as artifacts (7 day retention)
 ```
+
+---
+
+## Pipeline: Player Spotlight (Wednesday)
+
+```
+GitHub Actions (player_spotlight.yml)
+│
+├── 1. Checkout repo
+├── 2. Install dependencies (pip + playwright)
+└── 3. python render_player_spotlight.py
+        │
+        ├── db_queries.py      picks a random unfeatured skater, pulls season stats
+        │                      and league ranks; resets featured_players table when
+        │                      all skaters have been featured
+        ├── Anthropic API      generates fun facts and player blurb
+        └── templates/
+             ├── player_spotlight.html    Skater season stat card
+             └── goalie_spotlight.html    Goalie season stat card
+```
+
+> Players are rotated through the `featured_players` table to avoid repeats.
+> Top 10 scorers are excluded to surface lesser-known players.
 
 ---
 
@@ -94,6 +118,7 @@ Streak is the primary driver — a W5 outweighs any stat advantage.
 | `.github/workflows/weekly_recap.yml` | Monday recap schedule and job steps |
 | `.github/workflows/weekly_preview.yml` | Sunday preview schedule and job steps |
 | `.github/workflows/power_rankings.yml` | Thursday rankings schedule and job steps |
+| `.github/workflows/player_spotlight.yml` | Wednesday spotlight schedule and job steps |
 | `run_weekly.py` | Master recap script — chains DB update + render + upload |
 | `update.py` | Incremental DB update — fetches only new games since last run |
 | `backfill.py` | Full season load — used for initial setup only |
@@ -103,6 +128,7 @@ Streak is the primary driver — a W5 outweighs any stat advantage.
 | `render_weekly_recap.py` | Renders 4 recap slides via Jinja2 + Playwright |
 | `render_weekly_preview.py` | Renders 4 preview slides via Jinja2 + Playwright |
 | `render_power_rankings.py` | Renders 3 rankings slides via Jinja2 + Playwright |
+| `render_player_spotlight.py` | Renders 1 spotlight slide via Jinja2 + Playwright |
 | `drive_upload.py` | Uploads rendered PNGs to Google Drive via OAuth |
 | `notify.py` | SMS/MMS alerts via Twilio |
 
@@ -145,7 +171,7 @@ Never committed to the repo.
 | Secret | Used By | Description |
 |--------|---------|-------------|
 | `PWHL_DATABASE_URL` | `db_config.py` | Railway MySQL connection string |
-| `ANTHROPIC_API_KEY` | `render_power_rankings.py` | Claude API for team/player blurbs |
+| `ANTHROPIC_API_KEY` | `render_power_rankings.py`, `render_player_spotlight.py` | Claude API for blurbs and fun facts |
 | `GOOGLE_CLIENT_ID` | `drive_upload.py` | OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | `drive_upload.py` | OAuth client secret |
 | `GOOGLE_REFRESH_TOKEN` | `drive_upload.py` | OAuth refresh token |
@@ -166,6 +192,7 @@ python run_weekly.py --skip-drive --skip-sms
 python render_weekly_recap.py --sample
 python render_weekly_preview.py --sample
 python render_power_rankings.py --sample
+python render_player_spotlight.py --sample
 
 # Update DB only
 python update.py
@@ -181,7 +208,8 @@ python update.py --dry-run
 | Pipeline | Cron | Workflow file |
 |----------|------|---------------|
 | Weekly Recap | `0 14 * * 1` — Monday 9AM CST | `weekly_recap.yml` |
-| Weekly Preview | `0 14 * * 0` — Sunday 9AM CST | `weekly_preview.yml` |
+| Player Spotlight | `0 14 * * 3` — Wednesday 9AM CST | `player_spotlight.yml` |
 | Power Rankings | `0 14 * * 4` — Thursday 9AM CST | `power_rankings.yml` |
+| Weekly Preview | `0 14 * * 0` — Sunday 9AM CST | `weekly_preview.yml` |
 
 To trigger any pipeline manually: GitHub repo → **Actions** → select workflow → **Run workflow**
