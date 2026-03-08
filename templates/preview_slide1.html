@@ -6,53 +6,98 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-
   :root { --purple:#5e17eb; --deep-purple:#4a0fd4; --text-primary:#0a0a0a; --text-secondary:#666; }
-
   body { width:1080px; height:1920px; background:#f8f6f0; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
   .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
-  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 100% 0%,rgba(140,82,255,0.10) 0%,transparent 45%), radial-gradient(ellipse at 0% 100%,rgba(94,23,235,0.07) 0%,transparent 45%), #f8f6f0; }
+  .bg { position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 100% 0%,rgba(140,82,255,0.10) 0%,transparent 45%),radial-gradient(ellipse at 0% 100%,rgba(94,23,235,0.07) 0%,transparent 45%),#f8f6f0; }
   .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:64px 72px 60px; }
 
-  /* ── HEADER (compact) ── */
+  /* HEADER */
   .brand-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .brand-tag { font-weight:600; font-size:24px; letter-spacing:0.2em; color:var(--purple); text-transform:uppercase; }
   .season-tag { font-size:22px; color:var(--text-secondary); letter-spacing:0.1em; text-transform:uppercase; }
   .title-eyebrow { font-weight:600; font-size:26px; letter-spacing:0.25em; color:var(--purple); text-transform:uppercase; display:block; margin-bottom:2px; }
-  .title-main { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:var(--text-primary); letter-spacing:0.02em; }
+  .title-main { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:var(--text-primary); }
   .title-main span { color:var(--purple); }
   .header-divider { width:100%; height:2px; background:linear-gradient(90deg,var(--purple),var(--deep-purple),transparent); margin-top:16px; margin-bottom:10px; }
   .date-range { font-size:24px; font-weight:600; color:var(--text-secondary); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:24px; }
 
-  /* ── DAY GROUP ── */
-  .day-group { margin-bottom:16px; }
-  .day-header { display:flex; align-items:center; gap:16px; margin-bottom:10px; }
-  .day-name { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px; color:#8c52ff; flex-shrink:0; }
+  /* DAY GROUP */
+  .day-group { margin-bottom:var(--day-gap); }
+  .day-header { display:flex; align-items:center; gap:16px; margin-bottom:8px; }
+  .day-name { font-family:'Bebas Neue',sans-serif; font-size:var(--day-font); letter-spacing:4px; color:#8c52ff; flex-shrink:0; }
   .day-line { flex:1; height:1px; background:rgba(0,0,0,0.1); }
-  .day-date { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.3); flex-shrink:0; }
+  .day-date { font-size:var(--day-date-font); font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.3); flex-shrink:0; }
 
-  /* ── GAME ROW — single line: logo away @ home logo | time ── */
+  /* GAME ROW */
   .game-row {
-    display:flex; align-items:center; gap:16px;
+    display:flex; align-items:center; justify-content:space-between;
     background:#fff; border:1.5px solid rgba(140,82,255,0.12);
-    border-radius:14px; padding:14px 20px; margin-bottom:10px;
+    border-radius:14px; padding:var(--row-pad); margin-bottom:var(--row-gap);
     box-shadow:0 2px 10px rgba(0,0,0,0.04);
     position:relative; overflow:hidden;
   }
   .game-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(to bottom,#5e17eb,#8c52ff); border-radius:14px 0 0 14px; }
 
-  .team-logo { width:44px; height:44px; object-fit:contain; flex-shrink:0; }
-  .team-logo-placeholder { width:44px; height:44px; border-radius:6px; background:rgba(140,82,255,0.08); border:1.5px solid rgba(140,82,255,0.18); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:14px; color:#8c52ff; }
+  /* MATCHUP — centered, teams equal width either side of @ */
+  .matchup {
+    flex:1; display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center; gap:8px;
+    padding:0 8px;
+  }
+  .team-away { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
+  .team-home { display:flex; align-items:center; justify-content:flex-start; gap:10px; }
+  .team-logo { width:var(--logo-size); height:var(--logo-size); object-fit:contain; flex-shrink:0; }
+  .team-logo-placeholder { width:var(--logo-size); height:var(--logo-size); border-radius:6px; background:rgba(140,82,255,0.08); border:1.5px solid rgba(140,82,255,0.18); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:12px; color:#8c52ff; }
+  .team-name { font-family:'Bebas Neue',sans-serif; font-size:var(--team-font); color:#0d0d0d; letter-spacing:2px; }
+  .at-sign { font-family:'Bebas Neue',sans-serif; font-size:var(--at-font); color:rgba(0,0,0,0.2); text-align:center; }
 
-  .matchup { flex:1; display:flex; align-items:center; gap:10px; }
-  .team-name { font-family:'Bebas Neue',sans-serif; font-size:38px; color:#0d0d0d; letter-spacing:2px; }
-  .at-sign { font-family:'Bebas Neue',sans-serif; font-size:28px; color:rgba(0,0,0,0.2); flex-shrink:0; }
+  .game-meta { display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0; min-width:130px; }
+  .game-time { font-family:'Bebas Neue',sans-serif; font-size:var(--time-font); letter-spacing:2px; color:#5e17eb; }
+  .game-broadcast { font-size:var(--bc-font); font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
 
-  .game-meta { display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex-shrink:0; }
-  .game-time { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:2px; color:#5e17eb; }
-  .game-broadcast { font-size:16px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  /* SCALE TIERS based on game count passed via inline style on <body> */
+  /* ≤5 games — large */
+  .scale-small {
+    --logo-size:   64px;
+    --team-font:   52px;
+    --at-font:     36px;
+    --time-font:   38px;
+    --bc-font:     17px;
+    --row-pad:     22px 24px;
+    --row-gap:     14px;
+    --day-gap:     22px;
+    --day-font:    32px;
+    --day-date-font: 20px;
+  }
+  /* 6–7 games — medium */
+  .scale-medium {
+    --logo-size:   52px;
+    --team-font:   42px;
+    --at-font:     30px;
+    --time-font:   32px;
+    --bc-font:     15px;
+    --row-pad:     16px 20px;
+    --row-gap:     10px;
+    --day-gap:     16px;
+    --day-font:    28px;
+    --day-date-font: 18px;
+  }
+  /* 8+ games — compact */
+  .scale-large {
+    --logo-size:   42px;
+    --team-font:   34px;
+    --at-font:     24px;
+    --time-font:   26px;
+    --bc-font:     13px;
+    --row-pad:     12px 16px;
+    --row-gap:     8px;
+    --day-gap:     12px;
+    --day-font:    24px;
+    --day-date-font: 16px;
+  }
 
-  /* ── FOOTER ── */
   .spacer { flex:1; }
   .footer { display:flex; justify-content:space-between; align-items:center; padding-top:24px; border-top:1.5px solid rgba(0,0,0,0.08); }
   .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
@@ -63,7 +108,12 @@
 <body>
 <div class="top-bar"></div>
 <div class="bg"></div>
-<div class="slide">
+
+{% if games_count <= 5 %}{% set scale = "scale-small" %}
+{% elif games_count <= 7 %}{% set scale = "scale-medium" %}
+{% else %}{% set scale = "scale-large" %}{% endif %}
+
+<div class="slide {{ scale }}">
 
   <div class="brand-row">
     <span class="brand-tag">ByTheNumbers</span>
@@ -86,15 +136,19 @@
       </div>
       {% for game in day.games %}
       <div class="game-row">
-        {% if game.away_logo %}<img class="team-logo" src="{{ game.away_logo }}" alt="">
-        {% else %}<div class="team-logo-placeholder">{{ game.away_team }}</div>{% endif %}
         <div class="matchup">
-          <span class="team-name">{{ game.away_team }}</span>
+          <div class="team-away">
+            <span class="team-name">{{ game.away_team }}</span>
+            {% if game.away_logo %}<img class="team-logo" src="{{ game.away_logo }}" alt="">
+            {% else %}<div class="team-logo-placeholder">{{ game.away_team }}</div>{% endif %}
+          </div>
           <span class="at-sign">@</span>
-          <span class="team-name">{{ game.home_team }}</span>
+          <div class="team-home">
+            {% if game.home_logo %}<img class="team-logo" src="{{ game.home_logo }}" alt="">
+            {% else %}<div class="team-logo-placeholder">{{ game.home_team }}</div>{% endif %}
+            <span class="team-name">{{ game.home_team }}</span>
+          </div>
         </div>
-        {% if game.home_logo %}<img class="team-logo" src="{{ game.home_logo }}" alt="">
-        {% else %}<div class="team-logo-placeholder">{{ game.home_team }}</div>{% endif %}
         <div class="game-meta">
           <div class="game-time">{{ game.time }}</div>
           {% if game.broadcast %}<div class="game-broadcast">{{ game.broadcast }}</div>{% endif %}
