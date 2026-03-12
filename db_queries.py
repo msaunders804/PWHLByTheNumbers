@@ -1472,3 +1472,184 @@ def get_offense_defense_breakdown() -> list[dict]:
 
     finally:
         session.close()
+
+
+# ── Monte Carlo Simulation Inputs ─────────────────────────────────────────────
+
+def get_remaining_schedule() -> list[dict]:
+    """
+    Returns all unplayed games remaining in the current season.
+    Used as the simulation game list for Monte Carlo.
+    """
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT
+                g.game_id,
+                g.date,
+                g.home_team_id,
+                g.away_team_id,
+                ht.team_code AS home_code,
+                at.team_code AS away_code
+            FROM games g
+            JOIN teams ht ON ht.team_id = g.home_team_id AND ht.season_id = :sid
+            JOIN teams at ON at.team_id = g.away_team_id AND at.season_id = :sid
+            WHERE g.season_id    = :sid
+              AND g.game_status != 'final'
+            ORDER BY g.date ASC, g.game_id ASC
+        """), {"sid": SEASON_ID}).fetchall()
+
+        return [{
+            "game_id":      r.game_id,
+            "date":         str(r.date),
+            "home_team_id": r.home_team_id,
+            "away_team_id": r.away_team_id,
+            "home_code":    r.home_code,
+            "away_code":    r.away_code,
+        } for r in rows]
+    finally:
+        session.close()
+
+
+def get_simulation_inputs() -> dict[int, dict]:
+    """
+    Returns per-team inputs needed to calculate win probability in Monte Carlo.
+
+    Inputs per team:
+      - pts_pct       : season points / (games played * 2)
+      - rank_score    : raw power ranking score (streak*3 + ppg*20 + last5_gd*1.5)
+      - last5_gd      : goal differential in last 5 games
+      - home_win_pct  : wins at home / home games played
+      - team_code     : abbreviation
+      - gp            : games played
+      - pts           : current points
+      - games_remaining: count of unplayed games
+
+    Returns dict keyed by team_id.
+    """
+    session = Session()
+    try:
+        # Season stats + home record
+        rows = session.execute(text("""
+            WITH results AS (
+                SELECT
+                    g.home_team_id                                          AS team_id,
+                    CASE WHEN g.home_score > g.away_score THEN 1 ELSE 0 END AS win,
+                    CASE WHEN g.home_score < g.away_score
+                          AND g.result_type = 'OT'                          THEN 1 ELSE 0 END AS otl,
+                    CASE WHEN g.home_score < g.away_score
+                          AND g.result_type = 'SO'                          THEN 1 ELSE 0 END AS sol,
+                    g.home_score - g.away_score                             AS gd,
+                    'home'                                                  AS venue
+                FROM games g
+                WHERE g.season_id = :sid AND g.game_status = 'final'
+
+                UNION ALL
+
+                SELECT
+                    g.away_team_id,
+                    CASE WHEN g.away_score > g.home_score THEN 1 ELSE 0 END,
+                    CASE WHEN g.away_score < g.home_score
+                          AND g.result_type = 'OT'                          THEN 1 ELSE 0 END,
+                    CASE WHEN g.away_score < g.home_score
+                          AND g.result_type = 'SO'                          THEN 1 ELSE 0 END,
+                    g.away_score - g.home_score,
+                    'away'
+                FROM games g
+                WHERE g.season_id = :sid AND g.game_status = 'final'
+            )
+            SELECT
+                t.team_id,
+                t.team_code,
+                COUNT(*)                                                    AS gp,
+                SUM(win)*2 + SUM(otl) + SUM(sol)                           AS pts,
+                SUM(CASE WHEN venue='home' AND win=1 THEN 1 ELSE 0 END)    AS home_wins,
+                SUM(CASE WHEN venue='home'           THEN 1 ELSE 0 END)    AS home_gp
+            FROM results r
+            JOIN teams t ON t.team_id = r.team_id AND t.season_id = :sid
+            GROUP BY t.team_id, t.team_code
+        """), {"sid": SEASON_ID}).fetchall()
+
+        # All completed games for last-5 and streak (reuse power rankings logic)
+        all_games = session.execute(text("""
+            SELECT game_id, date, home_team_id, away_team_id,
+                   home_score, away_score, result_type
+            FROM games
+            WHERE season_id = :sid AND game_status = 'final'
+            ORDER BY date DESC, game_id DESC
+        """), {"sid": SEASON_ID}).fetchall()
+
+        # Remaining games count per team
+        remaining_rows = session.execute(text("""
+            SELECT home_team_id AS team_id, COUNT(*) AS cnt
+            FROM games
+            WHERE season_id = :sid AND game_status != 'final'
+            GROUP BY home_team_id
+
+            UNION ALL
+
+            SELECT away_team_id, COUNT(*)
+            FROM games
+            WHERE season_id = :sid AND game_status != 'final'
+            GROUP BY away_team_id
+        """), {"sid": SEASON_ID}).fetchall()
+
+        remaining_map: dict[int, int] = {}
+        for r in remaining_rows:
+            remaining_map[r.team_id] = remaining_map.get(r.team_id, 0) + r.cnt
+
+        team_ids = [r.team_id for r in rows]
+        result   = {}
+
+        for r in rows:
+            tid = r.team_id
+            gp  = int(r.gp  or 0)
+            pts = int(r.pts or 0)
+
+            # Points percentage
+            pts_pct = pts / (gp * 2) if gp else 0.0
+
+            # Home win %
+            home_gp   = int(r.home_gp   or 0)
+            home_wins = int(r.home_wins or 0)
+            home_win_pct = home_wins / home_gp if home_gp else 0.5
+
+            # Last 5 GD and streak
+            team_games = [g for g in all_games
+                          if g.home_team_id == tid or g.away_team_id == tid]
+
+            last5_gd = 0
+            for g in team_games[:5]:
+                last5_gd += (g.home_score - g.away_score) if g.home_team_id == tid \
+                             else (g.away_score - g.home_score)
+
+            streak = 0
+            for g in team_games:
+                won = ((g.home_team_id == tid and g.home_score > g.away_score) or
+                       (g.away_team_id == tid and g.away_score > g.home_score))
+                if streak == 0:
+                    streak = 1 if won else -1
+                elif (streak > 0 and won) or (streak < 0 and not won):
+                    streak += (1 if won else -1)
+                else:
+                    break
+
+            ppg = (pts / gp) if gp else 0.0
+            rank_score = (streak * 3) + (ppg * 20) + (last5_gd * 1.5)
+
+            result[tid] = {
+                "team_id":          tid,
+                "team_code":        r.team_code,
+                "gp":               gp,
+                "pts":              pts,
+                "pts_pct":          round(pts_pct, 4),
+                "home_win_pct":     round(home_win_pct, 4),
+                "last5_gd":         last5_gd,
+                "rank_score":       round(rank_score, 4),
+                "games_remaining":  remaining_map.get(tid, 0),
+            }
+
+        return result
+
+    finally:
+        session.close()
