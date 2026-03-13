@@ -14,29 +14,32 @@ from datetime import date
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from db_config import get_db_url
-from models import Base, Game, Team
-from backfill import (
+from pwhl_btn.db.db_config import get_db_url
+from pwhl_btn.db.models import Base, Game, Team
+from pwhl_btn.jobs.backfill import (
     SEASON_ID, RATE_LIMIT,
     fetch_schedule, load_teams, load_game, derive_result_type
 )
-from sync_toi import run_sync as sync_toi
+try:
+    from pwhl_btn.jobs.sync_toi import run_sync as sync_toi
+except ImportError:
+    sync_toi = None
 
 engine  = create_engine(get_db_url())
 Session = sessionmaker(bind=engine)
 
 
-def get_latest_game_id(session) -> int:
-    """Returns the highest game_id already loaded."""
-    row = session.execute(text("""
-        SELECT MAX(game_id) AS latest FROM games
-        WHERE season_id = :sid
-    """), {"sid": SEASON_ID}).fetchone()
-    return int(row.latest) if row and row.latest else 0
+def get_final_game_ids_in_db(session) -> set[int]:
+    """Returns game_ids already stored as final."""
+    rows = session.execute(text("""
+        SELECT game_id FROM games
+        WHERE season_id = :sid AND game_status = 'final'
+    """), {"sid": SEASON_ID}).fetchall()
+    return {r.game_id for r in rows}
 
 
-def get_new_games(since_id: int) -> list[dict]:
-    """Returns completed games from the schedule with game_id > since_id."""
+def get_new_games(already_final: set[int]) -> list[dict]:
+    """Returns completed games from the API schedule not yet marked final in DB."""
     print(f"  Fetching season {SEASON_ID} schedule...")
     schedule = fetch_schedule(SEASON_ID)
 
@@ -47,7 +50,7 @@ def get_new_games(since_id: int) -> list[dict]:
         except (ValueError, TypeError):
             continue
 
-        if gid <= since_id:
+        if gid in already_final:
             continue
 
         is_final = (
@@ -73,19 +76,20 @@ def run_update(dry_run: bool = False):
     print("\n[1/3] Syncing teams...")
     load_teams(SEASON_ID, session)
 
-    # Find last loaded game
-    print("\n[2/3] Checking DB for latest game ID...")
-    latest_id = get_latest_game_id(session)
-    if latest_id:
-        print(f"  Latest game_id in DB: {latest_id}")
+    # Find games already marked final in DB
+    print("\n[2/3] Checking DB for completed games...")
+    already_final = get_final_game_ids_in_db(session)
+    if already_final:
+        print(f"  {len(already_final)} games already final in DB")
     else:
-        print("  No games found in DB — run backfill.py for a full load")
+        print("  No final games in DB — run backfill.py first for historical data")
+        print("  Run backfill_schedule.py to seed the full schedule")
         session.close()
         return
 
-    # Find new games
-    print(f"\n[3/3] Fetching games with ID > {latest_id}...")
-    new_games = get_new_games(since_id=latest_id)
+    # Find newly completed games
+    print(f"\n[3/3] Checking for newly completed games...")
+    new_games = get_new_games(already_final=already_final)
 
     if not new_games:
         print("  No new games found — DB is up to date")
@@ -123,7 +127,10 @@ def run_update(dry_run: bool = False):
     # Refresh TOI averages after loading new games
     if ok_count > 0:
         print("\nRefreshing TOI averages...")
-        sync_toi()
+        if sync_toi:
+            sync_toi()
+        else:
+            print("  [TOI] sync_toi not available, skipping")
 
 
 if __name__ == "__main__":

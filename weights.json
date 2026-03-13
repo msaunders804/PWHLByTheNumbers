@@ -1,0 +1,13 @@
+{
+  "weights": {
+    "pts_pct": 0.2984,
+    "rank_score": 0.2775,
+    "last5_gd": 0.0,
+    "home_win_pct": 0.2001,
+    "sv_pct": 0.0,
+    "shots_ratio": 0.1434,
+    "xg_ratio": 0.0805
+  },
+  "game_pct": 0.67,
+  "season_id": 5
+}

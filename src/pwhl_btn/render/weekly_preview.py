@@ -1,10 +1,11 @@
 """
-render_weekly_preview.py — Renders the Sunday night weekly preview (4 slides).
+weekly_preview.py — Renders the Sunday night weekly preview (4 slides).
+
+Location: src/pwhl_btn/render/weekly_preview.py
 
 Usage:
-    python render_weekly_preview.py            # live data from DB
-    python render_weekly_preview.py --sample   # sample data (no DB)
-    python render_weekly_preview.py --skip-drive
+    python render/weekly_preview.py
+    python render/weekly_preview.py --skip-drive
 """
 
 import argparse
@@ -17,14 +18,20 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from playwright.sync_api import sync_playwright
 
-BASE_DIR     = Path(__file__).parent
-TEMPLATE_DIR = BASE_DIR / "templates"
-OUTPUT_DIR   = BASE_DIR / "output"
+# ── Paths ─────────────────────────────────────────────────────────────────────
+# render/weekly_preview.py
+#   → BASE_DIR    = src/pwhl_btn/render/
+#   → PACKAGE_DIR = src/pwhl_btn/
+RENDER_DIR   = Path(__file__).resolve().parent
+PACKAGE_DIR  = RENDER_DIR.parent
+TEMPLATE_DIR = RENDER_DIR / "templates"
+OUTPUT_DIR   = PACKAGE_DIR.parent.parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
+
 def _load_dotenv():
-    for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env"]:
+    for env_path in [PACKAGE_DIR / ".env", PACKAGE_DIR.parent / ".env", PACKAGE_DIR.parent.parent / ".env"]:
         if env_path.exists():
             with open(env_path) as f:
                 for line in f:
@@ -76,7 +83,11 @@ def generate_why_watch(home_team, away_team, home_record, away_record, key_playe
         req = urllib.request.Request(
             "https://api.anthropic.com/v1/messages",
             data=payload,
-            headers={"Content-Type": "application/json", "anthropic-version": "2023-06-01", "x-api-key": os.environ.get("ANTHROPIC_API_KEY", "")},
+            headers={
+                "Content-Type": "application/json",
+                "anthropic-version": "2023-06-01",
+                "x-api-key": os.environ.get("ANTHROPIC_API_KEY", ""),
+            },
             method="POST"
         )
         with urllib.request.urlopen(req) as resp:
@@ -87,60 +98,8 @@ def generate_why_watch(home_team, away_team, home_record, away_record, key_playe
         return "Two of the league's most competitive teams clash with real playoff implications on the line."
 
 
-def get_sample_data() -> dict:
-    start = date.today() + timedelta(days=1)
-    end   = start + timedelta(days=6)
-    return {
-        "week_label":          "WEEK 15",
-        "week_range":          _week_label(start, end).upper(),
-        "games_count":         6,
-        "teams_count":         8,
-        "game_to_watch_short": "BOS vs MTL",
-        "pwhl_logo":           None,
-        "schedule_days": [
-            {"day_name": "TUESDAY",  "date_str": "MAR 10", "games": [
-                {"away_team": "BOS", "home_team": "TOR", "away_logo": None, "home_logo": None, "time": "7:00 PM ET", "broadcast": "TSN"},
-                {"away_team": "MIN", "home_team": "OTT", "away_logo": None, "home_logo": None, "time": "7:00 PM ET", "broadcast": ""},
-            ]},
-            {"day_name": "THURSDAY", "date_str": "MAR 12", "games": [
-                {"away_team": "SEA", "home_team": "VAN", "away_logo": None, "home_logo": None, "time": "9:00 PM ET", "broadcast": "PWHL+"},
-            ]},
-            {"day_name": "SATURDAY", "date_str": "MAR 14", "games": [
-                {"away_team": "BOS", "home_team": "MTL", "away_logo": None, "home_logo": None, "time": "3:00 PM ET", "broadcast": "CBC"},
-                {"away_team": "NY",  "home_team": "MIN", "away_logo": None, "home_logo": None, "time": "5:00 PM ET", "broadcast": "PWHL+"},
-            ]},
-            {"day_name": "SUNDAY",   "date_str": "MAR 15", "games": [
-                {"away_team": "TOR", "home_team": "OTT", "away_logo": None, "home_logo": None, "time": "2:00 PM ET", "broadcast": "TSN"},
-            ]},
-        ],
-        "gtw_home_team":   "MTL", "gtw_away_team":   "BOS",
-        "gtw_home_logo":   None,  "gtw_away_logo":   None,
-        "gtw_home_record": "18-8-3", "gtw_away_record": "17-9-2",
-        "gtw_date":        "SAT MAR 14", "gtw_time": "3:00 PM ET",
-        "why_watch": "Boston and Montreal sit just two points apart in the standings, making this a preview of a potential playoff series. Maschmeyer and Desbiens are the two hottest goalies in the league right now.",
-        "key_players": [
-            {"name": "Marie-Philip Poulin", "team": "MTL", "goals": 14, "assists": 18, "points": 32},
-            {"name": "Kristin O'Neill",     "team": "MTL", "goals": 10, "assists": 15, "points": 25},
-            {"name": "Hilary Knight",       "team": "BOS", "goals": 12, "assists": 16, "points": 28},
-            {"name": "Alina Mueller",       "team": "BOS", "goals": 8,  "assists": 19, "points": 27},
-        ],
-        "standings": [
-            {"name": "MTL", "logo": None, "wins": 18, "losses": 8,  "ot_losses": 3, "gp": 29, "points": 39, "status": "playoff"},
-            {"name": "BOS", "logo": None, "wins": 17, "losses": 9,  "ot_losses": 2, "gp": 28, "points": 36, "status": "playoff"},
-            {"name": "MIN", "logo": None, "wins": 15, "losses": 10, "ot_losses": 4, "gp": 29, "points": 34, "status": "playoff"},
-            {"name": "TOR", "logo": None, "wins": 14, "losses": 11, "ot_losses": 4, "gp": 29, "points": 32, "status": "playoff"},
-            {"name": "OTT", "logo": None, "wins": 13, "losses": 12, "ot_losses": 4, "gp": 29, "points": 30, "status": "bubble"},
-            {"name": "NY",  "logo": None, "wins": 12, "losses": 13, "ot_losses": 3, "gp": 28, "points": 27, "status": "bubble"},
-            {"name": "VAN", "logo": None, "wins": 9,  "losses": 16, "ot_losses": 4, "gp": 29, "points": 22, "status": "out"},
-            {"name": "SEA", "logo": None, "wins": 7,  "losses": 18, "ot_losses": 3, "gp": 28, "points": 17, "status": "out"},
-        ],
-    }
-
-
 def get_live_data() -> dict:
-    import sys
-    sys.path.insert(0, str(BASE_DIR / "pwhl"))
-    from db_queries import get_upcoming_schedule, get_game_to_watch, get_preview_standings
+    from pwhl_btn.db.db_queries import get_upcoming_schedule, get_game_to_watch, get_preview_standings
 
     start, end = _next_week_range()
     print(f"  Week: {start} → {end}")
@@ -193,11 +152,16 @@ def render_slides(data: dict) -> list:
         for tmpl_name, label in slides:
             template = env.get_template(tmpl_name)
             html     = template.render(**data)
+            tmp_html = OUTPUT_DIR / f"_render_{tmpl_name}"
+            tmp_html.write_text(html, encoding="utf-8")
+
             out_path = OUTPUT_DIR / f"preview_{label}_{timestamp}.png"
             page     = browser.new_page(viewport={"width": 1080, "height": 1920})
-            page.set_content(html, wait_until="networkidle")
+            page.goto(f"file://{tmp_html.resolve()}")
+            page.wait_for_timeout(800)
             page.screenshot(path=str(out_path), clip={"x": 0, "y": 0, "width": 1080, "height": 1920})
             page.close()
+            tmp_html.unlink(missing_ok=True)
             print(f"  ✅ {out_path.name}")
             outputs.append(out_path)
         browser.close()
@@ -207,17 +171,16 @@ def render_slides(data: dict) -> list:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sample",     action="store_true")
     parser.add_argument("--skip-drive", action="store_true")
     args = parser.parse_args()
 
     print("\n── Weekly Preview ──────────────────────────────")
-    data    = get_sample_data() if args.sample else get_live_data()
+    data    = get_live_data()
     outputs = render_slides(data)
 
     if not args.skip_drive:
         try:
-            from drive_upload import upload_files
+            from pwhl_btn.integrations.google_drive import upload_files
             folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "")
             if folder_id:
                 links = upload_files(outputs, folder_id)

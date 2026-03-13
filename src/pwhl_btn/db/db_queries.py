@@ -11,7 +11,7 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from db_config import get_db_url
+from pwhl_btn.db.db_config import get_db_url
 DATABASE_URL = get_db_url()
 
 engine    = create_engine(DATABASE_URL)
@@ -31,7 +31,7 @@ TEAM_CODE_MAP = {
 }
 
 _THIS_DIR   = Path(__file__).resolve().parent   # root dir (db_queries.py lives here)
-PLAYERS_DIR = _THIS_DIR / "assets" / "players"
+PLAYERS_DIR = _THIS_DIR.parents[2] / "assets" / "players"
 
 def _player_photo_uri(player_name: str):
     # firstname_lastname.jpg — e.g. rebecca_leslie.jpg
@@ -43,7 +43,7 @@ def _player_photo_uri(player_name: str):
     return None
 
 _env_root   = os.environ.get("BTN_REPO_ROOT", "").strip()
-_REPO_ROOT  = Path(_env_root).resolve() if _env_root else _THIS_DIR
+_REPO_ROOT  = Path(_env_root).resolve() if _env_root else _THIS_DIR.parents[2]
 
 
 import base64 as _b64
@@ -981,7 +981,9 @@ def get_game_to_watch(start_date, end_date):
             FROM teams t
             LEFT JOIN games g ON (g.home_team_id = t.team_id OR g.away_team_id = t.team_id)
                               AND g.season_id = :sid AND g.game_status = 'final'
-            WHERE t.season_id = :sid
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM games WHERE season_id=:sid
+                UNION SELECT DISTINCT away_team_id FROM games WHERE season_id=:sid)
             GROUP BY t.team_id, t.team_code, t.team_name
             ORDER BY pts DESC
         """), {"sid": SEASON_ID}).fetchall()
@@ -1033,8 +1035,8 @@ def get_game_to_watch(start_date, end_date):
                 continue
             h_code = g.get("home_team_code", "")
             a_code = g.get("visiting_team_code", "")
-            h_id   = int(g.get("home_team", 0)) or code_to_id.get(h_code)
-            a_id   = int(g.get("visiting_team", 0)) or code_to_id.get(a_code)
+            h_id   = code_to_id.get(h_code)
+            a_id   = code_to_id.get(a_code)
             if h_id and a_id:
                 games.append(_Game(g.get("id"), gdate, h_id, a_id,
                                    _parse_game_time(g.get("game_time") or g.get("start_time") or "")))
@@ -1081,12 +1083,14 @@ def get_game_to_watch(start_date, end_date):
         from datetime import datetime as _dt
         date_str = _dt.strptime(str(best_game.date), "%Y-%m-%d").strftime("%a %b %d").upper()
 
+        h_code = code_map.get(h_id, "")
+        a_code = code_map.get(a_id, "")
         return {
             "game_id":        best_game.game_id,
-            "gtw_home_team":  code_map.get(h_id, ""),
-            "gtw_away_team":  code_map.get(a_id, ""),
-            "gtw_home_logo":  _logo_uri(code_map.get(h_id, "")),
-            "gtw_away_logo":  _logo_uri(code_map.get(a_id, "")),
+            "gtw_home_team":  h_code,
+            "gtw_away_team":  a_code,
+            "gtw_home_logo":  _logo_uri(h_code),
+            "gtw_away_logo":  _logo_uri(a_code),
             "gtw_home_record": rec_map.get(h_id, ""),
             "gtw_away_record": rec_map.get(a_id, ""),
             "gtw_date":       date_str,
@@ -1143,7 +1147,9 @@ def get_preview_standings():
             FROM teams t
             LEFT JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
                               AND g.season_id=:sid AND g.game_status='final'
-            WHERE t.season_id = :sid
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM games WHERE season_id=:sid
+                UNION SELECT DISTINCT away_team_id FROM games WHERE season_id=:sid)
             GROUP BY t.team_id, t.team_code, t.team_name
             ORDER BY pts DESC, wins DESC
         """), {"sid": SEASON_ID}).fetchall()
@@ -1204,7 +1210,9 @@ def get_power_rankings() -> list[dict]:
             FROM teams t
             LEFT JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
                               AND g.season_id=:sid AND g.game_status='final'
-            WHERE t.season_id=:sid
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM games WHERE season_id=:sid
+                UNION SELECT DISTINCT away_team_id FROM games WHERE season_id=:sid)
             GROUP BY t.team_id, t.team_code
         """), {"sid": SEASON_ID}).fetchall()
 
@@ -1425,7 +1433,9 @@ def get_offense_defense_breakdown() -> list[dict]:
             FROM teams t
             JOIN games g ON (g.home_team_id=t.team_id OR g.away_team_id=t.team_id)
                          AND g.season_id=:sid AND g.game_status='final'
-            WHERE t.season_id=:sid
+            WHERE t.team_id IN (
+                SELECT DISTINCT home_team_id FROM games WHERE season_id=:sid
+                UNION SELECT DISTINCT away_team_id FROM games WHERE season_id=:sid)
             GROUP BY t.team_id, t.team_code
         """), {"sid": SEASON_ID}).fetchall()
 

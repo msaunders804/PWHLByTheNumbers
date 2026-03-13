@@ -17,10 +17,8 @@ import requests
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-import sys, os
-sys.path.insert(0, os.path.dirname(__file__))
-from db_config import get_db_url
-from backfill import SEASON_ID
+from pwhl_btn.db.db_config import get_db_url
+from pwhl_btn.jobs.backfill import SEASON_ID
 
 API_BASE    = "https://lscluster.hockeytech.com/feed/index.php"
 API_KEY     = "446521baf8c38984"

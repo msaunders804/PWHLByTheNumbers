@@ -12,9 +12,9 @@ import os, sys, time, argparse, requests
 from datetime import datetime, date
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from models import Base, Game, Team, Player, PlayerGameStats, GoalieGameStats
+from pwhl_btn.db.models import Base, Game, Team, Player, PlayerGameStats, GoalieGameStats
 
-from db_config import get_db_url
+from pwhl_btn.db.db_config import get_db_url
 DATABASE_URL = get_db_url()
 
 SEASON_ID   = 8

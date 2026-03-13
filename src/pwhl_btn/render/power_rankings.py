@@ -24,7 +24,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 def _load_dotenv():
-    for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env"]:
+    for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env", BASE_DIR.parent.parent / ".env", BASE_DIR.parent.parent.parent / ".env"]:
         if env_path.exists():
             with open(env_path) as f:
                 for line in f:
@@ -259,7 +259,7 @@ def get_sample_data() -> dict:
 
 
 def get_live_data() -> dict:
-    from db_queries import get_power_rankings, get_hot_player, get_offense_defense_breakdown, _pwhl_logo_uri
+    from pwhl_btn.db.db_queries import get_power_rankings, get_hot_player, get_offense_defense_breakdown, _pwhl_logo_uri
 
     rankings = get_power_rankings()
     rankings = _generate_blurbs(rankings)
@@ -449,7 +449,7 @@ def main():
 
     if not args.skip_drive:
         try:
-            from drive_upload import upload_files
+            from pwhl_btn.integrations.google_drive import upload_files
             folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "")
             if folder_id:
                 links = upload_files(outputs, folder_id)

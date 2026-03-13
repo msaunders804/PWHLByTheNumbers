@@ -29,12 +29,13 @@ jobs:
 
       - name: Render and upload weekly preview
         env:
+          PYTHONPATH:             src
           PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
           GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
           GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-        run: python render_weekly_preview.py
+        run: python -m pwhl_btn.render.weekly_preview
 
       - name: Upload as artifact
         if: always()

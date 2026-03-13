@@ -23,7 +23,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 def _load_dotenv():
-    for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env"]:
+    for env_path in [BASE_DIR / ".env", BASE_DIR.parent / ".env", BASE_DIR.parent.parent / ".env", BASE_DIR.parent.parent.parent / ".env"]:
         if env_path.exists():
             with open(env_path) as f:
                 for line in f:
@@ -156,9 +156,7 @@ def get_sample_data() -> dict:
 
 
 def get_db_data(player: str = None) -> dict | None:
-    import sys
-    sys.path.insert(0, str(BASE_DIR / "pwhl"))
-    from db_queries import (get_spotlight_player,
+    from pwhl_btn.db.db_queries import (get_spotlight_player,
                              get_spotlight_player_by_id,
                              get_spotlight_player_by_name)
     if player:
@@ -186,12 +184,10 @@ def get_db_data(player: str = None) -> dict | None:
     data["college"]      = data.get("college", "")
     if data.get("position") == "G":
         # Goalie — fetch goalie-specific stats
-        import sys as _sys
-        _sys.path.insert(0, str(BASE_DIR / "pwhl"))
-        from db_queries import get_spotlight_goalie as _gsg
+        from pwhl_btn.db.db_queries import get_spotlight_goalie as _gsg
         from sqlalchemy import create_engine as _ce
         from sqlalchemy.orm import sessionmaker as _sm
-        from db_config import get_db_url as _gdu
+        from pwhl_btn.db.db_config import get_db_url as _gdu
         _sess = _sm(bind=_ce(_gdu()))()
         goalie_stats = _gsg(data["player_id"], _sess)
         _sess.close()

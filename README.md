@@ -1,215 +1,171 @@
-# BTN Automation Pipeline
+# ByTheNumbers — PWHL Analytics Platform
 
-## Overview
-
-Four automated pipelines generate and deliver PWHL content to Google Drive on a weekly schedule.
-
-| Pipeline | Schedule | Workflow |
-|----------|----------|---------|
-| Weekly Recap | Every **Monday** at 9AM CST | `weekly_recap.yml` |
-| Player Spotlight | Every **Wednesday** at 9AM CST | `player_spotlight.yml` |
-| Power Rankings | Every **Thursday** at 9AM CST | `power_rankings.yml` |
-| Weekly Preview | Every **Sunday** at 9AM CST | `weekly_preview.yml` |
+Public-facing analytics and social media platform for the Professional Women's Hockey League. Built to provide the same depth of data coverage routinely applied to men's leagues.
 
 ---
 
-## Pipeline: Weekly Recap (Monday)
+## The Problem
 
-```
-GitHub Actions (weekly_recap.yml)
-│
-├── 1. Checkout repo
-├── 2. Install dependencies (pip + playwright)
-└── 3. python run_weekly.py
-        │
-        ├─── Step 1: Update Database
-        │    └── update.py
-        │         ├── db_config.py       reads PWHL_DATABASE_URL from GitHub Secrets
-        │         ├── backfill.py        fetch_schedule(), load_game() from PWHL API
-        │         └── models.py          SQLAlchemy table definitions
-        │
-        ├─── Step 2: Render Slides
-        │    └── render_weekly_recap.py
-        │         ├── db_queries.py      pulls games, standings, story of week from DB
-        │         └── templates/
-        │              ├── recap_slide0.html    Hook / Week in Review
-        │              ├── recap_slide1.html    Scores
-        │              ├── recap_slide2.html    Standings
-        │              └── recap_slide3.html    Story of the Week
-        │
-        ├─── Step 3: Upload to Google Drive
-        │    └── drive_upload.py
-        │
-        └─── Step 4: GitHub Actions Artifact Upload
-             └── output/recap_*.png saved as artifacts (7 day retention)
-```
+The PWHL, founded in 2024, has no publicly available predictive analytics infrastructure. This project builds that foundation — automated standings analysis, player performance tracking, and Monte Carlo playoff probability modeling — delivered weekly to a public audience via Instagram.
 
 ---
 
-## Pipeline: Player Spotlight (Wednesday)
+## Predictive Model
 
-```
-GitHub Actions (player_spotlight.yml)
-│
-├── 1. Checkout repo
-├── 2. Install dependencies (pip + playwright)
-└── 3. python render_player_spotlight.py
-        │
-        ├── db_queries.py      picks a random unfeatured skater, pulls season stats
-        │                      and league ranks; resets featured_players table when
-        │                      all skaters have been featured
-        ├── Anthropic API      generates fun facts and player blurb
-        └── templates/
-             ├── player_spotlight.html    Skater season stat card
-             └── goalie_spotlight.html    Goalie season stat card
-```
+Playoff probability is estimated via **Monte Carlo simulation** (10,000 iterations per run). Each game's outcome is simulated by drawing goals independently from a **Poisson distribution**, where each team's expected goals (λ) is scaled from their relative strength and the PWHL league average of 2.8 GPG.
 
-> Players are rotated through the `featured_players` table to avoid repeats.
-> Top 10 scorers are excluded to surface lesser-known players.
+**Team strength** is a weighted composite of five features:
+
+| Feature | Description |
+|---------|-------------|
+| Points % | Blended season + last-10-game recency weighting, PDO-adjusted |
+| Rank score | `(streak × 3) + (PPG × 20) + (last5_GD × 1.5)` |
+| Home win % | Home ice performance |
+| Shots ratio | Possession proxy |
+| xG proxy | Shots ratio adjusted for SV% differential vs league average |
+
+Weights were derived via **Ridge Regression** trained on Season 7 team statistics at the 67% season snapshot, with final season points as the target variable. Ridge regularization was applied given the small sample size (n=6 teams).
+
+**Validation against Season 7 final standings:**
+
+| Snapshot | Spearman ρ | p-value |
+|----------|-----------|---------|
+| 33% | 0.143 | 0.787 |
+| 50% | 0.771 | 0.072 |
+| **67%** | **0.886** | **0.019** |
+| 80% | 0.943 | 0.005 |
+| 90% | 0.943 | 0.005 |
+
+Reliable predictive signal emerges after ~67% of games played. At 80%+ the model correctly ranks all six teams. Applied to Season 8 at the 67% snapshot: ρ = 0.976 (p = 0.000).
 
 ---
 
-## Pipeline: Weekly Preview (Sunday)
+## Data Infrastructure
+
+Game data is sourced from the PWHL HockeyTech API and persisted in a **Railway-hosted MySQL database** via a SQLAlchemy ORM pipeline. GitHub Actions triggers weekly DB updates and content generation automatically.
 
 ```
-GitHub Actions (weekly_preview.yml)
-│
-├── 1. Checkout repo
-├── 2. Install dependencies (pip + playwright)
-└── 3. python render_weekly_preview.py
-        │
-        ├── db_queries.py      pulls upcoming schedule, standings, game to watch
-        └── templates/
-             ├── preview_slide0.html    Hook / What's Ahead
-             ├── preview_slide1.html    This Week's Games (schedule)
-             ├── preview_slide2.html    Game to Watch
-             └── preview_slide3.html    Standings
+PWHLByTheNumbers/
+└── src/pwhl_btn/
+    ├── analytics/          Monte Carlo simulation, Ridge regression weight derivation
+    ├── db/                 SQLAlchemy models, queries, DB config
+    ├── ingest/             Incremental game updates, schedule backfill
+    ├── integrations/       Google Drive upload, OAuth
+    ├── jobs/               Weekly pipeline orchestration
+    ├── render/             Jinja2 + Playwright slide renderers
+    │   └── templates/      HTML slide templates (Instagram 1080×1920)
+    ├── visualizations/     Poster/presentation charts
+    └── output/             Rendered PNGs
 ```
 
 ---
 
-## Pipeline: Power Rankings (Thursday)
+## Weekly Pipelines
 
-```
-GitHub Actions (power_rankings.yml)
-│
-├── 1. Checkout repo
-├── 2. Install dependencies (pip + playwright)
-└── 3. python render_power_rankings.py
-        │
-        ├── db_queries.py      pulls rankings (streak + PPG + last-5 GD),
-        │                      offense/defense breakdown, hot player
-        ├── Anthropic API      generates opinionated blurbs per team + hot player
-        └── templates/
-             ├── rankings_slide0.html    Hook (top team, hot/cold streak callouts)
-             ├── rankings_slide1.html    Team Identity scatter (GF/pg vs GA/pg)
-             └── rankings_slide2.html    Hot Player highlight (photo + last-5 stats)
-```
+Four pipelines run automatically via GitHub Actions and deliver Instagram-ready slides to Google Drive.
 
-**Rankings formula:** `(streak × 3) + (PPG × 20) + (last5_gd × 1.5)`
-Streak is the primary driver — a W5 outweighs any stat advantage.
+| Pipeline | Day | Content |
+|----------|-----|---------|
+| Weekly Recap | Monday 9AM CST | Scores, standings, story of the week |
+| Player Spotlight | Wednesday 9AM CST | Rotating player stat card with AI-generated blurb |
+| Power Rankings | Thursday 9AM CST | GF/GA scatter, rank formula, hot player highlight |
+| Weekly Preview | Sunday 9AM CST | Upcoming schedule, game to watch, standings |
+
+**Power Rankings formula:** `(streak × 3) + (PPG × 20) + (last5_GD × 1.5)`
+
+**Player Spotlight rotation:** Players cycle through the `featured_players` table to avoid repeats. Top-10 scorers are excluded to surface depth players.
+
+**Game to Watch:** Selected by a composite of standings gap, head-to-head history, and player storylines. Why-watch copy generated via Claude API.
 
 ---
 
-## File Reference
+## Repository Structure
+
+### Analytics (`src/pwhl_btn/analytics/`)
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/weekly_recap.yml` | Monday recap schedule and job steps |
-| `.github/workflows/weekly_preview.yml` | Sunday preview schedule and job steps |
-| `.github/workflows/power_rankings.yml` | Thursday rankings schedule and job steps |
-| `.github/workflows/player_spotlight.yml` | Wednesday spotlight schedule and job steps |
-| `run_weekly.py` | Master recap script — chains DB update + render + upload |
-| `update.py` | Incremental DB update — fetches only new games since last run |
-| `backfill.py` | Full season load — used for initial setup only |
-| `db_config.py` | Database connection — reads `.env` locally, GitHub Secrets in CI |
-| `db_queries.py` | All query logic — scores, standings, rankings, hot player, schedule |
-| `models.py` | SQLAlchemy ORM table definitions |
-| `render_weekly_recap.py` | Renders 4 recap slides via Jinja2 + Playwright |
-| `render_weekly_preview.py` | Renders 4 preview slides via Jinja2 + Playwright |
-| `render_power_rankings.py` | Renders 3 rankings slides via Jinja2 + Playwright |
-| `render_player_spotlight.py` | Renders 1 spotlight slide via Jinja2 + Playwright |
-| `drive_upload.py` | Uploads rendered PNGs to Google Drive via OAuth |
-| `notify.py` | SMS/MMS alerts via Twilio |
+| `monte_carlo.py` | Poisson simulation → playoff %, Walter Cup %, projected points |
+| `derive_weights.py` | Ridge regression on S7 data → `weights.json` |
 
-### Templates
+### Data Layer (`src/pwhl_btn/db/`)
 
-| Template | Pipeline | Content |
-|----------|----------|---------|
-| `templates/recap_slide0.html` | Recap | Hook / Week in Review |
-| `templates/recap_slide1.html` | Recap | Scores |
-| `templates/recap_slide2.html` | Recap | Standings |
-| `templates/recap_slide3.html` | Recap | Story of the Week |
-| `templates/preview_slide0.html` | Preview | Hook / What's Ahead |
-| `templates/preview_slide1.html` | Preview | This Week's Games |
-| `templates/preview_slide2.html` | Preview | Game to Watch |
-| `templates/preview_slide3.html` | Preview | Standings |
-| `templates/rankings_slide0.html` | Rankings | Hook |
-| `templates/rankings_slide1.html` | Rankings | Team Identity (GF vs GA scatter) |
-| `templates/rankings_slide2.html` | Rankings | Hot Player highlight |
-| `templates/player_spotlight.html` | Spotlight | Player stat card |
-| `templates/goalie_spotlight.html` | Spotlight | Goalie stat card |
-
-### Assets
-
-| Path | Content |
+| File | Purpose |
 |------|---------|
-| `assets/logos/{TEAM}_50x50.png` | Team logos (base64-encoded at render time) |
-| `assets/logos/PWHL_logo.svg` | PWHL logo |
-| `assets/players/{first}_{last}.jpg` | Candid player photos (checked first) |
-| `assets/players/official/{player_id}.jpg` | Official headshots (checked second) |
+| `models.py` | SQLAlchemy ORM: Game, Player, Team, GoalieGameStats, PlayerGameStats |
+| `db_queries.py` | All read queries used by renderers and analytics |
+| `db_config.py` | DB connection — `.env` locally, GitHub Secrets in CI |
 
-> Photo resolution order: candid (`first_last.jpg`) → official headshot → leaguestat CDN
+### Ingest (`src/pwhl_btn/ingest/`)
+
+| File | Purpose |
+|------|---------|
+| `update.py` | Incremental update — upserts newly completed games |
+| `backfill_schedule.py` | Seeds full season schedule (unplayed rows) |
+
+### Renderers (`src/pwhl_btn/render/`)
+
+| File | Slides | Day |
+|------|--------|-----|
+| `weekly_recap.py` | 4 — hook, scores, standings, story | Monday |
+| `player_spotlight.py` | 1 — player stat card | Wednesday |
+| `power_rankings.py` | 3 — hook, scatter, hot player | Thursday |
+| `weekly_preview.py` | 4 — hook, schedule, game to watch, standings | Sunday |
+
+### Jobs (`src/pwhl_btn/jobs/`)
+
+| File | Purpose |
+|------|---------|
+| `run_weekly.py` | Chains DB update → render → Drive upload |
+| `sync_toi.py` | Recalculates average TOI per player from API |
+| `backfill.py` | Full historical season load (setup only) |
 
 ---
 
 ## Credentials
 
-All secrets are stored in GitHub → Settings → Secrets and variables → Actions.
-Never committed to the repo.
+Stored in GitHub → Settings → Secrets. Never committed.
 
-| Secret | Used By | Description |
-|--------|---------|-------------|
-| `PWHL_DATABASE_URL` | `db_config.py` | Railway MySQL connection string |
-| `ANTHROPIC_API_KEY` | `render_power_rankings.py`, `render_player_spotlight.py` | Claude API for blurbs and fun facts |
-| `GOOGLE_CLIENT_ID` | `drive_upload.py` | OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | `drive_upload.py` | OAuth client secret |
-| `GOOGLE_REFRESH_TOKEN` | `drive_upload.py` | OAuth refresh token |
-| `GOOGLE_DRIVE_FOLDER_ID` | `drive_upload.py` | Target Drive folder ID |
+| Secret | Used By |
+|--------|---------|
+| `PWHL_DATABASE_URL` | `db_config.py` — Railway MySQL connection |
+| `ANTHROPIC_API_KEY` | `power_rankings.py`, `player_spotlight.py` |
+| `GOOGLE_CLIENT_ID` | `google_drive.py` |
+| `GOOGLE_CLIENT_SECRET` | `google_drive.py` |
+| `GOOGLE_REFRESH_TOKEN` | `google_drive.py` |
+| `GOOGLE_DRIVE_FOLDER_ID` | `google_drive.py` |
 
 ---
 
 ## Local Development
 
 ```powershell
-# Run full recap pipeline (uses .env for credentials)
-python run_weekly.py
+# Run from src/pwhl_btn/
 
-# Skip Drive upload (faster for testing renders)
-python run_weekly.py --skip-drive --skip-sms
+# Full recap pipeline
+python jobs/run_weekly.py
 
-# Render each pipeline with sample data (no DB required)
-python render_weekly_recap.py --sample
-python render_weekly_preview.py --sample
-python render_power_rankings.py --sample
-python render_player_spotlight.py --sample
+# Skip uploads for faster render testing
+python jobs/run_weekly.py --skip-drive
 
-# Update DB only
-python update.py
+# Individual renderers
+python render/weekly_recap.py
+python render/weekly_preview.py
+python render/power_rankings.py
+python render/player_spotlight.py
 
-# Dry run — see what games would be loaded without writing
-python update.py --dry-run
+# DB update only
+python ingest/update.py
+
+# Derive regression weights from Season 7
+python analytics/derive_weights.py --game-pct 0.67 --save
+
+# Run Monte Carlo validation
+python analytics/monte_carlo.py --season 5 --game-pct 0.67
+python analytics/monte_carlo.py --season 8
+
+# Generate accuracy curve chart
+python visualizations/plot_accuracy_curve.py
 ```
 
----
-
-## Schedule
-
-| Pipeline | Cron | Workflow file |
-|----------|------|---------------|
-| Weekly Recap | `0 14 * * 1` — Monday 9AM CST | `weekly_recap.yml` |
-| Player Spotlight | `0 14 * * 3` — Wednesday 9AM CST | `player_spotlight.yml` |
-| Power Rankings | `0 14 * * 4` — Thursday 9AM CST | `power_rankings.yml` |
-| Weekly Preview | `0 14 * * 0` — Sunday 9AM CST | `weekly_preview.yml` |
-
-To trigger any pipeline manually: GitHub repo → **Actions** → select workflow → **Run workflow**
+To trigger any pipeline manually: GitHub → **Actions** → select workflow → **Run workflow**

@@ -234,21 +234,15 @@ def get_sample_data() -> dict:
 
 # ── DB data ───────────────────────────────────────────────────────────────────
 def get_db_data() -> dict:
-    try:
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent))
-        from db_queries import get_template_data
-        data = get_template_data()
-        print(f"  [DB] {len(data['games'])} games, {len(data['standings'])} teams loaded")
-        data.setdefault('skater_photo', None)
-        data.setdefault('skater_name', None)
-        data.setdefault('skater_team', None)
-        data.setdefault('pwhl_logo', _pwhl_logo_uri())
-        return data
-    except Exception as e:
-        print(f"  [DB ERROR] {e} — falling back to sample data")
-        import traceback; traceback.print_exc()
-        return get_sample_data()
+    from pwhl_btn.db.db_queries import get_template_data
+
+    data = get_template_data()
+    print(f"  [DB] {len(data['games'])} games, {len(data['standings'])} teams loaded")
+    data.setdefault("skater_photo", None)
+    data.setdefault("skater_name", None)
+    data.setdefault("skater_team", None)
+    data.setdefault("pwhl_logo", _pwhl_logo_uri())
+    return data
 
 
 # ── Renderer ──────────────────────────────────────────────────────────────────
