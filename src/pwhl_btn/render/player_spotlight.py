@@ -18,7 +18,7 @@ from playwright.sync_api import sync_playwright
 
 BASE_DIR     = Path(__file__).parent
 TEMPLATE_DIR = BASE_DIR / "templates"
-OUTPUT_DIR   = BASE_DIR / "output"
+OUTPUT_DIR   = BASE_DIR.parent.parent.parent / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
