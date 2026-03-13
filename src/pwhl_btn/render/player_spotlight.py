@@ -233,6 +233,7 @@ def main():
     parser.add_argument("--sample", action="store_true")
     parser.add_argument("--player", type=str, default=None,
                         help="Player name (partial match) or numeric ID to spotlight")
+    parser.add_argument("--skip-drive", action="store_true")
     args      = parser.parse_args()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M")
     out_path  = OUTPUT_DIR / f"spotlight_{timestamp}.png"
@@ -250,6 +251,17 @@ def main():
     print(f"\nRendering spotlight: {data['player_name']} ({data['player_team']})")
     render_spotlight(data, out_path)
     print(f"  Saved to {out_path}")
+
+    if not args.skip_drive:
+        folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "")
+        if folder_id:
+            try:
+                from pwhl_btn.integrations.google_drive import upload_files
+                links = upload_files([out_path], folder_id)
+                print(f"  📁 Uploaded to Drive: {links[0] if links else 'no link'}")
+            except Exception as e:
+                print(f"  Drive upload failed: {e}")
+
     return out_path
 
 
