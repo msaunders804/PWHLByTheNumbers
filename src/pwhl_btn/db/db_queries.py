@@ -604,11 +604,11 @@ def _official_photo_uri(player_id: int, player_name: str = "") -> str | None:
     Checks local assets/players/official/{id} first, then CDN.
     Does NOT check candid folder — use _candid_photo_uri() for that.
     """
-    official_dir = _THIS_DIR / "assets" / "players" / "official"
+    official_dir = PLAYERS_DIR / "official"
     for ext in ["jpg", "jpeg", "png", "webp"]:
         p = official_dir / f"{player_id}.{ext}"
         if p.exists():
-            return p.resolve().as_uri()
+            return _file_to_data_uri(p)
 
     return f"https://assets.leaguestat.com/pwhl/240x240/{player_id}.jpg"
 
@@ -616,15 +616,14 @@ def _official_photo_uri(player_id: int, player_name: str = "") -> str | None:
 def _candid_photo_uri(player_name: str) -> str | None:
     """
     Looks for a candid photo in assets/players/{first}_{last}.{ext}.
-    Returns file:// URI if found, None otherwise.
+    Returns data URI if found, None otherwise.
     Used by power rankings and recap — NOT spotlight.
     """
     slug = player_name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
-    candid_dir = _THIS_DIR / "assets" / "players"
     for ext in ["jpg", "jpeg", "png", "webp"]:
-        p = candid_dir / f"{slug}.{ext}"
+        p = PLAYERS_DIR / f"{slug}.{ext}"
         if p.exists():
-            return p.resolve().as_uri()
+            return _file_to_data_uri(p)
     return None
 
 
