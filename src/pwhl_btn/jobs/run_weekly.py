@@ -423,6 +423,7 @@ def main():
     parser.add_argument("--skater-photo", type=str, default=None, help="Path to skater photo for slide 1")
     parser.add_argument("--skater-name", type=str, default=None)
     parser.add_argument("--skater-team", type=str, default=None)
+    parser.add_argument("--skip-drive", action="store_true")
     args = parser.parse_args()
 
     data = get_sample_data() if args.sample else get_db_data()
@@ -448,7 +449,17 @@ def main():
         data["event"]["is_override"] = True
 
     out_dir = Path(args.out_dir) if args.out_dir else OUTPUT_DIR
-    render_all(data, out_dir)
+    outputs = render_all(data, out_dir)
+
+    if not args.skip_drive:
+        folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "")
+        if folder_id and outputs:
+            try:
+                from pwhl_btn.integrations.google_drive import upload_files
+                links = upload_files(outputs, folder_id)
+                print(f"  📁 Uploaded {len(links)} slides to Drive")
+            except Exception as e:
+                print(f"  Drive upload failed: {e}")
 
 
 if __name__ == "__main__":
