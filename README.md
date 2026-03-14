@@ -6,7 +6,7 @@ Public-facing analytics and social media platform for the Professional Women's H
 
 ## The Problem
 
-The PWHL, founded in 2024, has no publicly available predictive analytics infrastructure. This project builds that foundation — automated standings analysis, player performance tracking, and Monte Carlo playoff probability modeling — delivered weekly to a public audience via Instagram.
+The PWHL, founded in 2024, has no publicly available predictive analytics infrastructure. This project builds that foundation — automated standings analysis, player performance tracking, and Monte Carlo playoff probability modeling — delivered weekly to a public audience via TikTok (@bythenumberssports).
 
 ---
 
