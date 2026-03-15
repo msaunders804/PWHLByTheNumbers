@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --accent:#8c52ff; --gold:#f5a623; }
+  body { width:1080px; height:1920px; background:#ede8fb; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 85% 5%,rgba(94,23,235,0.14) 0%,transparent 50%), radial-gradient(ellipse at 5% 95%,rgba(94,23,235,0.10) 0%,transparent 50%), #ede8fb; }
+  .watermark { position:absolute; z-index:1; bottom:-60px; right:-40px; font-family:'Bebas Neue',sans-serif; font-size:500px; line-height:1; color:rgba(140,82,255,0.05); pointer-events:none; }
+
+  .brand { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(0,0,0,0.2); z-index:10; }
+  .badge { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.09); border:1.5px solid rgba(140,82,255,0.35); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#5e17eb; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; padding:110px 64px 90px; }
+
+  /* Header */
+  .header { text-align:center; margin-bottom:36px; }
+  .eyebrow { font-weight:700; font-size:26px; letter-spacing:8px; color:rgba(0,0,0,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:140px; line-height:0.85; color:#0d0d0d; }
+  .hero-title-accent { font-family:'Bebas Neue',sans-serif; font-size:140px; line-height:0.85; color:#8c52ff; }
+  .sub-label { font-size:22px; font-weight:700; letter-spacing:4px; color:rgba(0,0,0,0.28); margin-top:12px; text-transform:uppercase; }
+
+  /* Column headers */
+  .col-headers { display:flex; align-items:center; width:100%; padding:0 8px 10px; border-bottom:2px solid rgba(94,23,235,0.2); margin-bottom:8px; }
+  .col-team { width:160px; font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  .col-bar { flex:1; font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  .col-playoff { width:140px; text-align:center; font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  .col-pts { width:130px; text-align:right; font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+
+  /* Team rows */
+  .team-list { display:flex; flex-direction:column; gap:10px; width:100%; }
+  .team-row { display:flex; align-items:center; background:#f7f4ff; border:1.5px solid rgba(140,82,255,0.12); border-radius:14px; padding:18px 24px 18px 20px; position:relative; overflow:hidden; }
+  .team-row.first-place { border-color:rgba(94,23,235,0.35); background:linear-gradient(135deg,#f7f4ff 0%,#efe8ff 100%); }
+  .team-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(to bottom,var(--purple),var(--accent)); border-radius:14px 0 0 14px; }
+  .team-row.first-place::before { background:linear-gradient(to bottom,#f5a623,#ff6b35); }
+
+  /* Rank number */
+  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:32px; color:rgba(0,0,0,0.15); width:36px; flex-shrink:0; margin-right:12px; text-align:center; line-height:1; }
+  .team-row.first-place .rank-num { color:rgba(245,166,35,0.5); }
+
+  /* Logo / code */
+  .team-logo-wrap { width:60px; height:60px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:16px; }
+  .team-logo { width:56px; height:56px; object-fit:contain; }
+  .team-code-fallback { font-family:'Bebas Neue',sans-serif; font-size:28px; color:#5e17eb; letter-spacing:1px; }
+
+  /* Walter Cup % */
+  .wc-section { flex:1; display:flex; flex-direction:column; gap:6px; margin-right:16px; }
+  .wc-pct-row { display:flex; align-items:baseline; gap:6px; }
+  .wc-pct { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:#0d0d0d; }
+  .team-row.first-place .wc-pct { color:#5e17eb; }
+  .wc-label { font-size:15px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.32); text-transform:uppercase; }
+  .bar-track { height:8px; background:rgba(140,82,255,0.12); border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; background:linear-gradient(90deg,#5e17eb,#8c52ff); border-radius:4px; transition:width 0s; }
+  .team-row.first-place .bar-fill { background:linear-gradient(90deg,#f5a623,#ff6b35); }
+
+  /* Playoff % */
+  .playoff-section { width:130px; text-align:center; flex-shrink:0; }
+  .playoff-pct { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; color:#0d0d0d; }
+  .playoff-label { font-size:14px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  .playoff-ring { display:inline-flex; align-items:center; justify-content:center; }
+  .high-playoff { color:#2a9d3a; }
+  .low-playoff { color:#c0392b; }
+
+  /* Proj pts */
+  .pts-section { width:120px; text-align:right; flex-shrink:0; }
+  .pts-val { font-family:'Bebas Neue',sans-serif; font-size:36px; line-height:1; color:#0d0d0d; }
+  .pts-range { font-size:14px; font-weight:600; color:rgba(0,0,0,0.3); }
+  .pts-label { font-size:13px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.25); text-transform:uppercase; }
+
+  /* Sim note */
+  .sim-note { margin-top:18px; text-align:center; font-size:18px; font-weight:600; letter-spacing:2px; color:rgba(0,0,0,0.22); text-transform:uppercase; }
+
+  /* Footer */
+  .footer { position:absolute; bottom:56px; left:80px; right:80px; display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid rgba(0,0,0,0.08); padding-top:24px; z-index:10; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
+  .footer-season { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.18); text-transform:uppercase; }
+  .pwhl-logo { height:34px; opacity:0.22; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg"></div>
+<div class="watermark">BTN</div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Monte Carlo</div></div>
+
+<div class="slide">
+  <div class="header">
+    <div class="eyebrow">PWHL · {{ sim_label }}</div>
+    <div class="hero-title">WALTER CUP</div>
+    <div class="hero-title-accent">ODDS</div>
+    <div class="sub-label">Based on 10,000 simulated seasons</div>
+  </div>
+
+  <div class="col-headers">
+    <div style="width:36px;margin-right:12px;"></div>
+    <div class="col-team">Team</div>
+    <div class="col-bar">Walter Cup %</div>
+    <div class="col-playoff">Playoff %</div>
+    <div class="col-pts">Proj Pts</div>
+  </div>
+
+  <div class="team-list">
+    {% for team in teams %}
+    <div class="team-row {% if loop.index == 1 %}first-place{% endif %}">
+      <div class="rank-num">{{ loop.index }}</div>
+      <div class="team-logo-wrap">
+        {% if team.logo %}
+          <img class="team-logo" src="{{ team.logo }}" alt="{{ team.team_code }}">
+        {% else %}
+          <div class="team-code-fallback">{{ team.team_code }}</div>
+        {% endif %}
+      </div>
+      <div class="wc-section">
+        <div class="wc-pct-row">
+          <div class="wc-pct">{{ "%.1f"|format(team.walter_cup_pct) }}%</div>
+          <div class="wc-label">Walter Cup</div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:{{ [team.walter_cup_pct, 100]|min }}%"></div>
+        </div>
+      </div>
+      <div class="playoff-section">
+        <div class="playoff-pct {% if team.playoff_pct >= 70 %}high-playoff{% elif team.playoff_pct < 30 %}low-playoff{% endif %}">{{ "%.0f"|format(team.playoff_pct) }}%</div>
+        <div class="playoff-label">Playoffs</div>
+      </div>
+      <div class="pts-section">
+        <div class="pts-val">{{ "%.0f"|format(team.proj_pts_mean) }}</div>
+        <div class="pts-range">{{ team.proj_pts_low }}–{{ team.proj_pts_high }}</div>
+        <div class="pts-label">Proj Pts</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="sim-note">10,000 simulations · {{ games_remaining_avg }} avg games remaining</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+  <div class="footer-season">Season {{ season }}</div>
+</div>
+</body>
+</html>
