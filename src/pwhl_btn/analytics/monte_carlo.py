@@ -25,7 +25,6 @@ import argparse
 import json
 import math
 import random
-import sys
 from collections import defaultdict
 from pathlib import Path
 from statistics import mean, stdev
@@ -273,7 +272,7 @@ def run_simulation(n: int = DEFAULT_N) -> dict:
 
 # ── Validation (Season 2 backtest) ────────────────────────────────────────────
 
-def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float = None):
+def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float = None, verbose: bool = True):
     """
     Backtests the model using historical season data.
     Computes predicted standings at the midpoint (or as-of date) and compares
@@ -281,6 +280,9 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
 
     season_id : DB season_id to validate (default: 2 for backward compat)
     as_of_str : YYYY-MM-DD snapshot date (default: midseason cutoff)
+    verbose   : if False, suppresses all print output
+
+    Returns {"spearman": float, "p_value": float} or None on failure.
     """
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import sessionmaker
@@ -535,23 +537,39 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
 
         corr, pval = spearmanr(pred_ranks, actual_ranks)
 
-        print(f"\n  ── Season {TARGET_SEASON} Validation Results ──")
-        print(f"  Spearman rank correlation: {corr:.3f}  (p={pval:.3f})")
-        print(f"  (1.0 = perfect prediction, 0 = no correlation)\n")
-        print(f"  {'Team':<8} {'Predicted':>10} {'Actual':>8} {'Pred Rank':>10} {'Act Rank':>9} {'SV%':>8} {'ShotRatio':>10} {'PDO':>7}")
-        print(f"  {'-'*75}")
-        for tid in tids_sorted:
-            pm   = round(mean(pts_accumulator[tid]), 1)
-            code = teams_simple[tid]["team_code"]
-            sv   = teams_simple[tid].get("sv_pct", 0)
-            sr   = teams_simple[tid].get("shots_ratio", 0)
-            pdo  = teams_simple[tid].get("pdo", 0)
-            print(f"  {code:<8} {pm:>10.1f} {actual_pts[tid]:>8} "
-                  f"{pred_rank[tid]:>10} {actual_rank[tid]:>9} "
-                  f"  {sv:>6.3f}   {sr:>8.3f}  {pdo:>6.3f}")
+        if verbose:
+            print(f"\n  ── Season {TARGET_SEASON} Validation Results ──")
+            print(f"  Spearman rank correlation: {corr:.3f}  (p={pval:.3f})")
+            print(f"  (1.0 = perfect prediction, 0 = no correlation)\n")
+            print(f"  {'Team':<8} {'Predicted':>10} {'Actual':>8} {'Pred Rank':>10} {'Act Rank':>9} {'SV%':>8} {'ShotRatio':>10} {'PDO':>7}")
+            print(f"  {'-'*75}")
+            for tid in tids_sorted:
+                pm   = round(mean(pts_accumulator[tid]), 1)
+                code = teams_simple[tid]["team_code"]
+                sv   = teams_simple[tid].get("sv_pct", 0)
+                sr   = teams_simple[tid].get("shots_ratio", 0)
+                pdo  = teams_simple[tid].get("pdo", 0)
+                print(f"  {code:<8} {pm:>10.1f} {actual_pts[tid]:>8} "
+                      f"{pred_rank[tid]:>10} {actual_rank[tid]:>9} "
+                      f"  {sv:>6.3f}   {sr:>8.3f}  {pdo:>6.3f}")
+
+        return {
+            "spearman": float(corr),
+            "p_value":  float(pval),
+            "teams": {
+                team_code_map.get(tid, str(tid)): {
+                    "pred_rank":   pred_rank[tid],
+                    "actual_rank": actual_rank[tid],
+                    "pred_pts":    round(mean(pts_accumulator[tid]), 1),
+                    "actual_pts":  actual_pts[tid],
+                }
+                for tid in tids_sorted
+            },
+        }
 
     except ImportError:
         print("  scipy not installed — run: pip install scipy")
+        return None
     finally:
         session.close()
 
@@ -602,3 +620,6 @@ if __name__ == "__main__":
             with open(out_path, "w") as f:
                 json.dump(results, f, indent=2)
             print(f"\n  Exported → {out_path}")
+
+
+

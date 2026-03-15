@@ -68,6 +68,10 @@ def _pwhl_logo_uri() -> str | None:
     return _file_to_data_uri(_REPO_ROOT / "assets" / "logos" / "PWHL_logo.svg")
 
 
+def _walter_cup_uri() -> str | None:
+    return _file_to_data_uri(_REPO_ROOT / "assets" / "walter_cup.jpg")
+
+
 # ── Week range helpers ─────────────────────────────────────────────────────────
 def _d(dt, fmt: str) -> str:
     """Cross-platform date format — strips leading zeros on both Windows and Linux."""

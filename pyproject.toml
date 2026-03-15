@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwhl-btn"
+version = "0.1.0"
+description = "PWHL By The Numbers — analytics, rendering, and automation"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy>=2.0",
+    "requests",
+    "jinja2",
+    "playwright",
+    "matplotlib",
+    "numpy",
+    "google-auth",
+    "google-auth-oauthlib",
+    "google-api-python-client",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

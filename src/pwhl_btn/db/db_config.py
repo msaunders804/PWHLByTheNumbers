@@ -38,6 +38,8 @@ def _load_dotenv():
     candidates = [
         Path(__file__).parent / ".env",
         Path(__file__).parent.parent / ".env",
+        Path(__file__).parent.parent.parent / ".env",
+        Path(__file__).parent.parent.parent.parent / ".env",
     ]
     for env_path in candidates:
         if env_path.exists():

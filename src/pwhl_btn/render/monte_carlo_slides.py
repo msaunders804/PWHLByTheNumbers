@@ -1,8 +1,10 @@
 """
 monte_carlo_slides.py — Monte Carlo simulation TikTok slides.
 
-Slide 0: Walter Cup & playoff odds for all 8 teams (bar chart view)
-Slide 1: How Monte Carlo works (explainer)
+Slide 0: The Road to the Walter Cup (hook)
+Slide 1: Playoff Predictions (likelihood to make playoffs)
+Slide 2: Walter Cup Odds (bar chart for all 8 teams)
+Slide 3: How Monte Carlo works (explainer)
 
 Usage:
     python -m pwhl_btn.render.monte_carlo_slides            # live data
@@ -18,6 +20,8 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from playwright.sync_api import sync_playwright
 from datetime import datetime
+
+TOTAL_SEASON_GAMES = 30
 
 BASE_DIR     = Path(__file__).parent
 TEMPLATE_DIR = BASE_DIR / "templates"
@@ -81,29 +85,34 @@ def get_sample_data() -> dict:
     # Sort by Walter Cup %
     raw.sort(key=lambda x: x["walter_cup_pct"], reverse=True)
 
-    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _walter_cup_uri
     try:
         for t in raw:
             t["logo"] = _logo_uri(t["team_code"])
-        pwhl_logo = _pwhl_logo_uri()
+        pwhl_logo      = _pwhl_logo_uri()
+        walter_cup_img = _walter_cup_uri()
     except Exception:
         for t in raw:
             t["logo"] = None
-        pwhl_logo = None
+        pwhl_logo      = None
+        walter_cup_img = None
 
     avg_rem = round(sum(t["games_remaining"] for t in raw) / len(raw))
+    season_pct = round((TOTAL_SEASON_GAMES - avg_rem) / TOTAL_SEASON_GAMES * 100)
     return {
         "teams":               raw,
         "sim_label":           _sim_label(),
         "games_remaining_avg": avg_rem,
         "season":              8,
         "pwhl_logo":           pwhl_logo,
+        "walter_cup_img":      walter_cup_img,
+        "season_pct":          season_pct,
     }
 
 
 def get_live_data() -> dict:
     from pwhl_btn.analytics.monte_carlo import run_simulation
-    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _walter_cup_uri
 
     print("  Running Monte Carlo simulation (10,000 runs)...")
     results = run_simulation(n=10_000)
@@ -117,6 +126,7 @@ def get_live_data() -> dict:
     teams.sort(key=lambda x: x["walter_cup_pct"], reverse=True)
 
     avg_rem = round(sum(t["games_remaining"] for t in teams) / len(teams)) if teams else 0
+    season_pct = round((TOTAL_SEASON_GAMES - avg_rem) / TOTAL_SEASON_GAMES * 100)
 
     return {
         "teams":               teams,
@@ -124,6 +134,8 @@ def get_live_data() -> dict:
         "games_remaining_avg": avg_rem,
         "season":              8,
         "pwhl_logo":           _pwhl_logo_uri(),
+        "walter_cup_img":      _walter_cup_uri(),
+        "season_pct":          season_pct,
     }
 
 
@@ -133,8 +145,10 @@ def render_slides(data: dict) -> list[Path]:
     outputs   = []
 
     slides = [
-        ("mc_slide0.html", "odds"),
-        ("mc_slide1.html", "explainer"),
+        ("mc_slide0.html", "hook"),
+        ("mc_slide1.html", "playoff_odds"),
+        ("mc_slide2.html", "walter_cup_odds"),
+        ("mc_slide3.html", "explainer"),
     ]
 
     with sync_playwright() as p:
