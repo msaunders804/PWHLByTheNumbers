@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%,rgba(200,30,30,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.05) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:3; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(255,79,79,0.4); border-left:2px solid rgba(255,79,79,0.4); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(255,79,79,0.4); border-right:2px solid rgba(255,79,79,0.4); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(255,79,79,0.4); border-left:2px solid rgba(255,79,79,0.4); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(255,79,79,0.4); border-right:2px solid rgba(255,79,79,0.4); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#c0392b,#ff4f4f,#ff8c8c); }
+  .brand { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:10; }
+  .badge { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(255,79,79,0.18); border:1.5px solid rgba(255,79,79,0.55); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#ff4f4f; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#ffaaaa; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 88px; }
+
+  .title-block { text-align:center; margin-bottom:44px; }
+  .eyebrow { font-weight:700; font-size:24px; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:8px; }
+  .main-title { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .main-title-accent { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#ff4f4f; letter-spacing:2px; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,transparent,#ff4f4f,transparent); margin:20px auto 16px; border-radius:2px; box-shadow:0 0 12px rgba(255,79,79,0.55); }
+  .sub-label { font-size:21px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+
+  /* Team rows */
+  .team-list { display:flex; flex-direction:column; gap:14px; flex:1; }
+
+  .team-row { display:flex; align-items:center; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,79,79,0.15); border-radius:16px; padding:22px 28px; position:relative; overflow:hidden; }
+
+  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:28px; color:rgba(255,255,255,0.18); width:32px; flex-shrink:0; margin-right:14px; text-align:center; line-height:1; }
+  .rank-num.top { color:rgba(255,79,79,0.7); }
+
+  .team-code { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:2px; color:#fff; width:90px; flex-shrink:0; }
+
+  .bar-section { flex:1; display:flex; flex-direction:column; gap:4px; margin:0 20px; }
+  .bar-track { height:20px; background:rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,#c0392b,#ff4f4f); opacity:0.85; }
+
+  .val-section { width:72px; text-align:right; flex-shrink:0; }
+  .val-num { font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1; color:#ff4f4f; }
+  .val-label { font-size:14px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.25); text-transform:uppercase; }
+
+  /* Footer */
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:28px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:17px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+  .pwhl-logo { height:26px; opacity:0.18; filter:invert(1); }
+
+  .dots { display:flex; justify-content:center; gap:12px; margin-top:18px; flex-shrink:0; }
+  .dot { height:5px; border-radius:3px; }
+  .dot-active { width:32px; background:#ff4f4f; }
+  .dot-inactive { width:16px; background:rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Empty Net</div></div>
+
+<div class="slide">
+  <div class="title-block">
+    <div class="eyebrow">PWHL · Empty Net Goals</div>
+    <div class="main-title">MOST VULNERABLE</div>
+    <div class="main-title-accent">PULLING THE GOALIE</div>
+    <div class="neon-rule"></div>
+    <div class="sub-label">EN goals allowed while goalie is pulled</div>
+  </div>
+
+  <div class="team-list">
+    {% for team in teams %}
+    <div class="team-row">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(to bottom,#c0392b,#ff4f4f);border-radius:16px 0 0 16px;opacity:0.75;"></div>
+      <div class="rank-num {% if loop.index == 1 %}top{% endif %}">{{ loop.index }}</div>
+      <div class="team-code">{{ team.abbr }}</div>
+      <div class="bar-section">
+        <div class="bar-track">
+          <div class="bar-fill" style="width:{{ team.bar_pct }}%"></div>
+        </div>
+      </div>
+      <div class="val-section">
+        <div class="val-num">{{ team.val }}</div>
+        <div class="val-label">Goals</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+  <div class="dots">
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-active"></div>
+    <div class="dot dot-inactive"></div>
+  </div>
+</div>
+</body>
+</html>
