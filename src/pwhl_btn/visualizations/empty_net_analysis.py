@@ -45,63 +45,32 @@ def api_get(url):
         return json.loads(raw)
 
 
-def _parse_schedule_date(row: dict) -> str:
-    """Extract a M/D date string from a schedule row dict."""
-    from datetime import datetime
-    raw = str(
-        row.get("game_date")
-        or row.get("date_with_day")
-        or row.get("date")
-        or ""
-    ).strip()
-    if not raw:
-        return ""
-    # Strip leading weekday name: "Saturday, March 12, 2026" → "March 12, 2026"
-    if "," in raw:
-        head, _, tail = raw.partition(",")
-        if head.strip().lower() in {
-            "monday","tuesday","wednesday","thursday","friday","saturday","sunday"
-        }:
-            raw = tail.strip()
-    for fmt in ("%B %d, %Y", "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"):
-        try:
-            dt = datetime.strptime(raw, fmt)
-            return f"{dt.month}/{dt.day}"
-        except (ValueError, TypeError):
-            pass
-    try:  # ISO timestamp with T: "2026-03-12T19:30:00"
-        dt = datetime.strptime(raw[:19], "%Y-%m-%dT%H:%M:%S")
-        return f"{dt.month}/{dt.day}"
-    except (ValueError, TypeError):
-        pass
-    try:  # space-separated datetime: "2026-03-12 19:30:00"
-        dt = datetime.strptime(raw[:10], "%Y-%m-%d")
-        return f"{dt.month}/{dt.day}"
-    except (ValueError, TypeError):
-        pass
-    return ""
-
 
 def get_season_game_ids(season_id):
-    url = (f"{BASE_URL}?feed=statviewfeed&view=schedule&season_id={season_id}"
-           f"&key={API_KEY}&client_code={CLIENT_CODE}&lang=en&fmt=json")
+    from datetime import datetime as _dt
+    url = (f"{BASE_URL}?feed=modulekit&view=schedule&season_id={season_id}"
+           f"&key={API_KEY}&client_code={CLIENT_CODE}&fmt=json")
     data = api_get(url)
+    schedule = data.get("SiteKit", {}).get("Schedule", [])
     game_ids  = []
     game_dates = {}   # {game_id: "M/D"}
-    sections = data[0].get("sections", []) if isinstance(data, list) and data else []
-    for section in sections:
-        for entry in section.get("data", section.get("rows", [])):
-            row  = entry.get("row",  {})
-            prop = entry.get("prop", {})
-            if "final" not in row.get("game_status", "").lower():
-                continue
-            gid = (prop.get("game_summary_long", {}).get("gameLink")
-                   or prop.get("game_center", {}).get("gameLink")
-                   or row.get("game_id"))
-            if gid:
-                gid = int(gid)
-                game_ids.append(gid)
-                game_dates[gid] = _parse_schedule_date(row)
+    for g in schedule:
+        is_final = (
+            str(g.get("final", "0")) == "1"
+            or "final" in str(g.get("game_status", "")).lower()
+        )
+        if not is_final:
+            continue
+        gid = g.get("id") or g.get("game_id")
+        if not gid:
+            continue
+        gid = int(gid)
+        game_ids.append(gid)
+        raw_date = str(g.get("date_played", "")).strip()
+        try:
+            game_dates[gid] = f"{_dt.strptime(raw_date, '%Y-%m-%d').month}/{_dt.strptime(raw_date, '%Y-%m-%d').day}"
+        except (ValueError, TypeError):
+            game_dates[gid] = ""
     return game_ids, game_dates
 
 
@@ -250,6 +219,9 @@ def analyze_games(game_ids, game_dates=None):
                     pull_scored += 1
                     is_home = (team_id == home_id)
                     score = f"{home_score}-{away_score}"
+                    pulling_score   = home_score if is_home else away_score
+                    opposing_score  = away_score if is_home else home_score
+                    result = "W" if pulling_score > opposing_score else "L"
                     for _ in goals_in_window:
                         pull_scored_events.append({
                             "team":     home_abbr if is_home else away_abbr,
@@ -257,6 +229,7 @@ def analyze_games(game_ids, game_dates=None):
                             "home":     is_home,
                             "date":     game_date,
                             "score":    score,
+                            "result":   result,
                             "game_id":  gid,
                         })
                 else:

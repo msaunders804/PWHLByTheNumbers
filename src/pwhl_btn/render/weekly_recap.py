@@ -42,6 +42,24 @@ def _pwhl_logo_uri():
             return p.resolve().as_uri()
     return None
 
+
+_PLAYERS_DIR = Path(__file__).resolve().parents[3] / "assets" / "players"
+
+def _player_photo_uri(player_name: str) -> str | None:
+    """Look up a player photo in assets/players/ by name.
+    Tries 'firstname_lastname' and 'lastname_firstname' slugs."""
+    parts = player_name.lower().split()
+    candidates = [
+        "_".join(parts),           # alina_muller
+        "_".join(reversed(parts)), # muller_alina (fallback)
+    ]
+    for slug in candidates:
+        for ext in ("webp", "png", "jpg", "jpeg"):
+            p = _PLAYERS_DIR / f"{slug}.{ext}"
+            if p.exists():
+                return p.resolve().as_uri()
+    return None
+
 TEAM_FULL_NAMES = {
     "BOS": "Boston",   "MIN": "Minnesota", "MTL": "Montreal",
     "NYR": "New York", "OTT": "Ottawa",    "SEA": "Seattle",
@@ -99,8 +117,9 @@ def pick_event(flagged_events: list[dict]) -> dict:
     e.setdefault("icon",        EVENT_ICONS.get(e["type"], "📊"))
     e.setdefault("type_label",  EVENT_LABELS.get(e["type"], e["type"].replace("_", " ").title()))
     e.setdefault("is_override", False)
-    e.setdefault("player_photo",    None)
     e.setdefault("player_initials", initials(e.get("player_name", "??")))
+    if not e.get("player_photo"):
+        e["player_photo"] = _player_photo_uri(e.get("player_name", ""))
     return e
 
 
@@ -131,7 +150,7 @@ def manual_override_event() -> dict:
         "player_name":      player_name,
         "player_team":      player_team,
         "player_position":  player_pos,
-        "player_photo":     None,
+        "player_photo":     _player_photo_uri(player_name),
         "player_initials":  initials(player_name),
         "stats":            stats,
         "headline":         headline,
