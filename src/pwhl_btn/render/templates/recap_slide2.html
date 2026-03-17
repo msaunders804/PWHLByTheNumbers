@@ -279,6 +279,10 @@
   .team-row.eliminated .team-name-full,
   .team-row.eliminated .cell { opacity: 0.8; }
 
+  /* clinch badge */
+  .clinch-badge { font-size: 18px; color: #f5a623; margin-left: 8px; vertical-align: middle; line-height: 1; }
+  .elim-badge { font-size: 16px; color: #e53935; margin-left: 8px; vertical-align: middle; line-height: 1; font-weight: 700; letter-spacing: 0; }
+
   .footer-line {
     width: 100%;
     height: 1px;
@@ -359,7 +363,7 @@
           {% else %}
             <div class="team-logo-placeholder">{{ team.abbr }}</div>
           {% endif %}
-          <span class="team-name-full">{{ team.name }}</span>
+          <span class="team-name-full">{{ team.name }}</span>{% if team.clinched %}<span class="clinch-badge">★</span>{% endif %}{% if team.eliminated %}<span class="elim-badge">✕</span>{% endif %}
         </div>
 
         <div class="cell gp">{{ team.gp }}</div>
