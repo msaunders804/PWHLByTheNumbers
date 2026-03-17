@@ -96,13 +96,17 @@ def parse_time(t):
 
 
 def analyze_games(game_ids, game_dates=None):
-    team_names        = {}
-    en_scored         = defaultdict(int)
-    en_allowed        = defaultdict(int)
-    pull_times        = []
-    pull_scored       = 0   # pulling team scored at least once during the pull window
-    pull_no_score     = 0   # pulling team did not score during the pull window
-    pull_scored_events = []  # per-event detail records for the list slide
+    team_names             = {}
+    en_scored              = defaultdict(int)
+    en_allowed             = defaultdict(int)
+    pull_times             = []
+    pull_scored            = 0   # pulling team scored at least once during the pull window
+    pull_no_score          = 0   # pulling team did not score during the pull window
+    pull_en_against        = 0   # pulls where opponent scored an EN goal
+    pull_no_change         = 0   # pulls where neither team scored
+    pull_en_against_by_team = defaultdict(int)  # per pulling team
+    pull_total_by_team      = defaultdict(int)   # total pulls per team
+    pull_scored_events     = []  # per-event detail records for the list slide
 
     total = len(game_ids)
     for i, gid in enumerate(game_ids, 1):
@@ -136,7 +140,8 @@ def analyze_games(game_ids, game_dates=None):
 
         # Build 3rd-period goal timeline: {team_id: [time_in_seconds, ...]}
         # Used to check whether the pulling team scored during a pull window.
-        third_goals = defaultdict(list)
+        third_goals    = defaultdict(list)
+        third_en_goals = defaultdict(list)  # EN goals only — for checking goals against on pull
         for period in periods:
             per_id = str(
                 period.get("info", {}).get("id")
@@ -148,6 +153,8 @@ def analyze_games(game_ids, game_dates=None):
                 continue
             for goal in period.get("goals", []):
                 scoring_id = goal.get("team", {}).get("id")
+                props = goal.get("properties", {})
+                is_en = str(props.get("isEmptyNet", "0")) == "1"
                 # Try multiple field paths — HockeyTech uses "time" but some
                 # responses nest it or use alternate names.
                 raw_time = (
@@ -161,6 +168,8 @@ def analyze_games(game_ids, game_dates=None):
                 goal_time = parse_time(str(raw_time))
                 if scoring_id is not None:
                     third_goals[scoring_id].append(goal_time)
+                    if is_en:
+                        third_en_goals[scoring_id].append(goal_time)
 
         # Empty net goals (all periods)
         for period in periods:
@@ -209,6 +218,19 @@ def analyze_games(game_ids, game_dates=None):
                         pull_end_t = beg_t
 
                 pull_times.append(1200 - end_t)
+                is_home  = (team_id == home_id)
+                abbr     = home_abbr if is_home else away_abbr
+                opp_id   = away_id   if is_home else home_id
+                pull_total_by_team[abbr] += 1
+
+                # EN goal scored against the pulling team during this window?
+                en_against_in_window = [
+                    gt for gt in third_en_goals.get(opp_id, [])
+                    if end_t <= gt <= pull_end_t
+                ]
+                if en_against_in_window:
+                    pull_en_against += 1
+                    pull_en_against_by_team[abbr] += 1
 
                 # How many goals did the pulling team score during [end_t, pull_end_t]?
                 goals_in_window = [
@@ -217,7 +239,6 @@ def analyze_games(game_ids, game_dates=None):
                 ]
                 if goals_in_window:
                     pull_scored += 1
-                    is_home = (team_id == home_id)
                     score = f"{home_score}-{away_score}"
                     pulling_score   = home_score if is_home else away_score
                     opposing_score  = away_score if is_home else home_score
@@ -234,17 +255,23 @@ def analyze_games(game_ids, game_dates=None):
                         })
                 else:
                     pull_no_score += 1
+                    if not en_against_in_window:
+                        pull_no_change += 1
 
         time.sleep(0.15)
 
     return {
-        "team_names":         team_names,
-        "en_scored":          dict(en_scored),
-        "en_allowed":         dict(en_allowed),
-        "pull_times":         pull_times,
-        "pull_scored":        pull_scored,
-        "pull_no_score":      pull_no_score,
-        "pull_scored_events": pull_scored_events,
+        "team_names":              team_names,
+        "en_scored":               dict(en_scored),
+        "en_allowed":              dict(en_allowed),
+        "pull_times":              pull_times,
+        "pull_scored":             pull_scored,
+        "pull_no_score":           pull_no_score,
+        "pull_en_against":         pull_en_against,
+        "pull_no_change":          pull_no_change,
+        "pull_en_against_by_team": dict(pull_en_against_by_team),
+        "pull_total_by_team":      dict(pull_total_by_team),
+        "pull_scored_events":      pull_scored_events,
     }
 
 

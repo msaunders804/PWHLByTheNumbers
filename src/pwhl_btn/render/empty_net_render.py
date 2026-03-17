@@ -158,22 +158,34 @@ def _histogram_svg(pull_times: list[float], w: int = 900, h: int = 560) -> str:
 
 # ── Slide data builders ────────────────────────────────────────────────────────
 
+def _cover_data(results: dict, pwhl_logo: str | None) -> dict:
+    scored   = results.get("pull_scored",   0)
+    no_score = results.get("pull_no_score", 0)
+    total    = scored + no_score or 1
+    return {
+        "pct_scored": round(scored / total * 100),
+        "bos_logo":   _team_logo_uri("BOS"),
+        "mtl_logo":   _team_logo_uri("MTL"),
+        "pwhl_logo":  pwhl_logo,
+    }
+
+
 def _slide0_data(results: dict, pwhl_logo: str | None) -> dict:
-    scored    = results.get("pull_scored",   0)
-    no_score  = results.get("pull_no_score", 0)
-    total     = scored + no_score or 1
+    scored   = results.get("pull_scored",   0)
+    no_score = results.get("pull_no_score", 0)
+    total    = scored + no_score or 1
     events = [
         {**ev, "logo": _team_logo_uri(ev["team"]), "opp_logo": _team_logo_uri(ev["opponent"])}
         for ev in results.get("pull_scored_events", [])
     ]
     return {
-        "total_pulls":   total,
-        "n_scored":      scored,
-        "n_no_score":    no_score,
-        "pct_scored":    round(scored   / total * 100),
-        "pct_no_score":  round(no_score / total * 100),
-        "events":        events,
-        "pwhl_logo":     pwhl_logo,
+        "total_pulls":  total,
+        "n_scored":     scored,
+        "n_no_score":   no_score,
+        "pct_scored":   round(scored   / total * 100),
+        "pct_no_score": round(no_score / total * 100),
+        "events":       events,
+        "pwhl_logo":    pwhl_logo,
     }
 
 
@@ -205,9 +217,36 @@ def _slide1_data(results: dict, pwhl_logo: str | None) -> dict:
 
 
 def _slide2_data(results: dict, pwhl_logo: str | None) -> dict:
+    pull_total      = results.get("pull_total_by_team", {})
+    pull_en_against = results.get("pull_en_against_by_team", {})
+    total_pulls     = sum(pull_total.values()) or 1
+    total_en        = results.get("pull_en_against", 0)
+    rate_by_team = {
+        abbr: round(pull_en_against.get(abbr, 0) / total * 100)
+        for abbr, total in pull_total.items()
+        if total > 0
+    }
     return {
-        "teams":     _team_rows(results["en_allowed"], red_bars=True),
-        "pwhl_logo": pwhl_logo,
+        "n_en_against":   total_en,
+        "pct_en_against": round(total_en / total_pulls * 100),
+        "total_pulls":    total_pulls,
+        "teams":          _team_rows(rate_by_team, red_bars=True),
+        "pwhl_logo":      pwhl_logo,
+    }
+
+
+def _slide3_data_no_change(results: dict, pwhl_logo: str | None) -> dict:
+    scored     = results.get("pull_scored",    0)
+    en_against = results.get("pull_en_against", 0)
+    no_change  = results.get("pull_no_change",  0)
+    total      = scored + results.get("pull_no_score", 0) or 1
+    return {
+        "n_no_change":   no_change,
+        "pct_no_change": round(no_change  / total * 100),
+        "pct_scored":    round(scored     / total * 100),
+        "pct_en_against": round(en_against / total * 100),
+        "total_pulls":   total,
+        "pwhl_logo":     pwhl_logo,
     }
 
 
@@ -223,9 +262,10 @@ def _slide3_data(results: dict, pwhl_logo: str | None) -> dict:
     }
 
 
-def _slide4_data(results: dict, pwhl_logo: str | None) -> dict:
+def _slide4_data(pwhl_logo: str | None) -> dict:
     return {
-        "events":    results.get("pull_scored_events", []),
+        "bos_logo":  _team_logo_uri("BOS"),
+        "mtl_logo":  _team_logo_uri("MTL"),
         "pwhl_logo": pwhl_logo,
     }
 
@@ -274,10 +314,11 @@ def render_all(results: dict, out_dir: Path | None = None) -> list[Path]:
     pwhl_logo = _pwhl_logo_uri()
 
     slides = [
-        ("en_slide0.html", "en_slide0_overall.png",  _slide0_data(results, pwhl_logo)),
-        ("en_slide1.html", "en_slide1_scored.png",   _slide1_data(results, pwhl_logo)),
-        ("en_slide2.html", "en_slide2_allowed.png",  _slide2_data(results, pwhl_logo)),
-        ("en_slide3.html", "en_slide3_timing.png",   _slide3_data(results, pwhl_logo)),
+        ("en_cover.html",  "en_cover.png",             _cover_data(results, pwhl_logo)),
+        ("en_slide0.html", "en_slide0_overall.png",    _slide0_data(results, pwhl_logo)),
+        ("en_slide2.html", "en_slide2_en_against.png", _slide2_data(results, pwhl_logo)),
+        ("en_slide3.html", "en_slide3_no_change.png",  _slide3_data_no_change(results, pwhl_logo)),
+        ("en_slide4.html", "en_slide4_endcard.png",    _slide4_data(pwhl_logo)),
     ]
 
     print("\n🎬 Rendering Empty Net Analysis slides...")

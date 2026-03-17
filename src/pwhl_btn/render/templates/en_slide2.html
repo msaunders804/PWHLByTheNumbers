@@ -8,15 +8,15 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
 
-  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%,rgba(200,30,30,0.12) 0%,transparent 65%); z-index:0; }
-  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.05) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%,rgba(200,30,30,0.15) 0%,transparent 60%); z-index:0; }
+  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(255,79,79,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,79,79,0.04) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
   .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
 
   .corner { position:absolute; width:80px; height:80px; z-index:3; }
-  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(255,79,79,0.4); border-left:2px solid rgba(255,79,79,0.4); }
-  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(255,79,79,0.4); border-right:2px solid rgba(255,79,79,0.4); }
-  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(255,79,79,0.4); border-left:2px solid rgba(255,79,79,0.4); }
-  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(255,79,79,0.4); border-right:2px solid rgba(255,79,79,0.4); }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(255,79,79,0.45); border-left:2px solid rgba(255,79,79,0.45); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(255,79,79,0.45); border-right:2px solid rgba(255,79,79,0.45); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(255,79,79,0.45); border-left:2px solid rgba(255,79,79,0.45); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(255,79,79,0.45); border-right:2px solid rgba(255,79,79,0.45); }
 
   .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#c0392b,#ff4f4f,#ff8c8c); }
   .brand { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:10; }
@@ -24,42 +24,64 @@
   .badge-dot { width:8px; height:8px; border-radius:50%; background:#ff4f4f; }
   .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#ffaaaa; text-transform:uppercase; }
 
-  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 88px; }
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 80px; }
 
-  .title-block { text-align:center; margin-bottom:44px; }
-  .eyebrow { font-weight:700; font-size:24px; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:8px; }
-  .main-title { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; }
-  .main-title-accent { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#ff4f4f; letter-spacing:2px; }
-  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,transparent,#ff4f4f,transparent); margin:20px auto 16px; border-radius:2px; box-shadow:0 0 12px rgba(255,79,79,0.55); }
-  .sub-label { font-size:21px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  /* ── Title ── */
+  .title-block { text-align:center; margin-bottom:20px; flex-shrink:0; }
+  .eyebrow { font-weight:700; font-size:20px; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .main-title { font-family:'Bebas Neue',sans-serif; font-size:76px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .main-title-accent { font-family:'Bebas Neue',sans-serif; font-size:76px; line-height:0.88; color:#ff4f4f; letter-spacing:2px; }
+  .neon-rule { width:100px; height:3px; background:linear-gradient(90deg,transparent,#ff4f4f,transparent); margin:12px auto 8px; border-radius:2px; box-shadow:0 0 12px rgba(255,79,79,0.55); }
+  .sub-label { font-size:17px; font-weight:600; letter-spacing:4px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
 
-  /* Team rows */
-  .team-list { display:flex; flex-direction:column; gap:14px; flex:1; }
+  /* ── Big stat card ── */
+  .stat-card { display:flex; align-items:center; gap:24px; border-radius:20px; padding:28px 40px; margin-bottom:24px; flex-shrink:0;
+               background:rgba(255,79,79,0.08); border:1.5px solid rgba(255,79,79,0.35); position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
+                       background:linear-gradient(to bottom,#c0392b,#ff4f4f); border-radius:20px 0 0 20px; }
+  .stat-icon { font-size:48px; flex-shrink:0; }
+  .stat-body { flex:1; }
+  .stat-cat  { font-size:16px; font-weight:700; letter-spacing:5px; text-transform:uppercase; color:rgba(255,79,79,0.8); margin-bottom:4px; }
+  .stat-nums { display:flex; align-items:baseline; gap:14px; }
+  .stat-n    { font-family:'Bebas Neue',sans-serif; font-size:96px; line-height:1; color:#fff; }
+  .stat-pct  { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:rgba(255,255,255,0.45); }
+  .stat-sub  { font-size:14px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-top:4px; }
+  .stat-bar-track { height:6px; background:rgba(255,255,255,0.07); border-radius:3px; margin-top:12px; }
+  .stat-bar-fill  { height:100%; border-radius:3px; background:linear-gradient(90deg,#c0392b,#ff4f4f); }
 
-  .team-row { display:flex; align-items:center; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,79,79,0.15); border-radius:16px; padding:22px 28px; position:relative; overflow:hidden; }
+  /* ── Team list ── */
+  .list-header { display:flex; align-items:center; gap:16px; margin-bottom:12px; flex-shrink:0; }
+  .list-header-label { font-size:15px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.3); text-transform:uppercase; white-space:nowrap; }
+  .list-header-rule  { flex:1; height:1px; background:rgba(255,79,79,0.2); }
 
-  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:28px; color:rgba(255,255,255,0.18); width:32px; flex-shrink:0; margin-right:14px; text-align:center; line-height:1; }
+  .team-list { display:flex; flex-direction:column; gap:10px; flex:1; overflow:hidden; }
+
+  .team-row { display:flex; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,79,79,0.12); border-radius:12px; padding:16px 20px; position:relative; overflow:hidden; flex-shrink:0; }
+  .team-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+                      background:linear-gradient(to bottom,#c0392b,#ff4f4f); border-radius:12px 0 0 12px; opacity:0.75; }
+
+  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:26px; color:rgba(255,255,255,0.18); width:30px; flex-shrink:0; margin-right:12px; text-align:center; line-height:1; }
   .rank-num.top { color:rgba(255,79,79,0.7); }
 
-  .team-code { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:2px; color:#fff; width:90px; flex-shrink:0; }
+  .team-code { font-family:'Bebas Neue',sans-serif; font-size:42px; letter-spacing:2px; color:#fff; width:100px; flex-shrink:0; }
 
-  .bar-section { flex:1; display:flex; flex-direction:column; gap:4px; margin:0 20px; }
-  .bar-track { height:20px; background:rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; }
-  .bar-fill { height:100%; border-radius:10px; background:linear-gradient(90deg,#c0392b,#ff4f4f); opacity:0.85; }
+  .bar-section { flex:1; margin:0 20px; }
+  .bar-track { height:18px; background:rgba(255,255,255,0.06); border-radius:9px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:9px; background:linear-gradient(90deg,#c0392b,#ff4f4f); opacity:0.85; }
 
-  .val-section { width:72px; text-align:right; flex-shrink:0; }
-  .val-num { font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1; color:#ff4f4f; }
-  .val-label { font-size:14px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.25); text-transform:uppercase; }
+  .val-section { width:80px; text-align:right; flex-shrink:0; }
+  .val-num   { font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1; color:#ff4f4f; }
+  .val-label { font-size:13px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.25); text-transform:uppercase; }
 
-  /* Footer */
-  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:28px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
-  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
-  .footer-season { font-size:17px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
-  .pwhl-logo { height:26px; opacity:0.18; filter:invert(1); }
+  /* ── Footer ── */
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+  .pwhl-logo { height:24px; opacity:0.18; filter:invert(1); }
 
-  .dots { display:flex; justify-content:center; gap:12px; margin-top:18px; flex-shrink:0; }
+  .dots { display:flex; justify-content:center; gap:12px; margin-top:14px; flex-shrink:0; }
   .dot { height:5px; border-radius:3px; }
-  .dot-active { width:32px; background:#ff4f4f; }
+  .dot-active   { width:32px; background:#ff4f4f; }
   .dot-inactive { width:16px; background:rgba(255,255,255,0.15); }
 </style>
 </head>
@@ -78,17 +100,35 @@
 
 <div class="slide">
   <div class="title-block">
-    <div class="eyebrow">PWHL · Empty Net Goals</div>
-    <div class="main-title">MOST VULNERABLE</div>
-    <div class="main-title-accent">PULLING THE GOALIE</div>
+    <div class="eyebrow">PWHL · Empty Net Analysis</div>
+    <div class="main-title">PULLING THE GOALIE</div>
+    <div class="main-title-accent">THE RISK</div>
     <div class="neon-rule"></div>
-    <div class="sub-label">EN goals allowed while goalie is pulled</div>
+    <div class="sub-label">{{ total_pulls }} pulls tracked · Season 8</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">⚠</div>
+    <div class="stat-body">
+      <div class="stat-cat">EN Goal Against</div>
+      <div class="stat-nums">
+        <div class="stat-n">{{ n_en_against }}</div>
+        <div class="stat-pct">{{ pct_en_against }}%</div>
+      </div>
+      <div class="stat-sub">chance opponent scores on the empty net</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill" style="width:{{ pct_en_against }}%"></div></div>
+    </div>
+  </div>
+
+  <div class="list-header">
+    <div class="list-header-rule"></div>
+    <div class="list-header-label">By Team</div>
+    <div class="list-header-rule"></div>
   </div>
 
   <div class="team-list">
     {% for team in teams %}
     <div class="team-row">
-      <div style="position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(to bottom,#c0392b,#ff4f4f);border-radius:16px 0 0 16px;opacity:0.75;"></div>
       <div class="rank-num {% if loop.index == 1 %}top{% endif %}">{{ loop.index }}</div>
       <div class="team-code">{{ team.abbr }}</div>
       <div class="bar-section">
@@ -97,8 +137,8 @@
         </div>
       </div>
       <div class="val-section">
-        <div class="val-num">{{ team.val }}</div>
-        <div class="val-label">Goals</div>
+        <div class="val-num">{{ team.val }}%</div>
+        <div class="val-label">of pulls</div>
       </div>
     </div>
     {% endfor %}
@@ -112,9 +152,7 @@
 
   <div class="dots">
     <div class="dot dot-inactive"></div>
-    <div class="dot dot-inactive"></div>
     <div class="dot dot-active"></div>
-    <div class="dot dot-inactive"></div>
   </div>
 </div>
 </body>
