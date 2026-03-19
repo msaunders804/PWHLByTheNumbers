@@ -214,6 +214,11 @@ def get_standings(season_id: int = 8) -> list[dict]:
             ORDER BY points DESC, wins DESC
         """), {"sid": season_id}).fetchall()
 
+        clinch_data = get_clinch_data(season_id)
+        from pwhl_btn.analytics.clinch import check_clinched, check_eliminated
+        clinched   = check_clinched(clinch_data)
+        eliminated = check_eliminated(clinch_data)
+
         return [{
             "abbr":        r.team_code,
             "name":        r.team_name,
@@ -226,9 +231,148 @@ def get_standings(season_id: int = 8) -> list[dict]:
             "home_record": f"{r.hw}-{r.hl}-{r.hotl}",
             "away_record": f"{r.aw}-{r.al}-{r.aotl}",
             "points":      r.points,
+            "clinched":    clinched.get(r.team_id, False),
+            "eliminated":  eliminated.get(r.team_id, False),
         } for r in rows]
     finally:
         session.close()
+
+
+def get_clinch_data(season_id: int = 8) -> dict[int, dict]:
+    """
+    Returns {team_id: {"pts": int, "games_remaining": int, "team_code": str}}
+    for use by the clinch calculator.
+    """
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT t.team_id, t.team_code,
+                   COALESCE(SUM(
+                       CASE
+                           WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                                (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                           THEN 2
+                           WHEN g.result_type IN ('OT','SO')
+                            AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
+                                 (g.away_team_id = t.team_id AND g.away_score < g.home_score))
+                           THEN 1
+                           ELSE 0
+                       END
+                   ), 0) AS pts,
+                   (SELECT COUNT(*) FROM games g2
+                    WHERE g2.season_id = :sid
+                      AND g2.game_status != 'final'
+                      AND (g2.home_team_id = t.team_id OR g2.away_team_id = t.team_id)
+                   ) AS games_remaining
+            FROM teams t
+            LEFT JOIN games g ON (g.home_team_id = t.team_id OR g.away_team_id = t.team_id)
+                              AND g.season_id = :sid AND g.game_status = 'final'
+            WHERE t.season_id = :sid
+            GROUP BY t.team_id, t.team_code
+        """), {"sid": season_id}).fetchall()
+
+        return {
+            r.team_id: {
+                "pts":             int(r.pts),
+                "games_remaining": int(r.games_remaining),
+                "team_code":       r.team_code,
+            }
+            for r in rows
+        }
+    finally:
+        session.close()
+
+
+def get_clinch_slide_data(team_id: int, season_id: int = 8) -> dict:
+    """
+    Returns all data needed to render the clinch announcement slide for a team:
+      - team info + seed
+      - top scorer (goals/assists/points)
+      - top goalie (wins/GAA/SV%)
+    """
+    session = Session()
+    try:
+        # ── Team info + current seed ───────────────────────────────────────────
+        standings = get_standings(season_id)
+        seed      = next((i + 1 for i, t in enumerate(standings)
+                          if t["abbr"] and _team_id_for_code(t["abbr"], session, season_id) == team_id), None)
+        team_row  = next((t for t in standings
+                          if _team_id_for_code(t["abbr"], session, season_id) == team_id), {})
+
+        # ── Top scorer ────────────────────────────────────────────────────────
+        scorer = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                   SUM(s.goals)   AS goals,
+                   SUM(s.assists) AS assists,
+                   SUM(s.points)  AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games   g ON g.game_id   = s.game_id
+            WHERE s.team_id   = :tid
+              AND g.season_id = :sid
+              AND g.game_status = 'final'
+            GROUP BY p.player_id, player_name
+            ORDER BY SUM(s.points) DESC, SUM(s.goals) DESC
+            LIMIT 1
+        """), {"tid": team_id, "sid": season_id}).fetchone()
+
+        # ── Top goalie (by wins) ───────────────────────────────────────────────
+        goalie = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                   SUM(CASE WHEN s.decision = 'W' THEN 1 ELSE 0 END)        AS wins,
+                   SUM(CASE WHEN s.goals_against = 0 AND s.decision = 'W'
+                            THEN 1 ELSE 0 END)                               AS shutouts,
+                   SUM(s.saves)                                              AS saves,
+                   SUM(s.shots_against)                                      AS shots_against,
+                   ROUND(SUM(s.goals_against) /
+                         NULLIF(SUM(s.minutes_played) / 3600.0, 0), 2)      AS gaa,
+                   ROUND(SUM(s.saves) /
+                         NULLIF(SUM(s.shots_against), 0), 3)                AS sv_pct,
+                   COUNT(DISTINCT s.game_id)                                AS gp
+            FROM goalie_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games   g ON g.game_id   = s.game_id
+            WHERE s.team_id   = :tid
+              AND g.season_id = :sid
+              AND g.game_status = 'final'
+            GROUP BY p.player_id, player_name
+            ORDER BY wins DESC, gaa ASC
+            LIMIT 1
+        """), {"tid": team_id, "sid": season_id}).fetchone()
+
+        return {
+            "team_code":      team_row.get("abbr", ""),
+            "team_name":      team_row.get("name", ""),
+            "team_logo":      team_row.get("logo"),
+            "team_points":    team_row.get("points", 0),
+            "team_gp":        team_row.get("gp", 0),
+            "seed":           seed,
+            # Scorer
+            "scorer_name":    scorer.player_name if scorer else "—",
+            "scorer_goals":   int(scorer.goals   or 0) if scorer else 0,
+            "scorer_assists":  int(scorer.assists or 0) if scorer else 0,
+            "scorer_points":  int(scorer.pts     or 0) if scorer else 0,
+            "scorer_gp":      int(scorer.gp      or 0) if scorer else 0,
+            # Goalie
+            "goalie_name":    goalie.player_name if goalie else "—",
+            "goalie_wins":    int(goalie.wins     or 0) if goalie else 0,
+            "goalie_shutouts": int(goalie.shutouts or 0) if goalie else 0,
+            "goalie_gaa":     f"{float(goalie.gaa or 0):.2f}" if goalie else "0.00",
+            "goalie_sv_pct":  f"{float(goalie.sv_pct or 0):.3f}" if goalie else ".000",
+            "goalie_gp":      int(goalie.gp       or 0) if goalie else 0,
+        }
+    finally:
+        session.close()
+
+
+def _team_id_for_code(team_code: str, session, season_id: int) -> int | None:
+    """Look up team_id by team_code within a session."""
+    row = session.execute(
+        text("SELECT team_id FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"),
+        {"code": team_code, "sid": season_id}
+    ).fetchone()
+    return row.team_id if row else None
 
 
 # ── Teaser stats ───────────────────────────────────────────────────────────────
@@ -1169,6 +1313,11 @@ def get_preview_standings():
             ORDER BY pts DESC, wins DESC
         """), {"sid": SEASON_ID}).fetchall()
 
+        clinch_data = get_clinch_data(SEASON_ID)
+        from pwhl_btn.analytics.clinch import check_clinched, check_eliminated
+        clinched   = check_clinched(clinch_data)
+        eliminated = check_eliminated(clinch_data)
+
         result = []
         for i, r in enumerate(rows):
             status = "playoff" if i < 4 else ("bubble" if i < 6 else "out")
@@ -1186,6 +1335,8 @@ def get_preview_standings():
                 "status":       status,
                 "home_record":  f"{int(r.hw or 0)}-{int(r.hl or 0)}-{int(r.hotl or 0)}",
                 "away_record":  f"{int(r.aw or 0)}-{int(r.al or 0)}-{int(r.aotl or 0)}",
+                "clinched":     clinched.get(r.team_id, False),
+                "eliminated":   eliminated.get(r.team_id, False),
             })
         return result
     finally:

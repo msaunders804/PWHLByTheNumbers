@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%,rgba(94,23,235,0.18) 0%,transparent 60%); z-index:0; }
+  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.05) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:3; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .brand { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:10; }
+  .badge { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.18); border:1.5px solid rgba(140,82,255,0.55); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:140px 72px 100px; }
+
+  /* ── Title ── */
+  .title-block { text-align:center; margin-bottom:48px; flex-shrink:0; }
+  .eyebrow { font-weight:700; font-size:20px; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .main-title { font-family:'Bebas Neue',sans-serif; font-size:76px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .main-title-accent { font-family:'Bebas Neue',sans-serif; font-size:76px; line-height:0.88; color:#8c52ff; letter-spacing:2px; }
+  .neon-rule { width:100px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:16px auto 10px; border-radius:2px; box-shadow:0 0 12px rgba(140,82,255,0.6); }
+  .sub-label { font-size:17px; font-weight:600; letter-spacing:4px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+
+  /* ── Hero stat ── */
+  .hero { text-align:center; margin-bottom:56px; flex-shrink:0; }
+  .hero-pct { font-family:'Bebas Neue',sans-serif; font-size:280px; line-height:0.85; color:#fff; letter-spacing:-4px; }
+  .hero-pct span { color:#8c52ff; }
+  .hero-label { font-size:28px; font-weight:700; letter-spacing:6px; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-top:8px; }
+  .hero-count { font-size:20px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-top:6px; }
+
+  /* ── Outcome breakdown ── */
+  .breakdown { width:100%; display:flex; flex-direction:column; gap:14px; flex-shrink:0; }
+  .breakdown-label { font-size:15px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.3); text-transform:uppercase; text-align:center; margin-bottom:4px; }
+
+  .outcome-row { display:flex; align-items:center; gap:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(140,82,255,0.1); border-radius:12px; padding:16px 24px; }
+  .outcome-icon { font-size:26px; width:36px; text-align:center; flex-shrink:0; }
+  .outcome-name { font-size:22px; font-weight:700; letter-spacing:3px; text-transform:uppercase; flex:1; }
+  .outcome-bar-wrap { flex:2; }
+  .outcome-bar-track { height:14px; background:rgba(255,255,255,0.06); border-radius:7px; overflow:hidden; }
+  .outcome-bar-fill  { height:100%; border-radius:7px; }
+  .outcome-pct { font-family:'Bebas Neue',sans-serif; font-size:34px; line-height:1; width:72px; text-align:right; flex-shrink:0; }
+
+  .outcome-row.no-change .outcome-name     { color:rgba(255,255,255,0.55); }
+  .outcome-row.no-change .outcome-bar-fill { background:linear-gradient(90deg,#5e17eb,#8c52ff); }
+  .outcome-row.no-change .outcome-pct      { color:#8c52ff; }
+
+  .outcome-row.scored .outcome-name        { color:rgba(74,222,128,0.7); }
+  .outcome-row.scored .outcome-bar-fill    { background:linear-gradient(90deg,#15803d,#4ade80); }
+  .outcome-row.scored .outcome-pct         { color:#4ade80; }
+
+  .outcome-row.en-against .outcome-name     { color:rgba(255,79,79,0.7); }
+  .outcome-row.en-against .outcome-bar-fill { background:linear-gradient(90deg,#c0392b,#ff4f4f); }
+  .outcome-row.en-against .outcome-pct      { color:#ff4f4f; }
+
+  /* ── Footer ── */
+  .footer { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:40px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+  .pwhl-logo { height:24px; opacity:0.18; filter:invert(1); }
+
+  .dots { display:flex; justify-content:center; gap:12px; margin-top:16px; flex-shrink:0; }
+  .dot { height:5px; border-radius:3px; }
+  .dot-active   { width:32px; background:#8c52ff; }
+  .dot-inactive { width:16px; background:rgba(255,255,255,0.15); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Empty Net</div></div>
+
+<div class="slide">
+  <div class="title-block">
+    <div class="eyebrow">PWHL · Empty Net Analysis</div>
+    <div class="main-title">PULLING THE GOALIE</div>
+    <div class="main-title-accent">NO SCORE CHANGE</div>
+    <div class="neon-rule"></div>
+    <div class="sub-label">{{ total_pulls }} pulls tracked · Season 8</div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-pct">{{ pct_no_change }}<span>%</span></div>
+    <div class="hero-label">of pulls — nobody scores</div>
+    <div class="hero-count">{{ n_no_change }} of {{ total_pulls }} pulls</div>
+  </div>
+
+  <div class="breakdown">
+    <div class="breakdown-label">All Pull Outcomes</div>
+
+    <div class="outcome-row no-change">
+      <div class="outcome-icon">—</div>
+      <div class="outcome-name">No Change</div>
+      <div class="outcome-bar-wrap">
+        <div class="outcome-bar-track">
+          <div class="outcome-bar-fill" style="width:{{ pct_no_change }}%"></div>
+        </div>
+      </div>
+      <div class="outcome-pct">{{ pct_no_change }}%</div>
+    </div>
+
+    <div class="outcome-row scored">
+      <div class="outcome-icon">✓</div>
+      <div class="outcome-name">Pulled Team Scored</div>
+      <div class="outcome-bar-wrap">
+        <div class="outcome-bar-track">
+          <div class="outcome-bar-fill" style="width:{{ pct_scored }}%"></div>
+        </div>
+      </div>
+      <div class="outcome-pct">{{ pct_scored }}%</div>
+    </div>
+
+    <div class="outcome-row en-against">
+      <div class="outcome-icon">⚠</div>
+      <div class="outcome-name">EN Goal Against</div>
+      <div class="outcome-bar-wrap">
+        <div class="outcome-bar-track">
+          <div class="outcome-bar-fill" style="width:{{ pct_en_against }}%"></div>
+        </div>
+      </div>
+      <div class="outcome-pct">{{ pct_en_against }}%</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+  <div class="dots">
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-active"></div>
+  </div>
+</div>
+</body>
+</html>

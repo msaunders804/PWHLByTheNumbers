@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Backgrounds ── */
+  .bg-split-bos { position:absolute; left:0; top:0; width:50%; height:100%; background:radial-gradient(ellipse at 20% 60%,rgba(0,122,51,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-split-mtl { position:absolute; right:0; top:0; width:50%; height:100%; background:radial-gradient(ellipse at 80% 60%,rgba(134,38,51,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-vignette  { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 35%,rgba(94,23,235,0.22) 0%,transparent 55%); z-index:0; }
+  .bg-grid      { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.05) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:5; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .brand   { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:10; }
+  .badge   { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.18); border:1.5px solid rgba(140,82,255,0.55); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  /* ── Layout ── */
+  .slide { position:relative; z-index:3; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:130px 72px 100px; }
+
+  /* ── Hook text ── */
+  .hook { text-align:center; margin-bottom:52px; flex-shrink:0; }
+  .hook-eyebrow { font-size:20px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:16px; }
+  .hook-pct {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:220px;
+    line-height:0.82;
+    color:#fff;
+    letter-spacing:-4px;
+  }
+  .hook-pct span { color:#8c52ff; }
+  .hook-chance {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:80px;
+    line-height:1;
+    color:rgba(255,255,255,0.55);
+    letter-spacing:4px;
+    margin-top:4px;
+  }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:28px auto; border-radius:2px; box-shadow:0 0 16px rgba(140,82,255,0.7); }
+  .hook-sub {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:68px;
+    line-height:1.0;
+    color:#fff;
+    letter-spacing:2px;
+  }
+  .hook-sub em {
+    font-style:normal;
+    color:#8c52ff;
+  }
+
+  /* ── Score card ── */
+  .score-card { width:100%; background:rgba(255,255,255,0.03); border:1.5px solid rgba(140,82,255,0.2); border-radius:24px; padding:36px 40px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; position:relative; overflow:hidden; }
+  .score-card::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:linear-gradient(90deg,#007A33,#8c52ff,#862633); }
+
+  .team-side { display:flex; flex-direction:column; align-items:center; gap:14px; width:240px; }
+  .team-logo  { width:160px; height:160px; object-fit:contain; }
+  .team-logo-placeholder { width:160px; height:160px; border-radius:14px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:3px; color:rgba(255,255,255,0.25); }
+  .team-name { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:3px; color:rgba(255,255,255,0.5); text-align:center; line-height:1.1; }
+  .team-name.winner { color:#fff; }
+  .winner-badge { background:rgba(140,82,255,0.2); border:1px solid rgba(140,82,255,0.5); border-radius:100px; padding:3px 14px; font-size:14px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  .score-center { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .score-nums   { display:flex; align-items:center; gap:12px; }
+  .score-n      { font-family:'Bebas Neue',sans-serif; font-size:120px; line-height:1; }
+  .score-n.winner { color:#fff; text-shadow:0 0 32px rgba(140,82,255,0.45); }
+  .score-n.loser  { color:rgba(255,255,255,0.3); }
+  .score-sep    { font-family:'Bebas Neue',sans-serif; font-size:68px; line-height:1; color:rgba(255,255,255,0.15); }
+  .ot-badge     { background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.6); border-radius:8px; padding:5px 18px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:4px; color:#c49fff; }
+  .final-label  { font-size:14px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.2); text-transform:uppercase; }
+
+  /* ── Footer ── */
+  .footer { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:36px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+  .pwhl-logo { height:24px; opacity:0.18; filter:invert(1); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-split-bos"></div>
+<div class="bg-split-mtl"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Empty Net</div></div>
+
+<div class="slide">
+
+  <div class="hook">
+    <div class="hook-eyebrow">Empty Net Analysis · Season 8</div>
+    <div class="hook-pct">{{ pct_scored }}<span>%</span></div>
+    <div class="hook-chance">Chance.</div>
+    <div class="neon-rule"></div>
+    <div class="hook-sub">Boston did it<br><em>twice.</em></div>
+  </div>
+
+  <div class="score-card">
+    <div class="team-side">
+      {% if bos_logo %}
+        <img class="team-logo" src="{{ bos_logo }}" alt="Boston Fleet">
+      {% else %}
+        <div class="team-logo-placeholder">BOS</div>
+      {% endif %}
+      <div class="team-name winner">BOSTON<br>FLEET</div>
+      <div class="winner-badge">WINNER</div>
+    </div>
+
+    <div class="score-center">
+      <div class="score-nums">
+        <div class="score-n winner">4</div>
+        <div class="score-sep">–</div>
+        <div class="score-n loser">3</div>
+      </div>
+      <div class="ot-badge">OT</div>
+      <div class="final-label">Final</div>
+    </div>
+
+    <div class="team-side">
+      {% if mtl_logo %}
+        <img class="team-logo" src="{{ mtl_logo }}" alt="Montreal Victoire">
+      {% else %}
+        <div class="team-logo-placeholder">MTL</div>
+      {% endif %}
+      <div class="team-name">MONTREAL<br>VICTOIRE</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>

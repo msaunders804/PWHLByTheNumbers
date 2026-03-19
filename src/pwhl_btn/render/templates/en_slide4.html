@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Backgrounds ── */
+  .bg-split-bos { position:absolute; left:0; top:0; width:50%; height:100%; background:radial-gradient(ellipse at 20% 50%,rgba(0,122,51,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-split-mtl { position:absolute; right:0; top:0; width:50%; height:100%; background:radial-gradient(ellipse at 80% 50%,rgba(134,38,51,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-vignette  { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 50%,rgba(94,23,235,0.10) 0%,transparent 55%); z-index:0; }
+  .bg-grid      { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.04) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+  .bg-divider   { position:absolute; left:50%; top:0; bottom:0; width:1px; background:linear-gradient(to bottom,transparent,rgba(140,82,255,0.25) 20%,rgba(140,82,255,0.25) 80%,transparent); z-index:2; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:5; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-left:2px solid rgba(140,82,255,0.5); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(140,82,255,0.5); border-right:2px solid rgba(140,82,255,0.5); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .brand   { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:10; }
+  .badge   { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.18); border:1.5px solid rgba(140,82,255,0.55); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  /* ── Main layout ── */
+  .slide { position:relative; z-index:3; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:120px 64px 100px; gap:0; }
+
+  /* ── Follow block ── */
+  .follow-block { text-align:center; margin-bottom:64px; }
+  .follow-eyebrow { font-size:20px; font-weight:700; letter-spacing:10px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:8px; }
+  .follow-main { font-family:'Bebas Neue',sans-serif; font-size:120px; line-height:0.88; color:#fff; letter-spacing:3px; }
+  .follow-handle { font-family:'Bebas Neue',sans-serif; font-size:64px; line-height:1; color:#8c52ff; letter-spacing:4px; margin-top:12px; }
+  .neon-rule { width:140px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:24px auto 0; border-radius:2px; box-shadow:0 0 16px rgba(140,82,255,0.7); }
+
+  /* ── Score card ── */
+  .score-card { width:100%; background:rgba(255,255,255,0.03); border:1.5px solid rgba(140,82,255,0.2); border-radius:24px; padding:48px 40px; display:flex; align-items:center; justify-content:space-between; margin-bottom:0; position:relative; overflow:hidden; }
+  .score-card::before { content:''; position:absolute; left:0; top:0; right:0; height:4px; background:linear-gradient(90deg,#007A33,#8c52ff,#862633); }
+
+  /* Team side */
+  .team-side { display:flex; flex-direction:column; align-items:center; gap:20px; width:280px; }
+  .team-logo { width:200px; height:200px; object-fit:contain; }
+  .team-logo-placeholder { width:200px; height:200px; border-radius:16px; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:56px; letter-spacing:3px; color:rgba(255,255,255,0.25); }
+  .team-name { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:3px; color:rgba(255,255,255,0.6); text-align:center; line-height:1; }
+  .team-name.winner { color:#fff; }
+  .winner-badge { background:rgba(140,82,255,0.2); border:1px solid rgba(140,82,255,0.5); border-radius:100px; padding:4px 16px; font-size:15px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  /* Score center */
+  .score-center { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .score-nums { display:flex; align-items:center; gap:16px; }
+  .score-n { font-family:'Bebas Neue',sans-serif; font-size:140px; line-height:1; }
+  .score-n.winner { color:#fff; text-shadow:0 0 40px rgba(140,82,255,0.5); }
+  .score-n.loser  { color:rgba(255,255,255,0.35); }
+  .score-sep { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:rgba(255,255,255,0.15); }
+  .ot-badge { background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.6); border-radius:10px; padding:6px 20px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:4px; color:#c49fff; }
+  .final-label { font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.2); text-transform:uppercase; }
+
+  /* ── Footer ── */
+  .footer-block { text-align:center; margin-top:56px; }
+  .footer-tagline { font-size:18px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.18); text-transform:uppercase; margin-bottom:8px; }
+  .footer-logo-row { display:flex; align-items:center; justify-content:center; gap:16px; }
+  .pwhl-logo { height:28px; opacity:0.18; filter:invert(1); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-split-bos"></div>
+<div class="bg-split-mtl"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="bg-divider"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Empty Net</div></div>
+
+<div class="slide">
+
+  <div class="follow-block">
+    <div class="follow-eyebrow">For more PWHL stats</div>
+    <div class="follow-main">FOLLOW</div>
+    <div class="follow-main">BTN SPORTS</div>
+    <div class="follow-handle">@BTNSports</div>
+    <div class="neon-rule"></div>
+  </div>
+
+  <div class="score-card">
+    <!-- Boston (winner) -->
+    <div class="team-side">
+      {% if bos_logo %}
+        <img class="team-logo" src="{{ bos_logo }}" alt="Boston Fleet">
+      {% else %}
+        <div class="team-logo-placeholder">BOS</div>
+      {% endif %}
+      <div class="team-name winner">BOSTON<br>FLEET</div>
+      <div class="winner-badge">WINNER</div>
+    </div>
+
+    <!-- Score -->
+    <div class="score-center">
+      <div class="score-nums">
+        <div class="score-n winner">4</div>
+        <div class="score-sep">–</div>
+        <div class="score-n loser">3</div>
+      </div>
+      <div class="ot-badge">OT</div>
+      <div class="final-label">Final</div>
+    </div>
+
+    <!-- Montreal -->
+    <div class="team-side">
+      {% if mtl_logo %}
+        <img class="team-logo" src="{{ mtl_logo }}" alt="Montreal Victoire">
+      {% else %}
+        <div class="team-logo-placeholder">MTL</div>
+      {% endif %}
+      <div class="team-name">MONTREAL<br>VICTOIRE</div>
+    </div>
+  </div>
+
+  <div class="footer-block">
+    <div class="footer-tagline">PWHL · By The Numbers</div>
+    <div class="footer-logo-row">
+      {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+      <div class="footer-season">Season 8 · 2025–26</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
