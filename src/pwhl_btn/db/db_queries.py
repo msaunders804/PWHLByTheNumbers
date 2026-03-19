@@ -146,7 +146,7 @@ def get_weekly_games(start: date = None, end: date = None) -> list[dict]:
 def get_standings(season_id: int = 8) -> list[dict]:
     """
     Computes current standings from the games table.
-    Points: W=2, OTW=2, OTL=1, SOL=1, L=0
+    Points: W=3, OTW=2, OTL=1, SOL=1, L=0
     Returns list sorted by points desc, then wins desc.
     """
     session = Session()
@@ -197,7 +197,9 @@ def get_standings(season_id: int = 8) -> list[dict]:
                 SUM(otw)                        AS otw,
                 SUM(otl)                        AS otl,
                 SUM(sol)                        AS sol,
-                SUM(win)*2 + SUM(otl) + SUM(sol) AS points,
+                SUM(CASE WHEN win=1 AND result_type='REG' THEN 3
+                         WHEN win=1 AND result_type IN ('OT','SO') THEN 2
+                         ELSE 0 END) + SUM(otl) + SUM(sol) AS points,
                 -- Home record
                 SUM(CASE WHEN venue='home' AND win=1  THEN 1 ELSE 0 END) AS hw,
                 SUM(CASE WHEN venue='home' AND loss=1 THEN 1 ELSE 0 END) AS hl,
@@ -959,8 +961,13 @@ def get_game_to_watch(start_date, end_date):
         standings = session.execute(text("""
             SELECT t.team_id, t.team_code, t.team_name,
                    SUM(CASE
-                       WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
-                            (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                       WHEN ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score > g.home_score))
+                        AND g.result_type = 'REG'
+                       THEN 3
+                       WHEN ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score > g.home_score))
+                        AND g.result_type IN ('OT','SO')
                        THEN 2
                        WHEN g.result_type IN ('OT','SO')
                         AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
@@ -1112,8 +1119,13 @@ def get_preview_standings():
         rows = session.execute(text("""
             SELECT t.team_id, t.team_code, t.team_name,
                    SUM(CASE
-                       WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
-                            (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                       WHEN ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score > g.home_score))
+                        AND g.result_type = 'REG'
+                       THEN 3
+                       WHEN ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                             (g.away_team_id = t.team_id AND g.away_score > g.home_score))
+                        AND g.result_type IN ('OT','SO')
                        THEN 2
                        WHEN g.result_type IN ('OT','SO')
                         AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
@@ -1547,6 +1559,7 @@ def get_simulation_inputs() -> dict[int, dict]:
             WITH results AS (
                 SELECT
                     g.home_team_id                                          AS team_id,
+                    g.result_type,
                     CASE WHEN g.home_score > g.away_score THEN 1 ELSE 0 END AS win,
                     CASE WHEN g.home_score < g.away_score
                           AND g.result_type = 'OT'                          THEN 1 ELSE 0 END AS otl,
@@ -1561,6 +1574,7 @@ def get_simulation_inputs() -> dict[int, dict]:
 
                 SELECT
                     g.away_team_id,
+                    g.result_type,
                     CASE WHEN g.away_score > g.home_score THEN 1 ELSE 0 END,
                     CASE WHEN g.away_score < g.home_score
                           AND g.result_type = 'OT'                          THEN 1 ELSE 0 END,
@@ -1575,7 +1589,9 @@ def get_simulation_inputs() -> dict[int, dict]:
                 t.team_id,
                 t.team_code,
                 COUNT(*)                                                    AS gp,
-                SUM(win)*2 + SUM(otl) + SUM(sol)                           AS pts,
+                SUM(CASE WHEN win=1 AND result_type='REG' THEN 3
+                         WHEN win=1 AND result_type IN ('OT','SO') THEN 2
+                         ELSE 0 END) + SUM(otl) + SUM(sol)                 AS pts,
                 SUM(CASE WHEN venue='home' AND win=1 THEN 1 ELSE 0 END)    AS home_wins,
                 SUM(CASE WHEN venue='home'           THEN 1 ELSE 0 END)    AS home_gp
             FROM results r

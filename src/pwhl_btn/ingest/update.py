@@ -25,7 +25,7 @@ try:
 except ImportError:
     sync_toi = None
 
-engine  = create_engine(get_db_url())
+engine  = create_engine(get_db_url(), pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 
 
@@ -113,7 +113,7 @@ def run_update(dry_run: bool = False):
         print(f"  [{i}/{len(new_games)}] Game {gid} "
               f"({game['date_played']} — {game['home_team_name']} vs {game['visiting_team_name']})...",
               end=" ", flush=True)
-        if load_game(gid, session):
+        if load_game(gid):
             ok_count += 1
             print("OK")
         else:

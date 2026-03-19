@@ -53,7 +53,7 @@ def migrate(session):
                     f"ALTER TABLE {table} ADD COLUMN {col_name} {col_def}"
                 ))
                 session.commit()
-                print(f"  ✅ Added {table}.{col_name}")
+                print(f"  [ok] Added {table}.{col_name}")
             except Exception as e:
                 session.rollback()
                 if "Duplicate column" in str(e):
@@ -239,7 +239,7 @@ def run_sync(dry_run: bool = False):
         print(f"\n  Syncing goalies...")
         total += sync_goalies(session, dry_run=dry_run)
 
-        print(f"\n  ✅ Total players updated: {total}")
+        print(f"\n  [ok] Total players updated: {total}")
     finally:
         session.close()
 

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --accent:#8c52ff; --gold:#f5a623; }
+  body { width:1080px; height:1920px; background:#06000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  /* Radial glow bg */
+  .bg-glow-1 { position:absolute; top:-200px; left:-200px; width:900px; height:900px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.28) 0%,transparent 65%); z-index:0; }
+  .bg-glow-2 { position:absolute; bottom:200px; right:-150px; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(245,166,35,0.18) 0%,transparent 65%); z-index:0; }
+
+  /* Watermark number */
+  .watermark-num { position:absolute; bottom:280px; left:50%; transform:translateX(-50%); font-family:'Bebas Neue',sans-serif; font-size:780px; line-height:1; color:rgba(94,23,235,0.12); letter-spacing:-20px; z-index:0; white-space:nowrap; }
+
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:56px 80px 80px; }
+
+  /* Top strip */
+  .top-strip { display:flex; justify-content:space-between; align-items:center; }
+  .brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.30); }
+  .record-badge { display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.15); border:1.5px solid rgba(245,166,35,0.55); border-radius:100px; padding:10px 28px; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:19px; font-weight:800; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .spacer { flex:1; }
+
+  /* Hero content */
+  .eyebrow { font-size:22px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:16px; }
+
+  .big-num { font-family:'Bebas Neue',sans-serif; font-size:320px; line-height:0.85; color:#fff; letter-spacing:-4px; position:relative; display:inline-block; }
+  .big-num-accent { font-family:'Bebas Neue',sans-serif; font-size:320px; line-height:0.85; color:#f5a623; letter-spacing:-4px; }
+
+  .record-name { font-family:'Bebas Neue',sans-serif; font-size:62px; line-height:1.0; color:#c49fff; letter-spacing:2px; margin-top:16px; margin-bottom:36px; max-width:880px; }
+
+  .divider { width:120px; height:4px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin-bottom:40px; }
+
+  /* Game info */
+  .game-row { display:flex; align-items:center; gap:24px; margin-bottom:20px; }
+  .team-logo { width:64px; height:64px; object-fit:contain; }
+  .team-logo-placeholder { width:64px; height:64px; border-radius:10px; background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.4); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:18px; color:#8c52ff; }
+  .game-label { font-size:38px; font-weight:800; letter-spacing:3px; color:#fff; text-transform:uppercase; }
+  .game-date  { font-size:26px; font-weight:600; letter-spacing:4px; color:rgba(255,255,255,0.40); text-transform:uppercase; margin-bottom:36px; }
+
+  /* Previous record note */
+  .prev-note { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:28px 36px; margin-bottom:44px; border-left:4px solid rgba(255,255,255,0.18); }
+  .prev-label { font-size:18px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:8px; }
+  .prev-value { font-size:32px; font-weight:700; color:rgba(255,255,255,0.55); }
+  .prev-value em { color:rgba(255,255,255,0.80); font-style:normal; }
+
+  /* CTA */
+  .cta { display:inline-flex; align-items:center; gap:14px; background:linear-gradient(135deg,#f5a623,#e8890a); border-radius:100px; padding:20px 44px; font-size:24px; font-weight:800; letter-spacing:4px; color:#0a0015; text-transform:uppercase; align-self:flex-start; }
+
+  /* Dots */
+  .dots { position:absolute; bottom:72px; left:0; right:0; display:flex; justify-content:center; gap:14px; z-index:10; }
+  .dot { width:10px; height:10px; border-radius:50%; }
+  .dot-active   { background:#f5a623; }
+  .dot-inactive { background:rgba(255,255,255,0.2); }
+
+  /* Footer */
+  .footer-brand { position:absolute; bottom:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(255,255,255,0.10); z-index:10; }
+  .pwhl-logo-wrap { position:absolute; bottom:36px; right:80px; z-index:10; }
+  .pwhl-logo { height:32px; opacity:0.15; filter:invert(1); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+<div class="watermark-num">{{ new_value }}</div>
+
+<div class="slide">
+  <div class="top-strip">
+    <div class="brand">BTN</div>
+    <div class="record-badge">
+      <div class="badge-dot"></div>
+      <div class="badge-text">{% if is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="eyebrow">PWHL &middot; Season {{ season }}</div>
+  <div>
+    <span class="big-num">{{ new_value }}</span>
+  </div>
+  <div class="record-name">{{ record_name }}</div>
+  <div class="divider"></div>
+
+  <div class="game-row">
+    {% if new_team_logo %}
+      <img class="team-logo" src="{{ new_team_logo }}" alt="{{ new_team_code }}">
+    {% else %}
+      <div class="team-logo-placeholder">{{ new_team_code }}</div>
+    {% endif %}
+    <div class="game-label">{{ new_team_code }} {{ new_game_result }}</div>
+  </div>
+  <div class="game-date">{{ new_game_date }}</div>
+
+  <div class="prev-note">
+    <div class="prev-label">Previous Record</div>
+    <div class="prev-value">
+      <em>{{ prev_value }}</em> &mdash; {{ prev_holders_label }}
+    </div>
+  </div>
+
+  <div class="cta">SWIPE FOR DETAILS &nbsp;&#8594;</div>
+</div>
+
+<div class="dots">
+  <div class="dot dot-active"></div>
+  <div class="dot dot-inactive"></div>
+  {% if include_detail_slide %}<div class="dot dot-inactive"></div>{% endif %}
+</div>
+
+<div class="footer-brand">BY THE NUMBERS</div>
+{% if pwhl_logo %}<div class="pwhl-logo-wrap"><img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL"></div>{% endif %}
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --accent:#8c52ff; --gold:#f5a623; }
+  body { width:1080px; height:1920px; background:#0a0a0a; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* Player photo full-bleed bg */
+  .photo-bg { position:absolute; inset:0; z-index:0; background:#111; }
+  .player-photo { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.60; }
+  .overlay-top    { position:absolute; top:0; left:0; right:0; height:420px; z-index:1; background:linear-gradient(to bottom,rgba(6,0,15,0.92) 0%,transparent 100%); }
+  .overlay-bottom { position:absolute; bottom:0; left:0; right:0; height:1060px; z-index:1; background:linear-gradient(to top,rgba(6,0,15,1.0) 0%,rgba(6,0,15,0.85) 45%,transparent 100%); }
+  .overlay-purple { position:absolute; inset:0; z-index:1; background:linear-gradient(135deg,rgba(94,23,235,0.20) 0%,transparent 60%); }
+
+  /* Fallback bg when no photo */
+  .bg-glow { position:absolute; top:-100px; right:-100px; width:800px; height:800px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.25) 0%,transparent 65%); z-index:0; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; padding:56px 80px 80px; }
+
+  /* Top strip */
+  .top-strip { display:flex; justify-content:space-between; align-items:center; }
+  .brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.30); }
+  .record-badge { display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.15); border:1.5px solid rgba(245,166,35,0.50); border-radius:100px; padding:10px 28px; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:19px; font-weight:800; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .spacer { flex:1; }
+
+  /* Player credit (shown only when photo exists) */
+  .featured-player { margin-bottom:12px; display:flex; align-items:center; gap:14px; }
+  .feat-label { font-size:20px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .feat-name  { font-size:32px; font-weight:800; letter-spacing:2px; color:rgba(255,255,255,0.70); text-transform:uppercase; }
+
+  /* NEW RECORD block */
+  .section-label { font-size:20px; font-weight:700; letter-spacing:6px; color:#f5a623; text-transform:uppercase; margin-bottom:10px; }
+
+  .new-record-block { margin-bottom:40px; }
+  .new-team-row { display:flex; align-items:center; gap:20px; margin-bottom:14px; }
+  .team-logo { width:68px; height:68px; object-fit:contain; }
+  .team-logo-placeholder { width:68px; height:68px; border-radius:10px; background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.4); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:20px; color:#8c52ff; }
+  .new-team-name { font-size:30px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.60); text-transform:uppercase; }
+
+  .new-record-line { display:flex; align-items:baseline; gap:20px; margin-bottom:10px; }
+  .new-num  { font-family:'Bebas Neue',sans-serif; font-size:200px; line-height:0.85; color:#f5a623; letter-spacing:-2px; }
+  .new-unit { font-family:'Bebas Neue',sans-serif; font-size:62px; line-height:1; color:rgba(255,255,255,0.50); letter-spacing:2px; align-self:flex-end; padding-bottom:14px; }
+
+  .record-name-text { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1.05; color:#c49fff; letter-spacing:2px; margin-bottom:16px; max-width:900px; }
+  .game-detail { font-size:30px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+
+  .rule { width:100%; height:2px; background:linear-gradient(90deg,rgba(245,166,35,0.6),rgba(140,82,255,0.3),transparent); margin:36px 0; }
+
+  /* PREVIOUS RECORD block */
+  .prev-record-block { }
+  .prev-holders { display:flex; flex-direction:column; gap:16px; }
+  .prev-holder-row { display:flex; align-items:center; gap:18px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:14px; padding:18px 24px; }
+  .prev-logo { width:44px; height:44px; object-fit:contain; }
+  .prev-logo-placeholder { width:44px; height:44px; border-radius:8px; background:rgba(255,255,255,0.10); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:14px; color:rgba(255,255,255,0.50); }
+  .prev-holder-info { flex:1; }
+  .prev-holder-team { font-size:24px; font-weight:800; letter-spacing:3px; color:rgba(255,255,255,0.70); text-transform:uppercase; }
+  .prev-holder-game { font-size:20px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .prev-holder-val { font-family:'Bebas Neue',sans-serif; font-size:52px; color:rgba(255,255,255,0.45); letter-spacing:1px; }
+
+  /* Dots */
+  .dots { position:absolute; bottom:72px; left:0; right:0; display:flex; justify-content:center; gap:14px; z-index:10; }
+  .dot { width:10px; height:10px; border-radius:50%; }
+  .dot-active   { background:#f5a623; }
+  .dot-inactive { background:rgba(255,255,255,0.2); }
+
+  /* Footer */
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:32px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08); }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-handle { font-size:18px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+  .pwhl-logo { height:28px; opacity:0.15; filter:invert(1); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+
+<div class="photo-bg">
+  {% if player_photo %}
+  <img class="player-photo" src="{{ player_photo }}" alt="{{ featured_player_name }}">
+  {% endif %}
+</div>
+{% if player_photo %}
+<div class="overlay-top"></div>
+<div class="overlay-bottom"></div>
+<div class="overlay-purple"></div>
+{% else %}
+<div class="bg-glow"></div>
+{% endif %}
+
+<div class="slide">
+  <div class="top-strip">
+    <div class="brand">BTN</div>
+    <div class="record-badge">
+      <div class="badge-dot"></div>
+      <div class="badge-text">{% if is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  {% if player_photo and featured_player_name %}
+  <div class="featured-player">
+    <span class="feat-label">Featured:</span>
+    <span class="feat-name">{{ featured_player_name }}</span>
+  </div>
+  {% endif %}
+
+  <!-- NEW RECORD -->
+  <div class="new-record-block">
+    <div class="section-label">New Record</div>
+    <div class="new-team-row">
+      {% if new_team_logo %}
+        <img class="team-logo" src="{{ new_team_logo }}" alt="{{ new_team_code }}">
+      {% else %}
+        <div class="team-logo-placeholder">{{ new_team_code }}</div>
+      {% endif %}
+      <span class="new-team-name">{{ new_team_name }}</span>
+    </div>
+    <div class="new-record-line">
+      <div class="new-num">{{ new_value }}</div>
+      <div class="new-unit">{{ new_value_unit }}</div>
+    </div>
+    <div class="record-name-text">{{ record_name }}</div>
+    <div class="game-detail">{{ new_game_result }} &middot; vs {{ new_game_opponent }} &middot; {{ new_game_date }}</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- PREVIOUS RECORD -->
+  <div class="prev-record-block">
+    <div class="section-label">Previously: {{ prev_value }} {{ new_value_unit }}</div>
+    <div class="prev-holders">
+      {% for h in prev_holders %}
+      <div class="prev-holder-row">
+        {% if h.logo %}
+          <img class="prev-logo" src="{{ h.logo }}" alt="{{ h.team_code }}">
+        {% else %}
+          <div class="prev-logo-placeholder">{{ h.team_code }}</div>
+        {% endif %}
+        <div class="prev-holder-info">
+          <div class="prev-holder-team">{{ h.team_code }}</div>
+          <div class="prev-holder-game">{{ h.game_date }} &middot; {{ h.opponent }} {{ h.score }}</div>
+        </div>
+        <div class="prev-holder-val">{{ prev_value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+    <div class="footer-handle">#PWHL</div>
+  </div>
+</div>
+
+<div class="dots">
+  <div class="dot dot-inactive"></div>
+  <div class="dot dot-active"></div>
+  {% if include_detail_slide %}<div class="dot dot-inactive"></div>{% endif %}
+</div>
+</body>
+</html>

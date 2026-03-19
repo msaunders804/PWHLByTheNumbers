@@ -23,7 +23,7 @@ API_KEY     = "446521baf8c38984"
 CLIENT_CODE = "pwhl"
 RATE_LIMIT  = 0.5
 
-engine  = create_engine(DATABASE_URL)
+engine  = create_engine(DATABASE_URL, pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 
 
@@ -96,9 +96,18 @@ def load_teams(season_id, session):
     print(f"  {len(teams)} teams loaded")
 
 
-def load_game(game_id: int, session, resume: bool = False) -> bool:
+def load_game(game_id: int, session=None, resume: bool = False) -> bool:
+    # Each game gets its own session so a stale connection from a prior game
+    # (dropped by MySQL during the API fetch + rate-limit sleep) never poisons
+    # the next write.  Callers may still pass a session for the resume check.
+    _own_session = session is None
+    if _own_session:
+        session = Session()
+
     if resume and session.get(Game, game_id):
         print(f"  Game {game_id} already in DB — skipping")
+        if _own_session:
+            session.close()
         return True
 
     try:
@@ -225,6 +234,10 @@ def load_game(game_id: int, session, resume: bool = False) -> bool:
         import traceback; traceback.print_exc()
         return False
 
+    finally:
+        if _own_session:
+            session.close()
+
 
 # ── Main backfill ──────────────────────────────────────────────────────────────
 def backfill(season_id, limit=None, resume=False):
@@ -252,7 +265,7 @@ def backfill(season_id, limit=None, resume=False):
     for i, game in enumerate(completed, 1):
         gid = int(game["id"])
         print(f"  [{i:3d}/{len(completed)}] Game {gid}...", end=" ", flush=True)
-        if load_game(gid, session, resume=resume):
+        if load_game(gid, resume=resume):
             ok_count += 1
             print("OK")
         else:
