@@ -2,7 +2,7 @@ name: PWHL Weekly Preview
 
 on:
   schedule:
-    - cron: '0 14 * * 0'   # Every Sunday 9:00 AM CST (14:00 UTC)
+    - cron: '0 21 * * 0'   # Every Sunday 9:00 AM CST (14:00 UTC)
   workflow_dispatch:        # Allow manual trigger from Actions tab
 
 jobs:
