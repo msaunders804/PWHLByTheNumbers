@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --purple:#5e17eb; --accent:#8c52ff; --gold:#f5a623; --green:#2a9d3a; }
+  body { width:1080px; height:1920px; background:#ede8fb; color:#0d0d0d; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#c49fff); }
+  .bg { position:absolute; inset:0; z-index:0; background: radial-gradient(ellipse at 85% 5%,rgba(94,23,235,0.14) 0%,transparent 50%), radial-gradient(ellipse at 5% 95%,rgba(94,23,235,0.10) 0%,transparent 50%), #ede8fb; }
+  .watermark { position:absolute; z-index:1; bottom:-60px; right:-40px; font-family:'Bebas Neue',sans-serif; font-size:500px; line-height:1; color:rgba(140,82,255,0.05); pointer-events:none; }
+
+  .brand { position:absolute; top:40px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:6px; color:rgba(0,0,0,0.2); z-index:10; }
+  .badge { position:absolute; top:32px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.09); border:1.5px solid rgba(140,82,255,0.35); border-radius:100px; padding:10px 28px; z-index:10; }
+  .badge-dot { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:20px; font-weight:700; letter-spacing:4px; color:#5e17eb; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:10; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; padding:110px 64px 100px; }
+
+  /* Header */
+  .header { text-align:center; margin-bottom:20px; }
+  .eyebrow { font-weight:700; font-size:24px; letter-spacing:8px; color:rgba(0,0,0,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.85; color:#0d0d0d; }
+  .hero-title-accent { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.85; color:#8c52ff; }
+  .hook-text { font-size:23px; font-weight:600; color:rgba(0,0,0,0.38); line-height:1.3; margin-top:12px; }
+  .hook-em { color:#5e17eb; font-weight:800; font-style:normal; }
+
+  /* Team rows */
+  .team-list { display:flex; flex-direction:column; gap:9px; width:100%; margin-bottom:16px; }
+
+  .playoff-cutoff { display:flex; align-items:center; gap:14px; margin:2px 0; }
+  .cutoff-line { flex:1; height:2px; background:linear-gradient(90deg,transparent,rgba(200,30,30,0.45),transparent); }
+  .cutoff-label { font-size:14px; font-weight:800; letter-spacing:3px; color:rgba(200,30,30,0.65); text-transform:uppercase; white-space:nowrap; }
+
+  .team-row { display:flex; align-items:center; background:#f7f4ff; border:1.5px solid rgba(140,82,255,0.12); border-radius:14px; padding:13px 20px 13px 16px; position:relative; overflow:hidden; }
+  .team-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:14px 0 0 14px; background:linear-gradient(to bottom,var(--purple),var(--accent)); }
+  .team-row.fourth-place { border-color:rgba(245,166,35,0.45); background:linear-gradient(135deg,#fffbf0 0%,#fef6e0 100%); }
+  .team-row.fourth-place::before { background:linear-gradient(to bottom,#f5a623,#ff6b35); }
+  .team-row.in { border-color:rgba(42,157,58,0.18); }
+  .team-row.in::before { background:linear-gradient(to bottom,#2a9d3a,#5ecf72); }
+  .team-row.out { opacity:0.68; }
+  .team-row.out::before { background:rgba(180,180,180,0.4); }
+
+  .rank-num { font-family:'Bebas Neue',sans-serif; font-size:26px; color:rgba(0,0,0,0.14); width:28px; flex-shrink:0; margin-right:10px; text-align:center; line-height:1; }
+  .team-row.fourth-place .rank-num { color:rgba(245,166,35,0.45); }
+  .team-row.in .rank-num { color:rgba(42,157,58,0.28); }
+
+  .team-logo-wrap { width:48px; height:48px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:12px; }
+  .team-logo { width:44px; height:44px; object-fit:contain; }
+  .team-code-fallback { font-family:'Bebas Neue',sans-serif; font-size:22px; color:#5e17eb; }
+
+  .team-code { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:#0d0d0d; width:72px; flex-shrink:0; }
+  .team-row.fourth-place .team-code { color:#9a6200; }
+
+  .team-meta { display:flex; flex-direction:column; gap:1px; flex:1; margin:0 12px; }
+  .meta-pts { font-family:'Bebas Neue',sans-serif; font-size:26px; color:#0d0d0d; line-height:1; }
+  .team-row.fourth-place .meta-pts { color:#9a6200; }
+  .meta-sub { font-size:12px; font-weight:700; letter-spacing:1px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+
+  .pct-section { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; width:108px; }
+  .pct-val { font-family:'Bebas Neue',sans-serif; font-size:44px; line-height:1; color:#0d0d0d; }
+  .team-row.fourth-place .pct-val { color:#c07d00; }
+  .team-row.in .pct-val { color:#1d7a2a; }
+  .team-row.out .pct-val { color:#888; }
+  .pct-label { font-size:12px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.28); text-transform:uppercase; }
+  .bar-track { width:100%; height:5px; background:rgba(140,82,255,0.12); border-radius:3px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,#5e17eb,#8c52ff); }
+  .team-row.fourth-place .bar-fill { background:linear-gradient(90deg,#f5a623,#ff6b35); }
+  .team-row.in .bar-fill { background:linear-gradient(90deg,#2a9d3a,#5ecf72); }
+  .team-row.out .bar-fill { background:linear-gradient(90deg,#9b9b9b,#c0c0c0); }
+
+  /* ── Sim advantage (compact 3-metric strip) ── */
+  .adv-strip { width:100%; display:flex; background:linear-gradient(135deg,#1a0a3d,#2d1260); border-radius:14px; border:1.5px solid rgba(140,82,255,0.3); margin-bottom:14px; overflow:hidden; }
+  .adv-item { flex:1; display:flex; flex-direction:column; align-items:center; padding:18px 10px 14px; position:relative; }
+  .adv-item + .adv-item::before { content:''; position:absolute; left:0; top:15%; bottom:15%; width:1px; background:rgba(255,255,255,0.1); }
+  .adv-val { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:#f5a623; }
+  .adv-val-unit { font-size:26px; }
+  .adv-label { font-size:13px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.5); text-transform:uppercase; text-align:center; margin-top:4px; line-height:1.3; }
+  .adv-sub { font-size:12px; font-weight:600; color:rgba(255,255,255,0.28); margin-top:3px; letter-spacing:1px; }
+
+  /* ── Road Ahead section ── */
+  .road-ahead { width:100%; }
+  .section-label { font-size:13px; font-weight:800; letter-spacing:5px; color:rgba(0,0,0,0.3); text-transform:uppercase; text-align:center; margin-bottom:10px; }
+
+  .road-panels { display:flex; gap:10px; width:100%; }
+
+  .road-panel { flex:1; border-radius:14px; padding:16px 16px 14px; display:flex; flex-direction:column; gap:0; }
+  .panel-fourth { background:linear-gradient(135deg,#fffbf0,#fef0cc); border:1.5px solid rgba(245,166,35,0.4); }
+  .panel-fifth  { background:#f2f2f8; border:1.5px solid rgba(0,0,0,0.08); opacity:0.85; }
+  .panel-sixth  { background:#f2f2f8; border:1.5px solid rgba(0,0,0,0.07); opacity:0.72; }
+
+  .panel-header { display:flex; align-items:center; gap:8px; padding-bottom:10px; margin-bottom:10px; border-bottom:1px solid rgba(0,0,0,0.07); }
+  .panel-logo { width:28px; height:28px; object-fit:contain; flex-shrink:0; }
+  .panel-code-fallback { font-family:'Bebas Neue',sans-serif; font-size:17px; color:#5e17eb; }
+  .panel-name { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; flex:1; }
+  .panel-fourth .panel-name { color:#9a6200; }
+  .panel-fifth  .panel-name { color:rgba(0,0,0,0.6); }
+  .panel-sixth  .panel-name { color:rgba(0,0,0,0.5); }
+  .panel-rank { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:2px 8px; border-radius:100px; white-space:nowrap; }
+  .panel-fourth .panel-rank { background:rgba(245,166,35,0.2); color:#9a6200; }
+  .panel-fifth  .panel-rank { background:rgba(0,0,0,0.07); color:rgba(0,0,0,0.42); }
+  .panel-sixth  .panel-rank { background:rgba(0,0,0,0.05); color:rgba(0,0,0,0.35); }
+
+  .panel-row { display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; border-bottom:1px solid rgba(0,0,0,0.05); }
+  .panel-row:last-of-type { border-bottom:none; }
+  .panel-row-label { font-size:12px; font-weight:700; letter-spacing:1px; color:rgba(0,0,0,0.38); text-transform:uppercase; }
+  .panel-row-val { font-family:'Bebas Neue',sans-serif; font-size:26px; line-height:1; }
+  .panel-fourth .panel-row-val { color:#9a6200; }
+  .panel-fifth  .panel-row-val { color:rgba(0,0,0,0.55); }
+  .panel-sixth  .panel-row-val { color:rgba(0,0,0,0.45); }
+
+  .panel-verdict { margin-top:10px; text-align:center; padding:6px 0; border-radius:8px; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+  .verdict-good { background:rgba(42,157,58,0.1); color:#1d7a2a; }
+  .verdict-neutral { background:rgba(0,0,0,0.05); color:rgba(0,0,0,0.38); }
+
+  /* Sim note + dots + footer */
+  .sim-note { margin-top:12px; text-align:center; font-size:16px; font-weight:600; letter-spacing:2px; color:rgba(0,0,0,0.22); text-transform:uppercase; }
+  .dots { display:flex; justify-content:center; gap:12px; margin-top:12px; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-active   { background:#8c52ff; }
+  .dot-inactive { background:rgba(0,0,0,0.15); }
+  .footer { position:absolute; bottom:56px; left:80px; right:80px; display:flex; justify-content:space-between; align-items:center; border-top:1.5px solid rgba(0,0,0,0.08); padding-top:24px; z-index:10; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:4px; color:rgba(0,0,0,0.18); }
+  .footer-season { font-size:18px; font-weight:700; letter-spacing:2px; color:rgba(0,0,0,0.18); text-transform:uppercase; }
+  .pwhl-logo { height:34px; opacity:0.22; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg"></div>
+<div class="watermark">BTN</div>
+
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Monte Carlo</div></div>
+
+<div class="slide">
+  <div class="header">
+    <div class="eyebrow">PWHL · {{ sim_label }}</div>
+    <div class="hero-title">VYING FOR</div>
+    <div class="hero-title-accent">FOURTH</div>
+    <div class="hook-text">It looks tight on paper.<br><em class="hook-em">The model tells a different story.</em></div>
+  </div>
+
+  <!-- Team standings around the playoff cutoff -->
+  <div class="team-list">
+    {% for team in race_teams %}
+
+      {%- if loop.index == 3 %}
+      <div class="playoff-cutoff">
+        <div class="cutoff-line"></div>
+        <div class="cutoff-label">── Playoff Cutoff ──</div>
+        <div class="cutoff-line"></div>
+      </div>
+      {% endif %}
+
+      {%- if team.playoff_rank == 4 %}
+        {%- set row_class = "fourth-place" %}
+      {%- elif team.playoff_rank <= 3 %}
+        {%- set row_class = "in" %}
+      {%- else %}
+        {%- set row_class = "out" %}
+      {%- endif %}
+
+    <div class="team-row {{ row_class }}">
+      <div class="rank-num">{{ team.playoff_rank }}</div>
+      <div class="team-logo-wrap">
+        {% if team.logo %}<img class="team-logo" src="{{ team.logo }}" alt="{{ team.team_code }}">
+        {% else %}<div class="team-code-fallback">{{ team.team_code }}</div>{% endif %}
+      </div>
+      <div class="team-code">{{ team.team_code }}</div>
+      <div class="team-meta">
+        <div class="meta-pts">{{ team.current_pts }} <span style="font-size:16px;font-weight:700;letter-spacing:1px;color:rgba(0,0,0,0.32);font-family:'Barlow Condensed',sans-serif;">PTS</span></div>
+        <div class="meta-sub">{{ team.games_remaining }} games remaining</div>
+      </div>
+      <div class="pct-section">
+        <div class="pct-val">{{ "%.0f"|format(team.playoff_pct) }}%</div>
+        <div class="bar-track"><div class="bar-fill" style="width:{{ [team.playoff_pct, 100]|min }}%"></div></div>
+        <div class="pct-label">Playoffs</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Simulation advantage metrics -->
+  {% if fourth_team and fifth_team %}
+  <div class="adv-strip">
+    <div class="adv-item">
+      <div class="adv-val">+{{ playoff_gap }}<span class="adv-val-unit">%</span></div>
+      <div class="adv-label">Playoff Odds<br>vs 5th Place</div>
+      <div class="adv-sub">{{ fourth_team.playoff_pct }}% vs {{ fifth_team.playoff_pct }}%</div>
+    </div>
+    <div class="adv-item">
+      <div class="adv-val">+{{ pts_gap }}</div>
+      <div class="adv-label">Points<br>Lead</div>
+      <div class="adv-sub">{{ fourth_team.current_pts }} vs {{ fifth_team.current_pts }} pts</div>
+    </div>
+    <div class="adv-item">
+      <div class="adv-val">+{{ proj_gap }}</div>
+      <div class="adv-label">Projected<br>Pts Gap</div>
+      <div class="adv-sub">{{ "%.0f"|format(fourth_team.proj_pts_mean) }} vs {{ "%.0f"|format(fifth_team.proj_pts_mean) }} proj</div>
+    </div>
+  </div>
+
+  <!-- Road Ahead: PPG + schedule face-off -->
+  <div class="road-ahead">
+    <div class="section-label">The Road Ahead</div>
+    <div class="road-panels">
+
+      <!-- 4th place panel -->
+      <div class="road-panel panel-fourth">
+        <div class="panel-header">
+          {% if fourth_team.logo %}<img class="panel-logo" src="{{ fourth_team.logo }}" alt="{{ fourth_team.team_code }}">
+          {% else %}<div class="panel-code-fallback">{{ fourth_team.team_code }}</div>{% endif %}
+          <div class="panel-name">{{ fourth_team.team_code }}</div>
+          <div class="panel-rank">4th</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Pts / Game</div>
+          <div class="panel-row-val">{{ "%.2f"|format(fourth_team.ppg) }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Games Left</div>
+          <div class="panel-row-val">{{ fourth_team.games_remaining }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Opp Avg</div>
+          <div class="panel-row-val">{{ fourth_team.sched_strength }}%</div>
+        </div>
+        <div class="panel-verdict verdict-good">✓ Easier Path</div>
+      </div>
+
+      <!-- 5th place panel -->
+      <div class="road-panel panel-fifth">
+        <div class="panel-header">
+          {% if fifth_team.logo %}<img class="panel-logo" src="{{ fifth_team.logo }}" alt="{{ fifth_team.team_code }}">
+          {% else %}<div class="panel-code-fallback">{{ fifth_team.team_code }}</div>{% endif %}
+          <div class="panel-name">{{ fifth_team.team_code }}</div>
+          <div class="panel-rank">5th</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Pts / Game</div>
+          <div class="panel-row-val">{{ "%.2f"|format(fifth_team.ppg) }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Games Left</div>
+          <div class="panel-row-val">{{ fifth_team.games_remaining }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Opp Avg</div>
+          <div class="panel-row-val">{{ fifth_team.sched_strength }}%</div>
+        </div>
+        <div class="panel-verdict verdict-neutral">Tougher Road</div>
+      </div>
+
+      <!-- 6th place panel -->
+      {% if sixth_team %}
+      <div class="road-panel panel-sixth">
+        <div class="panel-header">
+          {% if sixth_team.logo %}<img class="panel-logo" src="{{ sixth_team.logo }}" alt="{{ sixth_team.team_code }}">
+          {% else %}<div class="panel-code-fallback">{{ sixth_team.team_code }}</div>{% endif %}
+          <div class="panel-name">{{ sixth_team.team_code }}</div>
+          <div class="panel-rank">6th</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Pts / Game</div>
+          <div class="panel-row-val">{{ "%.2f"|format(sixth_team.ppg) }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Games Left</div>
+          <div class="panel-row-val">{{ sixth_team.games_remaining }}</div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-row-label">Opp Avg</div>
+          <div class="panel-row-val">{{ sixth_team.sched_strength }}%</div>
+        </div>
+        <div class="panel-verdict verdict-neutral">Tougher Road</div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="sim-note">25,000 simulations · {{ games_remaining_avg }} avg games remaining</div>
+
+  <div class="dots">
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-active"></div>
+    <div class="dot dot-inactive"></div>
+    <div class="dot dot-inactive"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  {% if pwhl_logo %}<img class="pwhl-logo" src="{{ pwhl_logo }}" alt="PWHL">{% endif %}
+  <div class="footer-season">Season {{ season }}</div>
+</div>
+</body>
+</html>

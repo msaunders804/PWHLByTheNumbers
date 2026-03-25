@@ -102,7 +102,7 @@
     <div class="eyebrow">PWHL · {{ sim_label }}</div>
     <div class="hero-title">WALTER CUP</div>
     <div class="hero-title-accent">ODDS</div>
-    <div class="sub-label">Based on 10,000 simulated seasons</div>
+    <div class="sub-label">Based on 25,000 simulated seasons</div>
   </div>
 
   <div class="col-headers">
@@ -114,7 +114,7 @@
   </div>
 
   <div class="team-list">
-    {% for team in teams %}
+    {% for team in teams | sort(attribute='playoff_pct', reverse=True) %}
     <div class="team-row {% if loop.index == 1 %}first-place{% endif %}">
       <div class="rank-num">{{ loop.index }}</div>
       <div class="team-logo-wrap">
@@ -146,9 +146,10 @@
     {% endfor %}
   </div>
 
-  <div class="sim-note">10,000 simulations · {{ games_remaining_avg }} avg games remaining</div>
+  <div class="sim-note">25,000 simulations · {{ games_remaining_avg }} avg games remaining</div>
 
   <div class="dots">
+    <div class="dot dot-inactive"></div>
     <div class="dot dot-inactive"></div>
     <div class="dot dot-inactive"></div>
     <div class="dot dot-active"></div>

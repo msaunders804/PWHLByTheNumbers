@@ -258,6 +258,7 @@ def run_simulation(n: int = DEFAULT_N) -> dict:
         results[tid] = {
             "team_code":        t["team_code"],
             "current_pts":      t["pts"],
+            "gp":               t["gp"],
             "games_remaining":  t["games_remaining"],
             "playoff_pct":      round(playoff_counts[tid]    / n * 100, 1),
             "walter_cup_pct":   round(walter_cup_counts[tid] / n * 100, 1),
