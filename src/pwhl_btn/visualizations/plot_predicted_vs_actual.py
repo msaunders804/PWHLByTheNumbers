@@ -29,19 +29,17 @@ from pwhl_btn.analytics.monte_carlo import run_validation
 
 S7_SEASON_ID = 5   # season_id 5 = PWHL Season 7
 SNAPSHOTS    = [
-    (0.33, "33% of Season"),
     (0.67, "67% of Season"),
-    (0.90, "90% of Season"),
 ]
 
 # BTN brand colors
-BG       = "#000000"
-FG       = "#ffffff"
-GRID     = "#2a2a2a"
+BG       = "#ffffff"
+FG       = "#000000"
+GRID     = "#dddddd"
 ACCENT   = "#8c52ff"
 DOT_GOOD = "#8c52ff"   # on or near diagonal
 DOT_BAD  = "#ff6b6b"   # far from diagonal
-DIAG     = "#444444"
+DIAG     = "#aaaaaa"
 
 # ── Fetch data ─────────────────────────────────────────────────────────────────
 
@@ -130,7 +128,7 @@ for ax, (label, pct, result) in zip(axes, snapshot_results):
     sig_str = f"p={pval:.3f}" if pval >= 0.05 else f"p={pval:.3f} ✓"
     ax.set_title(
         f"{label}\nρ = {rho:.3f}  ({sig_str})",
-        color=FG, fontsize=11, fontweight="500", pad=10,
+        color=FG, fontsize=11, fontweight="500", pad=4,
     )
 
 # ── Shared legend ─────────────────────────────────────────────────────────────
@@ -147,15 +145,15 @@ legend_handles = [
 ]
 axes[-1].legend(
     handles=legend_handles, loc="upper left",
-    fontsize=8.5, facecolor="#0d0020", edgecolor=GRID,
+    fontsize=8.5, facecolor="#f5f5f5", edgecolor=GRID,
     labelcolor=FG, framealpha=0.9,
 )
 
 # ── Titles & watermark ────────────────────────────────────────────────────────
 
 fig.suptitle(
-    "Predicted vs Actual Season 7 Standings",
-    color=FG, fontsize=18, fontweight="500", y=1.02,
+    "Predicted vs Actual 24-25 Season Standings",
+    color=FG, fontsize=18, fontweight="500", y=1.00,
 )
 fig.text(
     0.5, -0.04,

@@ -100,7 +100,7 @@
     <div class="brand">BTN</div>
     <div class="record-badge">
       <div class="badge-dot"></div>
-      <div class="badge-text">{% if is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
+      <div class="badge-text">{% if badge_text %}{{ badge_text }}{% elif is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
     </div>
   </div>
 
@@ -135,25 +135,31 @@
   <div class="rule"></div>
 
   <!-- PREVIOUS RECORD -->
+  {% if not hide_prev %}
   <div class="prev-record-block">
     <div class="section-label">Previously: {{ prev_value }} {{ new_value_unit }}</div>
     <div class="prev-holders">
-      {% for h in prev_holders %}
-      <div class="prev-holder-row">
-        {% if h.logo %}
-          <img class="prev-logo" src="{{ h.logo }}" alt="{{ h.team_code }}">
-        {% else %}
-          <div class="prev-logo-placeholder">{{ h.team_code }}</div>
-        {% endif %}
-        <div class="prev-holder-info">
-          <div class="prev-holder-team">{{ h.team_code }}</div>
-          <div class="prev-holder-game">{{ h.game_date }} &middot; {{ h.opponent }} {{ h.score }}</div>
+      {% if prev_holders %}
+        {% for h in prev_holders %}
+        <div class="prev-holder-row">
+          {% if h.logo %}
+            <img class="prev-logo" src="{{ h.logo }}" alt="{{ h.team_code }}">
+          {% else %}
+            <div class="prev-logo-placeholder">{{ h.team_code }}</div>
+          {% endif %}
+          <div class="prev-holder-info">
+            <div class="prev-holder-team">{{ h.team_code }}</div>
+            <div class="prev-holder-game">{{ h.game_date }} &middot; {{ h.opponent }} {{ h.score }}</div>
+          </div>
+          <div class="prev-holder-val">{{ prev_value }}</div>
         </div>
-        <div class="prev-holder-val">{{ prev_value }}</div>
-      </div>
-      {% endfor %}
+        {% endfor %}
+      {% else %}
+        <div style="font-size:26px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,0.35);padding:20px 0;">No previous record this season.</div>
+      {% endif %}
     </div>
   </div>
+  {% endif %}
 
   <div class="footer">
     <div class="footer-brand">BY THE NUMBERS</div>

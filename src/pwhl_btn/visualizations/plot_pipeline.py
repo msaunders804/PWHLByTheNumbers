@@ -20,14 +20,14 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ── Brand colors ──────────────────────────────────────────────────────────────
 
-BG          = "#000000"
-FG          = "#ffffff"
+BG          = "#ffffff"
+FG          = "#000000"
 PURPLE      = "#8c52ff"
-PURPLE_DIM  = "#3d2470"
-PURPLE_EDGE = "#b38aff"
-GREY_BOX    = "#111111"
-GREY_EDGE   = "#2a2a2a"
-GREY_TEXT   = "#888888"
+PURPLE_DIM  = "#ede0ff"
+PURPLE_EDGE = "#8c52ff"
+GREY_BOX    = "#f2f2f2"
+GREY_EDGE   = "#cccccc"
+GREY_TEXT   = "#666666"
 ARROW_COLOR = "#8c52ff"
 
 # ── Pipeline stages ───────────────────────────────────────────────────────────

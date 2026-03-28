@@ -78,7 +78,7 @@
     <div class="brand">BTN</div>
     <div class="record-badge">
       <div class="badge-dot"></div>
-      <div class="badge-text">{% if is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
+      <div class="badge-text">{% if badge_text %}{{ badge_text }}{% elif is_tie %}Record Tied{% else %}Record Broken{% endif %}</div>
     </div>
   </div>
 
@@ -101,12 +101,14 @@
   </div>
   <div class="game-date">{{ new_game_date }}</div>
 
+  {% if not hide_prev %}
   <div class="prev-note">
     <div class="prev-label">Previous Record</div>
     <div class="prev-value">
       <em>{{ prev_value }}</em> &mdash; {{ prev_holders_label }}
     </div>
   </div>
+  {% endif %}
 
   <div class="cta">SWIPE FOR DETAILS &nbsp;&#8594;</div>
 </div>

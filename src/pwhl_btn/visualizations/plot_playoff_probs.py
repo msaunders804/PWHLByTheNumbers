@@ -26,13 +26,13 @@ from pwhl_btn.analytics.monte_carlo import run_simulation
 
 # ── Brand colors ──────────────────────────────────────────────────────────────
 
-BG           = "#000000"
-FG           = "#ffffff"
-GRID         = "#2a2a2a"
+BG           = "#ffffff"
+FG           = "#000000"
+GRID         = "#dddddd"
 BAR_IN       = "#8c52ff"   # top 4 — in playoff position
-BAR_OUT      = "#3a3a3a"   # 5th–8th — out
-BAR_EDGE_IN  = "#b38aff"
-BAR_EDGE_OUT = "#5a5a5a"
+BAR_OUT      = "#d0d0d0"   # 5th–8th — out
+BAR_EDGE_IN  = "#8c52ff"
+BAR_EDGE_OUT = "#aaaaaa"
 LINE_COLOR   = "#ff6b6b"   # 50% coin-flip line
 
 # ── Run simulation ─────────────────────────────────────────────────────────────
@@ -89,8 +89,8 @@ if n > PLAYOFF_SPOTS:
             color=LINE_COLOR, fontsize=8, va="bottom", alpha=0.9)
 
 # 50% reference line
-ax.axvline(50, color="#555555", linewidth=0.8, linestyle=":", zorder=1)
-ax.text(50.5, -0.7, "50%", color="#555555", fontsize=7.5, va="top")
+ax.axvline(50, color="#aaaaaa", linewidth=0.8, linestyle=":", zorder=1)
+ax.text(50.5, -0.7, "50%", color="#aaaaaa", fontsize=7.5, va="top")
 
 # ── Axes ──────────────────────────────────────────────────────────────────────
 
@@ -115,7 +115,7 @@ ax.set_axisbelow(True)
 ax.set_xlabel("Probability of finishing Top 4",
               color="#888888", fontsize=10, labelpad=8)
 ax.set_title(
-    "Season 8 Playoff Qualification Probabilities (67% Snapshot)",
+    "25-26 Season Playoff Qualification Probabilities (67% Snapshot)",
     color=FG, fontsize=16, fontweight="500", pad=14, loc="center",
 )
 fig.text(0.99, 0.01, "ByTheNumbers · PWHL Analytics",

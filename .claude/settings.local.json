@@ -14,7 +14,8 @@
       "Bash(del test_game_245.py test_load_new_games.py debug_schedule.py)",
       "Bash(printf:*)",
       "Bash(pip install:*)",
-      "Bash(PYTHONIOENCODING=utf-8 python -m pwhl_btn.render.monte_carlo_slides --sample --skip-drive)"
+      "Bash(PYTHONIOENCODING=utf-8 python -m pwhl_btn.render.monte_carlo_slides --sample --skip-drive)",
+      "Bash(find /c/Users/msaun/PWHLByTheNumbers/.github/workflows -type f -name *.yml -o -name *.yaml)"
     ]
   }
 }

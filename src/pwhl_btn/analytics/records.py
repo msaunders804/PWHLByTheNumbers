@@ -195,6 +195,85 @@ def _fetch_goal_diff_detail(conn, game_id: int, team_id):
             for r in rows]
 
 
+# ── Record 3: Season points leader (highest cumulative points by one player) ───
+
+def _fetch_season_points_leader(conn, season_id: int):
+    """
+    For each player, returns the game where their cumulative season points
+    reached their personal season high. Ordered by that high DESC — so the
+    all-time season leader sits at row 0.
+    """
+    return conn.execute(text("""
+        WITH player_season_pts AS (
+            SELECT
+                s.player_id,
+                s.team_id,
+                s.game_id,
+                SUM(s.points) OVER (
+                    PARTITION BY s.player_id
+                    ORDER BY g.date, s.game_id
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                ) AS running_total,
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score
+            FROM player_game_stats s
+            JOIN games g  ON g.game_id  = s.game_id
+            JOIN teams ht ON ht.team_id = g.home_team_id
+            JOIN teams at ON at.team_id = g.away_team_id
+            WHERE g.season_id = :sid AND g.game_status = 'Final'
+        ),
+        player_max AS (
+            SELECT player_id, MAX(running_total) AS season_high
+            FROM player_season_pts
+            GROUP BY player_id
+        ),
+        peak_game AS (
+            SELECT psp.*
+            FROM player_season_pts psp
+            JOIN player_max pm ON pm.player_id = psp.player_id
+                               AND pm.season_high = psp.running_total
+        ),
+        ranked AS (
+            SELECT *,
+                   ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY date DESC, game_id DESC) AS rn
+            FROM peak_game
+        )
+        SELECT
+            r.game_id,
+            r.team_id,
+            t.team_code,
+            CONCAT(p.first_name, ' ', p.last_name) AS team_name,
+            r.date,
+            r.home_code,
+            r.away_code,
+            r.home_score,
+            r.away_score,
+            r.running_total AS value
+        FROM ranked r
+        JOIN players p ON p.player_id = r.player_id
+        JOIN teams   t ON t.team_id   = r.team_id
+        WHERE r.rn = 1
+        ORDER BY r.running_total DESC
+    """), {"sid": season_id}).fetchall()
+
+
+def _fetch_season_pts_detail(conn, game_id: int, team_id: int):
+    rows = conn.execute(text("""
+        SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+               pgs.goals, pgs.assists, pgs.points
+        FROM player_game_stats pgs
+        JOIN players p ON p.player_id = pgs.player_id
+        WHERE pgs.game_id = :gid AND pgs.team_id = :tid
+          AND (pgs.goals > 0 OR pgs.assists > 0)
+        ORDER BY pgs.points DESC, pgs.goals DESC
+    """), {"gid": game_id, "tid": team_id}).fetchall()
+    return [{"name": r.name, "goals": r.goals, "assists": r.assists, "points": r.points}
+            for r in rows]
+
+
 # ── Registry ───────────────────────────────────────────────────────────────────
 
 TRACKED_RECORDS: list[RecordDefinition] = [
@@ -213,6 +292,14 @@ TRACKED_RECORDS: list[RecordDefinition] = [
         detail_slide  = True,
         fetch_instances = _fetch_goal_diff,
         fetch_detail    = _fetch_goal_diff_detail,
+    ),
+    RecordDefinition(
+        id            = "season_points_leader",
+        name          = "MOST POINTS IN A SEASON",
+        value_unit    = "PTS",
+        detail_slide  = False,
+        fetch_instances = _fetch_season_points_leader,
+        fetch_detail    = None,
     ),
 ]
 
@@ -343,5 +430,172 @@ def check_recent_records(days: int = 7) -> list[dict]:
                     "season":    SEASON_ID,
                     "pwhl_logo": _pwhl_logo_uri(),
                 })
+
+    return results
+
+
+# ── Hat trick detector ─────────────────────────────────────────────────────────
+
+def check_recent_hat_tricks(days: int = 1) -> list[dict]:
+    """
+    Returns one context dict per player who scored 3+ goals in a single game
+    within the last `days` days.  These are notable events, not season records.
+    """
+    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
+
+    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    cutoff = date.today() - timedelta(days=days)
+    results = []
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                s.game_id,
+                s.player_id,
+                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                s.team_id,
+                t.team_code,
+                t.team_name,
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score,
+                s.goals,
+                s.assists,
+                s.points
+            FROM player_game_stats s
+            JOIN players p  ON p.player_id = s.player_id
+            JOIN teams   t  ON t.team_id   = s.team_id
+            JOIN games   g  ON g.game_id   = s.game_id
+            JOIN teams   ht ON ht.team_id  = g.home_team_id
+            JOIN teams   at ON at.team_id  = g.away_team_id
+            WHERE g.season_id = :sid
+              AND g.game_status = 'Final'
+              AND s.goals >= 3
+              AND g.date >= :cutoff
+            ORDER BY s.goals DESC, g.date DESC
+        """), {"sid": SEASON_ID, "cutoff": cutoff}).fetchall()
+
+        for r in rows:
+            game_result, opp_code = _game_result_str(
+                r.team_code, r.home_code, r.home_score, r.away_score
+            )
+            badge_label = "Hat Trick" if r.goals == 3 else f"{r.goals}-Goal Game"
+            record_name = f"HAT TRICK" if r.goals == 3 else f"{r.goals}-GOAL GAME"
+
+            results.append({
+                "record_id":            f"hat_trick_{r.player_id}_{r.game_id}",
+                "record_name":          record_name,
+                "new_value":            r.goals,
+                "new_value_unit":       "GOALS",
+                "new_team_code":        r.team_code,
+                "new_team_name":        r.player_name,
+                "new_team_logo":        _logo_uri(r.team_code),
+                "new_game_result":      game_result,
+                "new_game_opponent":    opp_code,
+                "new_game_date":        _fmt_date(r.date),
+                "player_photo":         _player_photo_uri(r.player_name),
+                "featured_player_name": r.player_name,
+                "prev_value":           0,
+                "prev_holders":         [],
+                "prev_holders_label":   "—",
+                "is_tie":               False,
+                "badge_text":           badge_label,
+                "hide_prev":            True,
+                "scorers":              [{
+                    "name":    r.player_name,
+                    "goals":   r.goals,
+                    "assists": r.assists,
+                    "points":  r.points,
+                }],
+                "include_detail_slide": False,
+                "season":               SEASON_ID,
+                "pwhl_logo":            _pwhl_logo_uri(),
+            })
+
+    return results
+
+
+# ── First career PWHL goal detector ───────────────────────────────────────────
+
+def check_recent_first_goals(days: int = 1) -> list[dict]:
+    """
+    Returns one context dict per player who scored their first ever career
+    PWHL goal in the last `days` days.
+    """
+    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
+
+    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    cutoff = date.today() - timedelta(days=days)
+    results = []
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                s.game_id,
+                s.player_id,
+                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                s.team_id,
+                t.team_code,
+                t.team_name,
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score,
+                s.goals,
+                s.assists,
+                s.points
+            FROM player_game_stats s
+            JOIN players p  ON p.player_id = s.player_id
+            JOIN teams   t  ON t.team_id   = s.team_id
+            JOIN games   g  ON g.game_id   = s.game_id
+            JOIN teams   ht ON ht.team_id  = g.home_team_id
+            JOIN teams   at ON at.team_id  = g.away_team_id
+            WHERE g.game_status = 'Final'
+              AND g.date >= :cutoff
+              AND s.goals > 0
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM player_game_stats s2
+                  JOIN games g2 ON g2.game_id = s2.game_id
+                  WHERE s2.player_id = s.player_id
+                    AND s2.goals > 0
+                    AND g2.date < g.date
+              )
+            ORDER BY g.date DESC
+        """), {"cutoff": cutoff}).fetchall()
+
+        for r in rows:
+            game_result, opp_code = _game_result_str(
+                r.team_code, r.home_code, r.home_score, r.away_score
+            )
+            results.append({
+                "record_id":            f"first_goal_{r.player_id}",
+                "record_name":          "FIRST CAREER PWHL GOAL",
+                "new_value":            1,
+                "new_value_unit":       "GOAL",
+                "new_team_code":        r.team_code,
+                "new_team_name":        r.player_name,
+                "new_team_logo":        _logo_uri(r.team_code),
+                "new_game_result":      game_result,
+                "new_game_opponent":    opp_code,
+                "new_game_date":        _fmt_date(r.date),
+                "player_photo":         _player_photo_uri(r.player_name),
+                "featured_player_name": r.player_name,
+                "prev_value":           0,
+                "prev_holders":         [],
+                "prev_holders_label":   "First in Career",
+                "is_tie":               False,
+                "badge_text":           "Milestone",
+                "hide_prev":            True,
+                "scorers":              [],
+                "include_detail_slide": False,
+                "season":               SEASON_ID,
+                "pwhl_logo":            _pwhl_logo_uri(),
+            })
 
     return results

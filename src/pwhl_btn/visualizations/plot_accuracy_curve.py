@@ -34,9 +34,9 @@ S7_DATA = [
 
 # ── BTN brand colors ──────────────────────────────────────────────────────────
 
-BG       = "#000000"
-FG       = "#ffffff"
-GRID     = "#2a2a2a"
+BG       = "#ffffff"
+FG       = "#000000"
+GRID     = "#dddddd"
 S7_COLOR = "#8c52ff"
 
 # ── Figure setup ──────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ ax.set_axisbelow(True)
 
 # p < 0.05 threshold line
 ax.axhline(y=0.829, color=GRID, linewidth=0.8, linestyle="--", zorder=1)
-ax.text(26.5, 0.845, "p < 0.05 threshold", color="#555555",
+ax.text(26.5, 0.845, "p < 0.05 threshold", color="#999999",
         fontsize=8, va="bottom", style="italic")
 
 # ── Season 7 ──────────────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ handles = [
                   label="Season 7 — solid: p < 0.05  (hollow markers: not significant)"),
 ]
 ax.legend(handles=handles, loc="lower right", fontsize=9,
-          facecolor="#0d0020", edgecolor=GRID,
+          facecolor="#f5f5f5", edgecolor=GRID,
           labelcolor=FG, framealpha=0.9)
 
 # ── Labels & title ────────────────────────────────────────────────────────────

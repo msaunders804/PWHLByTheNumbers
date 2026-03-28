@@ -1,0 +1,56 @@
+name: PWHL Daily Records & Milestones
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 10:00 PM CST (04:00 UTC next day)
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+    inputs:
+      days:
+        description: 'Look-back window in days (default 1)'
+        required: false
+        default: '1'
+
+jobs:
+  daily-records:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install sqlalchemy pymysql jinja2 playwright requests \
+                      google-api-python-client google-auth
+          playwright install chromium --with-deps
+
+      - name: Sync latest game data
+        env:
+          PYTHONPATH:        src
+          PWHL_DATABASE_URL: ${{ secrets.PWHL_DATABASE_URL }}
+        run: python -m pwhl_btn.ingest.update
+
+      - name: Detect and render record-breaking events
+        env:
+          PYTHONPATH:             src
+          PWHL_DATABASE_URL:      ${{ secrets.PWHL_DATABASE_URL }}
+          GOOGLE_CLIENT_ID:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN:   ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+        run: |
+          DAYS="${{ github.event.inputs.days || '1' }}"
+          python -m pwhl_btn.jobs.run_daily_records --days "$DAYS"
+
+      - name: Upload slides as artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-records-${{ github.run_id }}
+          path: output/*.png
+          retention-days: 7
