@@ -48,7 +48,7 @@ def check_clinched(teams: dict, playoff_spots: int = PLAYOFF_SPOTS) -> dict[int,
         for oid, other in teams.items():
             if oid == tid:
                 continue
-            max_other = other["pts"] + (other["games_remaining"] * 2)
+            max_other = other["pts"] + (other["games_remaining"] * 3)
             if max_other < my_pts:
                 eliminated_count += 1
 
@@ -73,7 +73,7 @@ def check_eliminated(teams: dict, playoff_spots: int = PLAYOFF_SPOTS) -> dict[in
     """
     eliminated: dict[int, bool] = {}
     for tid, team in teams.items():
-        max_pts = team["pts"] + (team["games_remaining"] * 2)
+        max_pts = team["pts"] + (team["games_remaining"] * 3)
         ahead_count = sum(
             1 for oid, other in teams.items()
             if oid != tid and other["pts"] > max_pts
@@ -94,9 +94,58 @@ def get_clinched_teams(season_id: int = 8) -> dict[int, bool]:
     return check_clinched(teams)
 
 
+def get_newly_clinched_teams(season_id: int = 8, days: int = 1) -> list[int]:
+    """
+    Returns team_ids that clinched within the last `days` days.
+
+    Compares current clinch status against standings as-of `days` days ago.
+    A team appears in the result only if they are clinched now but were NOT
+    clinched before the games played in that window.
+    """
+    from datetime import date, timedelta
+    from pwhl_btn.db.db_queries import get_clinch_data
+
+    cutoff   = date.today() - timedelta(days=days)
+    current  = get_clinch_data(season_id)
+    previous = get_clinch_data(season_id, before_date=cutoff)
+
+    now_clinched  = check_clinched(current)
+    then_clinched = check_clinched(previous)
+
+    return [tid for tid, is_clinched in now_clinched.items()
+            if is_clinched and not then_clinched.get(tid, False)]
+
+
 def clinched_team_codes(season_id: int = 8) -> set[str]:
     """Convenience: return set of team_code strings for all clinched teams."""
     from pwhl_btn.db.db_queries import get_clinch_data
     teams = get_clinch_data(season_id)
     result = check_clinched(teams)
     return {teams[tid]["team_code"] for tid, clinched in result.items() if clinched}
+
+
+if __name__ == "__main__":
+    from pwhl_btn.db.db_queries import get_clinch_data
+
+    teams    = get_clinch_data()
+    clinched = check_clinched(teams)
+    elim     = check_eliminated(teams)
+
+    sorted_teams = sorted(teams.items(), key=lambda x: -x[1]["pts"])
+
+    print(f"\n── PWHL Playoff Clinch Check ────────────────────────────────")
+    print(f"  {'#':<3} {'Team':<8} {'PTS':>4}  {'GP Left':>7}  {'Max(×3)':>7}  Status")
+    print(f"  {'─'*3} {'─'*8} {'─'*4}  {'─'*7}  {'─'*7}  {'─'*12}")
+    for rank, (tid, info) in enumerate(sorted_teams, 1):
+        max_pts = info["pts"] + info["games_remaining"] * 3
+        if clinched[tid]:
+            status = "CLINCHED"
+        elif elim[tid]:
+            status = "ELIMINATED"
+        else:
+            status = "in play"
+        print(f"  {rank:<3} {info['team_code']:<8} {info['pts']:>4}  {info['games_remaining']:>7}  {max_pts:>7}  {status}")
+
+    n_clinched = sum(clinched.values())
+    n_elim     = sum(elim.values())
+    print(f"\n  Clinched: {n_clinched} / {len(teams)}   Eliminated: {n_elim} / {len(teams)}\n")

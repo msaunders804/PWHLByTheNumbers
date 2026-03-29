@@ -43,7 +43,7 @@ def run(team_id: int | None = None, dry_run: bool = False) -> list[Path]:
     print(f"\n  {'Team':<8} {'PTS':>4}  {'MAX':>4}  {'REM':>4}  {'Status'}")
     print(f"  {'─'*8} {'─'*4}  {'─'*4}  {'─'*4}  {'─'*12}")
     for tid, info in sorted(teams.items(), key=lambda x: -x[1]["pts"]):
-        max_pts = info["pts"] + info["games_remaining"] * 2
+        max_pts = info["pts"] + info["games_remaining"] * 3
         if clinched[tid]:
             status = "✅ CLINCHED"
         elif eliminated[tid]:

@@ -15,7 +15,15 @@
       "Bash(printf:*)",
       "Bash(pip install:*)",
       "Bash(PYTHONIOENCODING=utf-8 python -m pwhl_btn.render.monte_carlo_slides --sample --skip-drive)",
-      "Bash(find /c/Users/msaun/PWHLByTheNumbers/.github/workflows -type f -name *.yml -o -name *.yaml)"
+      "Bash(find /c/Users/msaun/PWHLByTheNumbers/.github/workflows -type f -name *.yml -o -name *.yaml)",
+      "Bash(pwhl/Scripts/pip install:*)",
+      "Bash(pwhl/bin/pip install:*)",
+      "Bash(python pwhl/bin/pip install \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
+      "Bash(pwhl/bin/python -m pip install \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
+      "Bash(/usr/bin/python3.12 -m pip install --target \"c:/Users/msaun/PWHLByTheNumbers/pwhl/lib/python3.12/site-packages\" \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
+      "Bash(python3 -m pip install --target \"c:/Users/msaun/PWHLByTheNumbers/pwhl/lib/python3.12/site-packages\" \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
+      "Read(//c/Users/msaun/AppData/Local/Programs/**)",
+      "Read(//c/Users/msaun/AppData/Local/Microsoft/WindowsApps/**)"
     ]
   }
 }

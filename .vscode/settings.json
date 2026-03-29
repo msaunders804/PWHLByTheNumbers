@@ -1,3 +1,4 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.defaultInterpreterPath": "C:\\Users\\msaun\\AppData\\Local\\Microsoft\\WindowsApps\\python3.11.exe"
 }

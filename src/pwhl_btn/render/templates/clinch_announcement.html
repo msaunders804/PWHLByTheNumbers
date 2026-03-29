@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  .bg-glow-center { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); width:1000px; height:1000px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.40) 0%,transparent 65%); z-index:0; }
+  .bg-glow-gold   { position:absolute; bottom:300px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.18) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines   { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .corner { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .season { position:absolute; top:40px; right:80px; font-size:18px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.22); text-transform:uppercase; z-index:10; }
+
+  .slide {
+    position:relative; z-index:2;
+    width:1080px; height:1920px;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:0;
+  }
+
+  .team-name {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:64px;
+    letter-spacing:6px;
+    color:rgba(255,255,255,0.55);
+    text-align:center;
+    margin-bottom:48px;
+  }
+
+  .logo-wrap {
+    width:520px; height:520px;
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:56px;
+  }
+  .team-logo {
+    width:520px; height:520px;
+    object-fit:contain;
+    filter:drop-shadow(0 0 60px rgba(140,82,255,0.45)) drop-shadow(0 0 120px rgba(94,23,235,0.30));
+  }
+  .team-logo-placeholder {
+    width:520px; height:520px;
+    border-radius:24px;
+    background:rgba(255,255,255,0.05);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:100px; letter-spacing:4px; color:rgba(255,255,255,0.25);
+  }
+
+  .clinched-word {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:220px;
+    line-height:0.88;
+    color:#f5a623;
+    letter-spacing:4px;
+    text-align:center;
+    text-shadow:0 0 60px rgba(245,166,35,0.50), 0 0 120px rgba(245,166,35,0.25);
+    margin-bottom:24px;
+  }
+
+  .neon-rule {
+    width:160px; height:3px;
+    background:linear-gradient(90deg,transparent,#f5a623,transparent);
+    border-radius:2px;
+    box-shadow:0 0 18px rgba(245,166,35,0.7);
+    margin-bottom:24px;
+  }
+
+  .seed-line {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:44px;
+    letter-spacing:8px;
+    color:rgba(255,255,255,0.45);
+    text-align:center;
+  }
+  .seed-line span { color:#8c52ff; }
+
+  .footer {
+    position:absolute; bottom:52px; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 80px; z-index:10;
+  }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.13); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.13); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-center"></div>
+<div class="bg-glow-gold"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="season">PWHL · Season 8</div>
+
+<div class="slide">
+  <div class="team-name">{{ team_name }}</div>
+
+  <div class="logo-wrap">
+    {% if team_logo %}
+      <img class="team-logo" src="{{ team_logo }}" alt="{{ team_name }}">
+    {% else %}
+      <div class="team-logo-placeholder">{{ team_code }}</div>
+    {% endif %}
+  </div>
+
+  <div class="clinched-word">CLINCHED</div>
+  <div class="neon-rule"></div>
+  <div class="seed-line"><span>{{ seed_label }} SEED</span> · PLAYOFFS</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 8 · 2025–26</div>
+</div>
+</body>
+</html>

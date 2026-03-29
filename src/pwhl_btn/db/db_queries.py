@@ -6,16 +6,36 @@ leave this module, so the renderers stay decoupled from the ORM.
 """
 
 import os
+import time
 from datetime import date, timedelta
 from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import OperationalError
 
 from pwhl_btn.db.db_config import get_db_url
 DATABASE_URL = get_db_url()
 
-engine    = create_engine(DATABASE_URL)
-Session   = sessionmaker(bind=engine)
+engine  = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+
+
+def _probe_connection(retries: int = 2, delay: int = 8) -> None:
+    """Test the DB connection and retry if Railway is waking from sleep."""
+    for attempt in range(1, retries + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return
+        except OperationalError as exc:
+            if attempt < retries:
+                print(f"[db] Connection attempt {attempt} failed — retrying in {delay}s ({exc.__class__.__name__})")
+                time.sleep(delay)
+            else:
+                raise
+
+
+_probe_connection()
 SEASON_ID = 8
 
 # ── Team logo helper ───────────────────────────────────────────────────────────
@@ -238,19 +258,35 @@ def get_standings(season_id: int = 8) -> list[dict]:
         session.close()
 
 
-def get_clinch_data(season_id: int = 8) -> dict[int, dict]:
+def get_clinch_data(season_id: int = 8, before_date=None) -> dict[int, dict]:
     """
     Returns {team_id: {"pts": int, "games_remaining": int, "team_code": str}}
     for use by the clinch calculator.
+
+    Args:
+        before_date: if provided (date or ISO string), only count games played
+                     strictly before this date.  Used to check historical clinch
+                     status (e.g. "were they clinched before yesterday's games?").
     """
     session = Session()
     try:
-        rows = session.execute(text("""
+        date_filter      = "AND g.date < :before_date"  if before_date else ""
+        remaining_filter = "AND g2.date >= :before_date" if before_date else "AND g2.game_status != 'final'"
+        params = {"sid": season_id}
+        if before_date:
+            params["before_date"] = str(before_date)
+
+        rows = session.execute(text(f"""
             SELECT t.team_id, t.team_code,
                    COALESCE(SUM(
                        CASE
-                           WHEN (g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
-                                (g.away_team_id = t.team_id AND g.away_score > g.home_score)
+                           WHEN g.result_type = 'REG'
+                            AND ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                                 (g.away_team_id = t.team_id AND g.away_score > g.home_score))
+                           THEN 3
+                           WHEN g.result_type IN ('OT','SO')
+                            AND ((g.home_team_id = t.team_id AND g.home_score > g.away_score) OR
+                                 (g.away_team_id = t.team_id AND g.away_score > g.home_score))
                            THEN 2
                            WHEN g.result_type IN ('OT','SO')
                             AND ((g.home_team_id = t.team_id AND g.home_score < g.away_score) OR
@@ -261,15 +297,16 @@ def get_clinch_data(season_id: int = 8) -> dict[int, dict]:
                    ), 0) AS pts,
                    (SELECT COUNT(*) FROM games g2
                     WHERE g2.season_id = :sid
-                      AND g2.game_status != 'final'
+                      {remaining_filter}
                       AND (g2.home_team_id = t.team_id OR g2.away_team_id = t.team_id)
                    ) AS games_remaining
             FROM teams t
             LEFT JOIN games g ON (g.home_team_id = t.team_id OR g.away_team_id = t.team_id)
                               AND g.season_id = :sid AND g.game_status = 'final'
+                              {date_filter}
             WHERE t.season_id = :sid
             GROUP BY t.team_id, t.team_code
-        """), {"sid": season_id}).fetchall()
+        """), params).fetchall()
 
         return {
             r.team_id: {

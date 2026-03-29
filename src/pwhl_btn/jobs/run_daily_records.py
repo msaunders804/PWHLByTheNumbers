@@ -30,6 +30,9 @@ from pwhl_btn.analytics.records import (
     check_recent_point_streaks,
     check_recent_shutout_streaks,
 )
+from pwhl_btn.analytics.clinch import get_newly_clinched_teams
+from pwhl_btn.db.db_queries import get_clinch_slide_data
+from pwhl_btn.render.clinch_render import render_clinch_announcement
 from pwhl_btn.render.record_breaking import render_slides
 
 
@@ -70,18 +73,24 @@ def main():
     print(f"        {len(shutout_streaks)} shutout streak record(s) found")
     all_contexts.extend(shutout_streaks)
 
-    if not all_contexts:
+    print("  [6/6] Checking playoff clinches...")
+    newly_clinched_ids = get_newly_clinched_teams(days=args.days)
+    print(f"        {len(newly_clinched_ids)} newly clinched team(s)")
+
+    if not all_contexts and not newly_clinched_ids:
         print(f"\n  Nothing notable in the last {args.days} day(s). Exiting.")
         return
 
-    print(f"\n  Total: {len(all_contexts)} event(s) to render")
+    print(f"\n  Total: {len(all_contexts)} record event(s), {len(newly_clinched_ids)} clinch(es) to render")
 
     if args.dry_run:
         for ctx in all_contexts:
             print(f"  [dry-run] {ctx['record_id']} — {ctx['record_name']} ({ctx['new_value']} {ctx['new_value_unit']})")
+        for tid in newly_clinched_ids:
+            print(f"  [dry-run] CLINCHED team_id={tid}")
         return
 
-    # Render and optionally upload each event
+    # Render and optionally upload each record event
     all_outputs = []
     for ctx in all_contexts:
         print(f"\n  [{ctx['record_id']}]  {ctx['record_name']}  ({ctx['new_value']} {ctx['new_value_unit']})")
@@ -91,7 +100,19 @@ def main():
         if not args.skip_drive:
             _upload(outputs)
 
-    print(f"\n  Done — {len(all_outputs)} slide(s) rendered across {len(all_contexts)} event(s)")
+    # Render clinch announcements
+    for tid in newly_clinched_ids:
+        print(f"\n  [CLINCHED] team_id={tid}")
+        try:
+            data = get_clinch_slide_data(tid)
+            path = render_clinch_announcement(data)
+            all_outputs.append(path)
+            if not args.skip_drive:
+                _upload([path])
+        except Exception as e:
+            print(f"    ERROR: {e}")
+
+    print(f"\n  Done — {len(all_outputs)} slide(s) rendered across {len(all_contexts)} event(s) + {len(newly_clinched_ids)} clinch(es)")
 
 
 def _upload(outputs):

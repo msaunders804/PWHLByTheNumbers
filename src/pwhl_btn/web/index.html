@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTN · PWHL Query Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #07000f;
+  --surface:   rgba(255,255,255,0.04);
+  --surface2:  rgba(255,255,255,0.07);
+  --purple:    #5e17eb;
+  --accent:    #8c52ff;
+  --gold:      #f5a623;
+  --text:      #ffffff;
+  --muted:     rgba(255,255,255,0.42);
+  --border:    rgba(255,255,255,0.08);
+  --border-p:  rgba(140,82,255,0.28);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:var(--bg); color:var(--text);
+  font-family:'Barlow Condensed',sans-serif;
+  min-height:100vh; overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed;
+  top:-300px; left:-300px; width:900px; height:900px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(94,23,235,0.18) 0%, transparent 65%);
+  pointer-events:none; z-index:0;
+}
+
+/* ── Top bar ── */
+.top-bar { height:6px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+/* ── Header ── */
+header {
+  position:relative; z-index:1;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 32px; border-bottom:1px solid var(--border);
+}
+.brand      { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:6px; color:rgba(255,255,255,0.45); }
+.page-title { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:var(--muted); }
+
+/* ── Main ── */
+main {
+  position:relative; z-index:1;
+  max-width:860px; margin:0 auto;
+  padding:36px 24px 80px;
+}
+
+/* ── Input ── */
+.query-wrap { margin-bottom:28px; }
+
+textarea#question {
+  width:100%; min-height:76px;
+  background:var(--surface); border:1.5px solid var(--border-p);
+  border-radius:14px; padding:18px 22px;
+  color:var(--text); font-family:'Barlow Condensed',sans-serif;
+  font-size:21px; font-weight:600; letter-spacing:0.3px;
+  resize:none; outline:none; transition:border-color .2s;
+}
+textarea#question::placeholder { color:var(--muted); }
+textarea#question:focus { border-color:var(--accent); }
+
+.input-row {
+  display:flex; align-items:center; justify-content:flex-end;
+  gap:14px; margin-top:10px;
+}
+.hint { font-size:14px; color:var(--muted); letter-spacing:1px; }
+
+.btn-ask {
+  background:linear-gradient(135deg,#5e17eb,#8c52ff);
+  border:none; border-radius:100px;
+  padding:11px 38px;
+  font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px;
+  color:#fff; cursor:pointer; transition:opacity .2s, transform .1s;
+  flex-shrink:0;
+}
+.btn-ask:hover:not(:disabled)  { opacity:.85; }
+.btn-ask:active:not(:disabled) { transform:scale(.97); }
+.btn-ask:disabled              { opacity:.35; cursor:not-allowed; }
+
+/* ── Loading ── */
+#loading {
+  display:none; align-items:center; gap:14px;
+  padding:20px 4px; color:var(--muted);
+  font-size:17px; letter-spacing:2px; text-transform:uppercase;
+}
+.spinner {
+  width:22px; height:22px; flex-shrink:0;
+  border:3px solid rgba(140,82,255,.3);
+  border-top-color:var(--accent);
+  border-radius:50%; animation:spin .75s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Cards ── */
+#results { display:flex; flex-direction:column; gap:14px; }
+
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; overflow:hidden;
+}
+.card-header {
+  padding:12px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12px; font-weight:700; letter-spacing:4px;
+  text-transform:uppercase; color:var(--muted);
+  cursor:pointer; user-select:none;
+  border-bottom:1px solid transparent; transition:border-color .2s;
+}
+.card-header.has-border { border-bottom-color:var(--border); }
+.caret { transition:transform .2s; font-style:normal; font-size:14px; }
+.card-header.open .caret { transform:rotate(90deg); }
+.card-body { padding:18px 20px; }
+.card-body.collapsed { display:none; }
+
+/* Summary */
+.card.summary { border-color:rgba(140,82,255,.22); }
+.card.summary .card-header { color:var(--accent); }
+.summary-text { font-size:19px; line-height:1.6; color:rgba(255,255,255,.88); white-space:pre-wrap; }
+
+/* SQL */
+.sql-code {
+  font-family:'Courier New',monospace; font-size:13px;
+  color:rgba(140,82,255,.9); line-height:1.65;
+  white-space:pre-wrap; word-break:break-all;
+}
+
+/* Table */
+.card.data-table .card-body { padding:0; }
+.table-scroll { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:16px; }
+thead th {
+  text-align:left; padding:10px 14px;
+  font-size:12px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; color:var(--muted);
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+tbody td { padding:9px 14px; color:rgba(255,255,255,.8); border-bottom:1px solid rgba(255,255,255,.04); }
+tbody tr:last-child td { border:none; }
+tbody tr:hover td { background:rgba(255,255,255,.03); }
+.row-count {
+  padding:10px 18px; font-size:13px; color:var(--muted);
+  border-top:1px solid var(--border);
+}
+
+/* Error */
+.card.error { border-color:rgba(255,80,80,.3); }
+.card.error .card-header { color:#ff6060; }
+.error-text { font-size:18px; color:rgba(255,130,130,.9); line-height:1.5; }
+
+/* ── History ── */
+.history { margin-top:40px; }
+.history-label {
+  font-size:12px; font-weight:700; letter-spacing:4px;
+  text-transform:uppercase; color:var(--muted); margin-bottom:10px;
+}
+.history-list { display:flex; flex-direction:column; gap:7px; }
+.history-item {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:11px 16px;
+  font-size:17px; color:var(--muted); cursor:pointer;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.history-item:hover { background:var(--surface2); color:var(--text); border-color:var(--border-p); }
+
+/* ── Mobile ── */
+@media(max-width:600px) {
+  header { padding:14px 16px; }
+  main   { padding:24px 14px 60px; }
+  textarea#question { font-size:18px; }
+  .btn-ask { padding:10px 28px; font-size:20px; }
+  .hint { display:none; }
+}
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+
+<header>
+  <div class="brand">BTN</div>
+  <div class="page-title">PWHL QUERY ENGINE</div>
+</header>
+
+<main>
+  <div class="query-wrap">
+    <textarea id="question" placeholder="Ask anything about PWHL stats…  e.g. Who leads the league in goals?" rows="2"></textarea>
+    <div class="input-row">
+      <span class="hint">Shift+Enter for new line &nbsp;·&nbsp; Enter to submit</span>
+      <button class="btn-ask" id="askBtn" onclick="submitQuery()">ASK</button>
+    </div>
+  </div>
+
+  <div id="loading"><div class="spinner"></div><span>Generating query…</span></div>
+
+  <div id="results"></div>
+
+  <div class="history" id="historySection" style="display:none">
+    <div class="history-label">Recent Questions</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</main>
+
+<script>
+const _history = [];
+
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitQuery(); }
+});
+
+async function submitQuery() {
+  const q = document.getElementById('question').value.trim();
+  if (!q) return;
+
+  setLoading(true);
+  document.getElementById('results').innerHTML = '';
+
+  try {
+    const res  = await fetch('/api/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Server error');
+    renderResults(data);
+    pushHistory(q);
+  } catch (err) {
+    renderError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ── Render ─────────────────────────────────────── */
+function renderResults(data) {
+  const out = document.getElementById('results');
+  out.innerHTML = '';
+
+  // Summary
+  out.appendChild(makeCard({
+    cls: 'summary', label: 'Answer', open: true,
+    body: `<div class="summary-text">${esc(data.summary)}</div>`,
+  }));
+
+  // SQL (collapsed)
+  if (data.sql) {
+    out.appendChild(makeCard({
+      label: 'SQL', open: false,
+      body: `<pre class="sql-code">${esc(data.sql)}</pre>`,
+    }));
+  }
+
+  // Table
+  if (data.rows && data.rows.length > 0) {
+    out.appendChild(makeCard({
+      cls: 'data-table',
+      label: `Results · ${data.rows.length} row(s)`,
+      open: true,
+      body: buildTable(data.columns, data.rows),
+      noPad: true,
+    }));
+  }
+}
+
+function makeCard({ cls = '', label, open, body, noPad = false }) {
+  const card = document.createElement('div');
+  card.className = `card ${cls}`.trim();
+
+  const hdr = document.createElement('div');
+  hdr.className = `card-header has-border ${open ? 'open' : ''}`;
+  hdr.innerHTML = `<span>${esc(label)}</span><i class="caret">›</i>`;
+  hdr.addEventListener('click', () => {
+    const isOpen = hdr.classList.toggle('open');
+    bd.classList.toggle('collapsed', !isOpen);
+  });
+
+  const bd = document.createElement('div');
+  bd.className = `card-body ${open ? '' : 'collapsed'}`;
+  if (noPad) bd.style.padding = '0';
+  bd.innerHTML = body;
+
+  card.appendChild(hdr);
+  card.appendChild(bd);
+  return card;
+}
+
+function buildTable(cols, rows) {
+  const MAX = 100;
+  const display = rows.slice(0, MAX);
+  const ths = cols.map(c => `<th>${esc(c)}</th>`).join('');
+  const trs = display.map(row =>
+    `<tr>${cols.map(c => `<td>${esc(String(row[c] ?? ''))}</td>`).join('')}</tr>`
+  ).join('');
+  const note = rows.length > MAX
+    ? `Showing ${MAX} of ${rows.length} rows — full data saved to output/nlp_results/`
+    : `${rows.length} row(s)`;
+  return `<div class="table-scroll"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>
+          <div class="row-count">${note}</div>`;
+}
+
+function renderError(msg) {
+  const out = document.getElementById('results');
+  out.appendChild(makeCard({
+    cls: 'error', label: 'Error', open: true,
+    body: `<div class="error-text">${esc(msg)}</div>`,
+  }));
+}
+
+/* ── History ─────────────────────────────────────── */
+function pushHistory(q) {
+  const i = _history.indexOf(q);
+  if (i !== -1) _history.splice(i, 1);
+  _history.unshift(q);
+  if (_history.length > 8) _history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list    = document.getElementById('historyList');
+  section.style.display = _history.length ? 'block' : 'none';
+  list.innerHTML = _history.map(q =>
+    `<div class="history-item" onclick="reuseQ(this)">${esc(q)}</div>`
+  ).join('');
+}
+
+function reuseQ(el) {
+  document.getElementById('question').value = el.textContent;
+  document.getElementById('question').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── Utils ───────────────────────────────────────── */
+function setLoading(on) {
+  document.getElementById('loading').style.display = on ? 'flex' : 'none';
+  document.getElementById('askBtn').disabled = on;
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
