@@ -274,6 +274,32 @@ def _fetch_season_pts_detail(conn, game_id: int, team_id: int):
             for r in rows]
 
 
+# ── Record 4: Game attendance ──────────────────────────────────────────────────
+
+def _fetch_game_attendance(conn, season_id: int):
+    return conn.execute(text("""
+        SELECT
+            g.game_id,
+            g.home_team_id  AS team_id,
+            ht.team_code,
+            ht.team_name,
+            g.date,
+            ht.team_code    AS home_code,
+            at.team_code    AS away_code,
+            g.home_score,
+            g.away_score,
+            g.attendance    AS value
+        FROM games g
+        JOIN teams ht ON ht.team_id = g.home_team_id
+        JOIN teams at ON at.team_id = g.away_team_id
+        WHERE g.season_id  = :sid
+          AND g.game_status = 'Final'
+          AND g.attendance IS NOT NULL
+          AND g.attendance  > 0
+        ORDER BY g.attendance DESC
+    """), {"sid": season_id}).fetchall()
+
+
 # ── Registry ───────────────────────────────────────────────────────────────────
 
 TRACKED_RECORDS: list[RecordDefinition] = [
@@ -299,6 +325,14 @@ TRACKED_RECORDS: list[RecordDefinition] = [
         value_unit    = "PTS",
         detail_slide  = False,
         fetch_instances = _fetch_season_points_leader,
+        fetch_detail    = None,
+    ),
+    RecordDefinition(
+        id            = "game_attendance",
+        name          = "HIGHEST GAME ATTENDANCE",
+        value_unit    = "FANS",
+        detail_slide  = False,
+        fetch_instances = _fetch_game_attendance,
         fetch_detail    = None,
     ),
 ]
@@ -592,6 +626,261 @@ def check_recent_first_goals(days: int = 1) -> list[dict]:
                 "is_tie":               False,
                 "badge_text":           "Milestone",
                 "hide_prev":            True,
+                "scorers":              [],
+                "include_detail_slide": False,
+                "season":               SEASON_ID,
+                "pwhl_logo":            _pwhl_logo_uri(),
+            })
+
+    return results
+
+
+# ── Shared streak helper ───────────────────────────────────────────────────────
+
+def _compute_streaks(rows, has_streak_fn):
+    """
+    Given game rows for a single player ordered by date asc, compute all
+    consecutive-game streaks where has_streak_fn(row) is True.
+
+    Returns a list of streak row-lists, longest first.
+    """
+    streaks = []
+    current = []
+    for r in rows:
+        if has_streak_fn(r):
+            current.append(r)
+        else:
+            if current:
+                streaks.append(current)
+            current = []
+    if current:
+        streaks.append(current)
+    streaks.sort(key=len, reverse=True)
+    return streaks
+
+
+def _streak_prev_holders(rows_by_player, season_best, has_streak_fn,
+                         logo_fn, fmt_date_fn):
+    """
+    Build prev_holders for a streak record: any player (other than the new
+    record holder, who is excluded from rows_by_player) whose longest streak
+    equals season_best.  Uses player_name as the display 'team_code' field.
+    """
+    prev = []
+    for player_rows in rows_by_player.values():
+        for streak in _compute_streaks(player_rows, has_streak_fn):
+            if len(streak) == season_best:
+                last = streak[-1]
+                opp = last.away_code if last.team_code == last.home_code else last.home_code
+                ts  = last.home_score if last.team_code == last.home_code else last.away_score
+                os_ = last.away_score if last.team_code == last.home_code else last.home_score
+                prev.append({
+                    "team_code": last.player_name,
+                    "logo":      logo_fn(last.team_code),
+                    "game_date": fmt_date_fn(last.date),
+                    "opponent":  f"vs {opp}",
+                    "score":     f"{ts}-{os_}",
+                })
+            break  # only the longest streak per player
+    return prev
+
+
+# ── Player point streak detector ──────────────────────────────────────────────
+
+def check_recent_point_streaks(days: int = 1) -> list[dict]:
+    """
+    Returns a context dict for any player whose consecutive-games-with-a-point
+    streak reached a new season best within the last `days` days.
+    """
+    from itertools import groupby
+    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
+
+    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    cutoff = date.today() - timedelta(days=days)
+    results = []
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                s.player_id,
+                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                s.team_id,
+                t.team_code,
+                s.game_id,
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score,
+                s.points
+            FROM player_game_stats s
+            JOIN players p  ON p.player_id = s.player_id
+            JOIN teams   t  ON t.team_id   = s.team_id
+            JOIN games   g  ON g.game_id   = s.game_id
+            JOIN teams   ht ON ht.team_id  = g.home_team_id
+            JOIN teams   at ON at.team_id  = g.away_team_id
+            WHERE g.season_id = :sid AND g.game_status = 'Final'
+            ORDER BY s.player_id, g.date, s.game_id
+        """), {"sid": SEASON_ID}).fetchall()
+
+    has_point = lambda r: r.points > 0
+
+    rows_by_player = {}
+    for player_id, player_rows in groupby(rows, key=lambda r: r.player_id):
+        rows_by_player[player_id] = list(player_rows)
+
+    # Season-best streak length across all players
+    season_best = 0
+    for player_rows in rows_by_player.values():
+        streaks = _compute_streaks(player_rows, has_point)
+        if streaks and len(streaks[0]) > season_best:
+            season_best = len(streaks[0])
+
+    if season_best == 0:
+        return results
+
+    seen = set()
+    for player_id, player_rows in rows_by_player.items():
+        for streak in _compute_streaks(player_rows, has_point):
+            if len(streak) < season_best:
+                break
+            last = streak[-1]
+            if last.date < cutoff or player_id in seen:
+                continue
+            seen.add(player_id)
+
+            game_result, opp_code = _game_result_str(
+                last.team_code, last.home_code, last.home_score, last.away_score
+            )
+            other_rows   = {pid: r for pid, r in rows_by_player.items() if pid != player_id}
+            prev_holders = _streak_prev_holders(other_rows, season_best, has_point, _logo_uri, _fmt_date)
+            prev_value   = season_best if prev_holders else season_best - 1
+            is_tie       = bool(prev_holders)
+
+            results.append({
+                "record_id":            f"point_streak_{player_id}",
+                "record_name":          f"LONGEST POINT STREAK — {last.player_name}",
+                "new_value":            season_best,
+                "new_value_unit":       "GAMES",
+                "new_team_code":        last.team_code,
+                "new_team_name":        last.player_name,
+                "new_team_logo":        _logo_uri(last.team_code),
+                "new_game_result":      game_result,
+                "new_game_opponent":    opp_code,
+                "new_game_date":        _fmt_date(last.date),
+                "player_photo":         _player_photo_uri(last.player_name),
+                "featured_player_name": last.player_name,
+                "prev_value":           prev_value,
+                "prev_holders":         prev_holders,
+                "prev_holders_label":   (prev_holders[0]["team_code"] if prev_holders else "None"),
+                "is_tie":               is_tie,
+                "badge_text":           "Point Streak" if is_tie else None,
+                "hide_prev":            not prev_holders and prev_value == 0,
+                "scorers":              [],
+                "include_detail_slide": False,
+                "season":               SEASON_ID,
+                "pwhl_logo":            _pwhl_logo_uri(),
+            })
+
+    return results
+
+
+# ── Goalie shutout streak detector ────────────────────────────────────────────
+
+def check_recent_shutout_streaks(days: int = 1) -> list[dict]:
+    """
+    Returns a context dict for any goalie whose consecutive-games-without-
+    conceding reached a new season best within `days` days.
+    Only counts games where the goalie played at least 55 minutes (full game).
+    """
+    from itertools import groupby
+    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
+
+    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    cutoff = date.today() - timedelta(days=days)
+    results = []
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                s.player_id,
+                CONCAT(p.first_name, ' ', p.last_name) AS player_name,
+                s.team_id,
+                t.team_code,
+                s.game_id,
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score,
+                s.goals_against,
+                s.minutes_played
+            FROM goalie_game_stats s
+            JOIN players p  ON p.player_id = s.player_id
+            JOIN teams   t  ON t.team_id   = s.team_id
+            JOIN games   g  ON g.game_id   = s.game_id
+            JOIN teams   ht ON ht.team_id  = g.home_team_id
+            JOIN teams   at ON at.team_id  = g.away_team_id
+            WHERE g.season_id    = :sid
+              AND g.game_status  = 'Final'
+              AND s.minutes_played >= 55
+            ORDER BY s.player_id, g.date, s.game_id
+        """), {"sid": SEASON_ID}).fetchall()
+
+    is_shutout = lambda r: r.goals_against == 0
+
+    rows_by_player = {}
+    for player_id, player_rows in groupby(rows, key=lambda r: r.player_id):
+        rows_by_player[player_id] = list(player_rows)
+
+    season_best = 0
+    for player_rows in rows_by_player.values():
+        streaks = _compute_streaks(player_rows, is_shutout)
+        if streaks and len(streaks[0]) > season_best:
+            season_best = len(streaks[0])
+
+    if season_best == 0:
+        return results
+
+    seen = set()
+    for player_id, player_rows in rows_by_player.items():
+        for streak in _compute_streaks(player_rows, is_shutout):
+            if len(streak) < season_best:
+                break
+            last = streak[-1]
+            if last.date < cutoff or player_id in seen:
+                continue
+            seen.add(player_id)
+
+            game_result, opp_code = _game_result_str(
+                last.team_code, last.home_code, last.home_score, last.away_score
+            )
+            other_rows   = {pid: r for pid, r in rows_by_player.items() if pid != player_id}
+            prev_holders = _streak_prev_holders(other_rows, season_best, is_shutout, _logo_uri, _fmt_date)
+            prev_value   = season_best if prev_holders else season_best - 1
+            is_tie       = bool(prev_holders)
+
+            results.append({
+                "record_id":            f"shutout_streak_{player_id}",
+                "record_name":          f"LONGEST SHUTOUT STREAK — {last.player_name}",
+                "new_value":            season_best,
+                "new_value_unit":       "GAMES",
+                "new_team_code":        last.team_code,
+                "new_team_name":        last.player_name,
+                "new_team_logo":        _logo_uri(last.team_code),
+                "new_game_result":      game_result,
+                "new_game_opponent":    opp_code,
+                "new_game_date":        _fmt_date(last.date),
+                "player_photo":         _player_photo_uri(last.player_name),
+                "featured_player_name": last.player_name,
+                "prev_value":           prev_value,
+                "prev_holders":         prev_holders,
+                "prev_holders_label":   (prev_holders[0]["team_code"] if prev_holders else "None"),
+                "is_tie":               is_tie,
+                "badge_text":           "Shutout Streak" if is_tie else None,
+                "hide_prev":            not prev_holders and prev_value == 0,
                 "scorers":              [],
                 "include_detail_slide": False,
                 "season":               SEASON_ID,
