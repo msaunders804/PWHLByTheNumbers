@@ -11,10 +11,10 @@ import argparse
 import time
 from datetime import date
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 
-from pwhl_btn.db.db_config import get_db_url
+from pwhl_btn.db.db_config import get_engine
 from pwhl_btn.db.models import Base, Game, Team
 from pwhl_btn.jobs.backfill import (
     SEASON_ID, RATE_LIMIT,
@@ -25,7 +25,7 @@ try:
 except ImportError:
     sync_toi = None
 
-engine  = create_engine(get_db_url(), pool_pre_ping=True)
+engine  = get_engine(pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 
 

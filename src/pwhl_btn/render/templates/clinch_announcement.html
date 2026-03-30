@@ -60,13 +60,39 @@
 
   .clinched-word {
     font-family:'Bebas Neue',sans-serif;
-    font-size:220px;
+    font-size:200px;
     line-height:0.88;
     color:#f5a623;
     letter-spacing:4px;
     text-align:center;
     text-shadow:0 0 60px rgba(245,166,35,0.50), 0 0 120px rgba(245,166,35,0.25);
-    margin-bottom:24px;
+    margin-bottom:0;
+  }
+
+  .playoffs-word {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:130px;
+    line-height:0.95;
+    color:#fff;
+    letter-spacing:10px;
+    text-align:center;
+    margin-bottom:32px;
+  }
+
+  .pwhl-badge {
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    background:rgba(140,82,255,0.15);
+    border:2px solid rgba(140,82,255,0.45);
+    border-radius:100px;
+    padding:14px 44px;
+    margin-bottom:0;
+  }
+  .pwhl-badge-dot { width:10px; height:10px; border-radius:50%; background:#8c52ff; flex-shrink:0; }
+  .pwhl-badge-text {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:32px;
+    letter-spacing:8px;
+    color:#8c52ff;
   }
 
   .neon-rule {
@@ -74,17 +100,9 @@
     background:linear-gradient(90deg,transparent,#f5a623,transparent);
     border-radius:2px;
     box-shadow:0 0 18px rgba(245,166,35,0.7);
-    margin-bottom:24px;
+    margin-bottom:32px;
+    margin-top:32px;
   }
-
-  .seed-line {
-    font-family:'Bebas Neue',sans-serif;
-    font-size:44px;
-    letter-spacing:8px;
-    color:rgba(255,255,255,0.45);
-    text-align:center;
-  }
-  .seed-line span { color:#8c52ff; }
 
   .footer {
     position:absolute; bottom:52px; left:0; right:0;
@@ -120,8 +138,13 @@
   </div>
 
   <div class="clinched-word">CLINCHED</div>
+  <div class="playoffs-word">PLAYOFFS</div>
   <div class="neon-rule"></div>
-  <div class="seed-line"><span>{{ seed_label }} SEED</span> · PLAYOFFS</div>
+  <div class="pwhl-badge">
+    <div class="pwhl-badge-dot"></div>
+    <div class="pwhl-badge-text">PWHL · SEASON 8 · 2025–26</div>
+    <div class="pwhl-badge-dot"></div>
+  </div>
 </div>
 
 <div class="footer">

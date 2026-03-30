@@ -14,17 +14,17 @@ Run:
 
 import argparse
 import requests
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 
-from pwhl_btn.db.db_config import get_db_url
+from pwhl_btn.db.db_config import get_engine
 from pwhl_btn.jobs.backfill import SEASON_ID
 
 API_BASE    = "https://lscluster.hockeytech.com/feed/index.php"
 API_KEY     = "446521baf8c38984"
 CLIENT_CODE = "pwhl"
 
-engine  = create_engine(get_db_url())
+engine  = get_engine()
 Session = sessionmaker(bind=engine)
 
 

@@ -7,8 +7,33 @@ Priority:
 """
 
 import os
+import time
 import getpass
 from pathlib import Path
+
+
+def get_engine(retries: int = 2, delay: int = 8, **engine_kwargs):
+    """
+    Create a SQLAlchemy engine and verify the connection, retrying once if the
+    Railway serverless DB is asleep (first packet queued/dropped on wake-up).
+
+    All kwargs are forwarded to create_engine (e.g. pool_pre_ping=True).
+    """
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.exc import OperationalError
+
+    engine = create_engine(get_db_url(), **engine_kwargs)
+    for attempt in range(1, retries + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return engine
+        except OperationalError as exc:
+            if attempt < retries:
+                print(f"[db] Connection attempt {attempt} failed — retrying in {delay}s ({exc.__class__.__name__})")
+                time.sleep(delay)
+            else:
+                raise
 
 
 def get_db_url() -> str:

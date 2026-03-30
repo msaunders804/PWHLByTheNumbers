@@ -6,36 +6,15 @@ leave this module, so the renderers stay decoupled from the ORM.
 """
 
 import os
-import time
 from datetime import date, timedelta
 from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import OperationalError
 
-from pwhl_btn.db.db_config import get_db_url
-DATABASE_URL = get_db_url()
+from pwhl_btn.db.db_config import get_engine
 
-engine  = create_engine(DATABASE_URL)
+engine  = get_engine()
 Session = sessionmaker(bind=engine)
-
-
-def _probe_connection(retries: int = 2, delay: int = 8) -> None:
-    """Test the DB connection and retry if Railway is waking from sleep."""
-    for attempt in range(1, retries + 1):
-        try:
-            with engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            return
-        except OperationalError as exc:
-            if attempt < retries:
-                print(f"[db] Connection attempt {attempt} failed — retrying in {delay}s ({exc.__class__.__name__})")
-                time.sleep(delay)
-            else:
-                raise
-
-
-_probe_connection()
 SEASON_ID = 8
 
 # ── Team logo helper ───────────────────────────────────────────────────────────

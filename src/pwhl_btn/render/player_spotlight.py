@@ -185,10 +185,9 @@ def get_db_data(player: str = None) -> dict | None:
     if data.get("position") == "G":
         # Goalie — fetch goalie-specific stats
         from pwhl_btn.db.db_queries import get_spotlight_goalie as _gsg
-        from sqlalchemy import create_engine as _ce
         from sqlalchemy.orm import sessionmaker as _sm
-        from pwhl_btn.db.db_config import get_db_url as _gdu
-        _sess = _sm(bind=_ce(_gdu()))()
+        from pwhl_btn.db.db_config import get_engine as _ge
+        _sess = _sm(bind=_ge())()
         goalie_stats = _gsg(data["player_id"], _sess)
         _sess.close()
         data.update(goalie_stats)

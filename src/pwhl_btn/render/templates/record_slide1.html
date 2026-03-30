@@ -148,7 +148,7 @@
             <div class="prev-logo-placeholder">{{ h.team_code }}</div>
           {% endif %}
           <div class="prev-holder-info">
-            <div class="prev-holder-team">{{ h.team_code }}</div>
+            <div class="prev-holder-team">{{ h.display_name if h.display_name else h.team_code }}</div>
             <div class="prev-holder-game">{{ h.game_date }} &middot; {{ h.opponent }} {{ h.score }}</div>
           </div>
           <div class="prev-holder-val">{{ prev_value }}</div>

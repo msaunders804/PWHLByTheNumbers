@@ -27,7 +27,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Callable
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
 SEASON_ID = 8
 
@@ -64,14 +64,14 @@ def _fmt_date(d) -> str:
 
 
 def _prev_holders_label(holders: list[dict]) -> str:
-    teams = [h["team_code"] for h in holders]
-    if not teams:
+    names = [h.get("display_name") or h["team_code"] for h in holders]
+    if not names:
         return "None"
-    if len(teams) == 1:
-        return teams[0]
-    if len(teams) == 2:
-        return f"{teams[0]} & {teams[1]}"
-    return f"{', '.join(teams[:-1])} & {teams[-1]}"
+    if len(names) == 1:
+        return names[0]
+    if len(names) == 2:
+        return f"{names[0]} & {names[1]}"
+    return f"{', '.join(names[:-1])} & {names[-1]}"
 
 
 def _game_result_str(team_code, home_code, home_score, away_score) -> tuple[str, str]:
@@ -347,10 +347,10 @@ def check_recent_records(days: int = 7) -> list[dict]:
 
     Each context dict is ready to pass directly to render_slides().
     """
-    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_config import get_engine
     from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
 
-    engine  = create_engine(get_db_url(), pool_pre_ping=True)
+    engine  = get_engine(pool_pre_ping=True)
     cutoff  = date.today() - timedelta(days=days)
     results = []
 
@@ -395,12 +395,18 @@ def check_recent_records(days: int = 7) -> list[dict]:
                     else:
                         opp = pi.home_code
                         ts, os_ = pi.away_score, pi.home_score
+                # For player records team_name holds the player's full name;
+                # for team records it holds the team name / code.
+                prev_player_name = getattr(pi, "team_name", None)
+                is_player_record = (prev_player_name and prev_player_name != pi.team_code)
                 prev_holders.append({
-                    "team_code": pi.team_code,
-                    "logo":      _logo_uri(pi.team_code),
-                    "game_date": _fmt_date(pi.date),
-                    "opponent":  f"vs {opp}",
-                    "score":     f"{ts}-{os_}",
+                    "team_code":    pi.team_code,
+                    "display_name": prev_player_name if is_player_record else pi.team_code,
+                    "logo":         _logo_uri(pi.team_code),
+                    "player_photo": _player_photo_uri(prev_player_name) if is_player_record else None,
+                    "game_date":    _fmt_date(pi.date),
+                    "opponent":     f"vs {opp}",
+                    "score":        f"{ts}-{os_}",
                 })
 
             # Build one context per record-breaking game (usually just one)
@@ -431,8 +437,16 @@ def check_recent_records(days: int = 7) -> list[dict]:
                 if rec.detail_slide and rec.fetch_detail:
                     scorers = rec.fetch_detail(conn, inst.game_id, inst.team_id)
 
-                # Optional featured player photo (top scorer)
-                featured_name  = scorers[0]["name"] if scorers else None
+                # Featured player: prefer top scorer; fall back to inst.team_name
+                # when the record is an individual one (team_name holds player name).
+                inst_player_name = getattr(inst, "team_name", None)
+                _is_player_rec   = (inst_player_name and inst_player_name != inst.team_code)
+                if scorers:
+                    featured_name = scorers[0]["name"]
+                elif _is_player_rec:
+                    featured_name = inst_player_name
+                else:
+                    featured_name = None
                 featured_photo = _player_photo_uri(featured_name) if featured_name else None
 
                 results.append({
@@ -475,10 +489,10 @@ def check_recent_hat_tricks(days: int = 1) -> list[dict]:
     Returns one context dict per player who scored 3+ goals in a single game
     within the last `days` days.  These are notable events, not season records.
     """
-    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_config import get_engine
     from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
 
-    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    engine = get_engine(pool_pre_ping=True)
     cutoff = date.today() - timedelta(days=days)
     results = []
 
@@ -559,10 +573,10 @@ def check_recent_first_goals(days: int = 1) -> list[dict]:
     Returns one context dict per player who scored their first ever career
     PWHL goal in the last `days` days.
     """
-    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_config import get_engine
     from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
 
-    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    engine = get_engine(pool_pre_ping=True)
     cutoff = date.today() - timedelta(days=days)
     results = []
 
@@ -693,10 +707,10 @@ def check_recent_point_streaks(days: int = 1) -> list[dict]:
     streak reached a new season best within the last `days` days.
     """
     from itertools import groupby
-    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_config import get_engine
     from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
 
-    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    engine = get_engine(pool_pre_ping=True)
     cutoff = date.today() - timedelta(days=days)
     results = []
 
@@ -795,10 +809,10 @@ def check_recent_shutout_streaks(days: int = 1) -> list[dict]:
     Only counts games where the goalie played at least 55 minutes (full game).
     """
     from itertools import groupby
-    from pwhl_btn.db.db_config import get_db_url
+    from pwhl_btn.db.db_config import get_engine
     from pwhl_btn.db.db_queries import _logo_uri, _pwhl_logo_uri, _player_photo_uri
 
-    engine = create_engine(get_db_url(), pool_pre_ping=True)
+    engine = get_engine(pool_pre_ping=True)
     cutoff = date.today() - timedelta(days=days)
     results = []
 
