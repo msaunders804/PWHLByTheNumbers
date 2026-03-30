@@ -108,6 +108,7 @@ class RecordDefinition:
     detail_slide:     bool
     fetch_instances:  Callable
     fetch_detail:     Callable | None = None
+    badge_text:       str | None      = None   # overrides default "Record Broken" badge
 
 
 # ── Record 1: Most skaters with a point — single team ─────────────────────────
@@ -321,11 +322,12 @@ TRACKED_RECORDS: list[RecordDefinition] = [
     ),
     RecordDefinition(
         id            = "season_points_leader",
-        name          = "MOST POINTS IN A SEASON",
+        name          = "MOST POINTS IN A SEASON — 2025–26",
         value_unit    = "PTS",
         detail_slide  = False,
         fetch_instances = _fetch_season_points_leader,
         fetch_detail    = None,
+        badge_text    = "2025–26 Season Record",
     ),
     RecordDefinition(
         id            = "game_attendance",
@@ -471,6 +473,7 @@ def check_recent_records(days: int = 7) -> list[dict]:
                     "prev_holders_label": _prev_holders_label(prev_holders),
                     # Record status
                     "is_tie":             is_tie,
+                    "badge_text":         rec.badge_text,
                     # Slide 2
                     "scorers":            scorers,
                     "include_detail_slide": rec.detail_slide,
