@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:30%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.22) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:200px; right:-100px; width:700px; height:600px; background:radial-gradient(ellipse,rgba(245,166,35,0.12) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+  .corner { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.14); border:1.5px solid rgba(140,82,255,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 80px 80px; }
+
+  .section-eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .section-title   { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .team-sub        { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#8c52ff,rgba(140,82,255,0)); border-radius:2px; margin:22px 0 52px; }
+
+  .logo-row { display:flex; align-items:center; gap:28px; margin-bottom:44px; }
+  .team-logo-sm { width:100px; height:100px; object-fit:contain; filter:drop-shadow(0 0 16px rgba(140,82,255,0.35)); }
+  .logo-team-name { font-family:'Bebas Neue',sans-serif; font-size:60px; letter-spacing:4px; color:rgba(255,255,255,0.70); }
+
+  .quote-mark { font-family:'Bebas Neue',sans-serif; font-size:160px; line-height:0.5; color:rgba(140,82,255,0.25); margin-bottom:0; }
+
+  .blurb-text {
+    font-size:34px;
+    font-weight:600;
+    line-height:1.55;
+    color:rgba(255,255,255,0.88);
+    letter-spacing:0.3px;
+  }
+
+  .spacer { flex:1; }
+
+  .divider { width:100%; height:2px; background:linear-gradient(90deg,rgba(140,82,255,0.5),rgba(245,166,35,0.3),transparent); margin:36px 0; }
+
+  .tag-row { display:flex; gap:12px; flex-wrap:wrap; }
+  .tag { background:rgba(140,82,255,0.14); border:1px solid rgba(140,82,255,0.30); border-radius:100px; padding:8px 22px; font-size:16px; font-weight:700; letter-spacing:3px; color:#8c52ff; text-transform:uppercase; }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; margin-top:32px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div><div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Analysis</div></div>
+
+<div class="slide">
+  <div class="section-eyebrow">2025–26 Season</div>
+  <div class="section-title">WHAT MAKES<br>THEM TICK</div>
+  <div class="team-sub">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+
+  <div class="logo-row">
+    {% if team_logo %}<img class="team-logo-sm" src="{{ team_logo }}" alt="{{ team_name }}">{% endif %}
+    <div class="logo-team-name">{{ team_name }}</div>
+  </div>
+
+  <div class="quote-mark">"</div>
+  <div class="blurb-text">{{ blurb }}</div>
+
+  <div class="spacer"></div>
+  <div class="divider"></div>
+
+  <div class="tag-row">
+    <div class="tag">{{ record_str }}</div>
+    <div class="tag">{{ points }} PTS</div>
+    <div class="tag">{{ win_pct }} WIN%</div>
+    <div class="tag">PLAYOFFS BOUND</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

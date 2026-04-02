@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:-200px; right:-200px; width:900px; height:900px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.24) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:100px; left:-150px; width:800px; height:700px; background:radial-gradient(ellipse,rgba(245,166,35,0.10) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+  .watermark { position:absolute; bottom:180px; right:-40px; font-family:'Bebas Neue',sans-serif; font-size:520px; line-height:1; color:rgba(94,23,235,0.08); letter-spacing:-20px; z-index:0; white-space:nowrap; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 80px; }
+
+  .section-eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .section-title   { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .team-sub        { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:22px 0 44px; }
+
+  .game-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:32px 36px; margin-bottom:20px; position:relative; overflow:hidden; }
+  .game-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:rgba(140,82,255,0.6); border-radius:20px 0 0 20px; }
+  .game-card.top::before { background:#f5a623; }
+
+  .game-rank { position:absolute; top:20px; right:28px; font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:rgba(255,255,255,0.05); }
+
+  .game-top { display:flex; align-items:center; gap:20px; margin-bottom:20px; }
+  .opp-logo { width:60px; height:60px; object-fit:contain; flex-shrink:0; }
+  .opp-logo-placeholder { width:60px; height:60px; border-radius:10px; background:rgba(140,82,255,0.18); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:18px; color:rgba(140,82,255,0.7); flex-shrink:0; }
+  .game-vs   { font-size:18px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .game-date { font-size:18px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.30); margin-left:auto; }
+
+  .score-row { display:flex; align-items:baseline; gap:16px; }
+  .score-big { font-family:'Bebas Neue',sans-serif; font-size:110px; line-height:0.88; color:#f5a623; letter-spacing:-2px; }
+  .score-sep { font-family:'Bebas Neue',sans-serif; font-size:60px; color:rgba(255,255,255,0.20); }
+  .score-opp { font-family:'Bebas Neue',sans-serif; font-size:110px; line-height:0.88; color:rgba(255,255,255,0.30); letter-spacing:-2px; }
+  .result-pill { margin-left:auto; align-self:center; background:rgba(245,166,35,0.18); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:8px 22px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:3px; color:#f5a623; }
+  .diff-tag { font-size:17px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); margin-top:6px; text-transform:uppercase; }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div><div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="watermark">3</div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ team_code }} · Playoffs</div></div>
+
+<div class="slide">
+  <div class="section-eyebrow">2025–26 Season</div>
+  <div class="section-title">DOMINANT<br>GAMES</div>
+  <div class="team-sub">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+
+  {% for g in top_games %}
+  <div class="game-card {% if loop.index == 1 %}top{% endif %}">
+    <div class="game-rank">{{ loop.index }}</div>
+    <div class="game-top">
+      {% if g.opp_logo %}<img class="opp-logo" src="{{ g.opp_logo }}" alt="{{ g.opponent }}">
+      {% else %}<div class="opp-logo-placeholder">{{ g.opponent }}</div>{% endif %}
+      <span class="game-vs">vs {{ g.opponent }}</span>
+      <span class="game-date">{{ g.date }}</span>
+    </div>
+    <div class="score-row">
+      <div class="score-big">{{ g.our_score }}</div>
+      <div class="score-sep">–</div>
+      <div class="score-opp">{{ g.opp_score }}</div>
+      <div class="result-pill">{{ g.result }}</div>
+    </div>
+    <div class="diff-tag">+{{ g.diff }} goal differential</div>
+  </div>
+  {% endfor %}
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>
