@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:25%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.22) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:120px 72px 80px; gap:0; }
+
+  .section-eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; text-align:center; margin-bottom:12px; align-self:flex-start; }
+  .section-title   { font-family:'Bebas Neue',sans-serif; font-size:90px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:4px; align-self:flex-start; }
+  .team-sub        { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; align-self:flex-start; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:22px 0 56px; align-self:flex-start; }
+
+  /* Big win pct hero */
+  .win-pct-hero { text-align:center; margin-bottom:52px; }
+  .win-pct-label { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:8px; }
+  .win-pct-num   { font-family:'Bebas Neue',sans-serif; font-size:280px; line-height:0.85; color:#f5a623; letter-spacing:-8px; text-shadow:0 0 80px rgba(245,166,35,0.35); }
+  .win-pct-sub   { font-size:22px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-top:8px; }
+
+  /* Record grid */
+  .record-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; width:100%; margin-bottom:40px; }
+  .rec-cell { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:28px 20px; text-align:center; }
+  .rec-cell.hi { border-color:rgba(140,82,255,0.30); background:rgba(140,82,255,0.08); }
+  .rec-val  { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:#fff; }
+  .rec-val.accent { color:#8c52ff; }
+  .rec-lbl  { font-size:14px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:4px; }
+
+  /* Points bar */
+  .pts-row { display:flex; align-items:center; gap:20px; background:rgba(245,166,35,0.08); border:1.5px solid rgba(245,166,35,0.28); border-radius:16px; padding:24px 32px; width:100%; }
+  .pts-big  { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:#f5a623; }
+  .pts-info { flex:1; }
+  .pts-label { font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+  .pts-sub   { font-size:22px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.55); margin-top:4px; }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); width:100%; margin-top:auto; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ team_code }} · Playoffs</div></div>
+
+<div class="slide">
+  <div class="section-eyebrow">2025–26 Season</div>
+  <div class="section-title">SEASON<br>RECORD</div>
+  <div class="team-sub">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+
+  <div class="win-pct-hero">
+    <div class="win-pct-label">Win Percentage</div>
+    <div class="win-pct-num">{{ win_pct }}</div>
+    <div class="win-pct-sub">{{ gp }} games played · {{ record_str }}</div>
+  </div>
+
+  <div class="record-grid">
+    <div class="rec-cell hi">
+      <div class="rec-val accent">{{ wins }}</div>
+      <div class="rec-lbl">Wins</div>
+    </div>
+    <div class="rec-cell">
+      <div class="rec-val">{{ losses }}</div>
+      <div class="rec-lbl">Losses</div>
+    </div>
+    <div class="rec-cell">
+      <div class="rec-val">{{ otl }}</div>
+      <div class="rec-lbl">OT/SO L</div>
+    </div>
+    <div class="rec-cell">
+      <div class="rec-val">{{ gp }}</div>
+      <div class="rec-lbl">GP</div>
+    </div>
+  </div>
+
+  <div class="pts-row">
+    <div class="pts-big">{{ points }}</div>
+    <div class="pts-info">
+      <div class="pts-label">Points This Season</div>
+      <div class="pts-sub">3–2–1–0 Scoring System</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

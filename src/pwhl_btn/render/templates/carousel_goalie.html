@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* Photo full-bleed bg */
+  .photo-bg { position:absolute; inset:0; z-index:0; }
+  .player-photo { width:100%; height:100%; object-fit:cover; object-position:top center; opacity:0.42; display:block; }
+  .overlay-top    { position:absolute; top:0; left:0; right:0; height:460px; z-index:1; background:linear-gradient(to bottom,rgba(7,0,15,0.95) 0%,transparent 100%); }
+  .overlay-bottom { position:absolute; bottom:0; left:0; right:0; height:1200px; z-index:1; background:linear-gradient(to top,rgba(7,0,15,1.0) 0%,rgba(7,0,15,0.90) 50%,transparent 100%); }
+  .bg-glow-gold { position:absolute; bottom:300px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.12) 0%,transparent 65%); z-index:2; }
+  .no-photo-bg  { position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 50% 30%,rgba(94,23,235,0.28) 0%,transparent 60%); }
+  .bg-scanlines { position:absolute; inset:0; z-index:3; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:5; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 80px; }
+
+  .section-eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .section-title   { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .team-sub        { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:22px 0 0; }
+
+  .spacer { flex:1; }
+
+  /* Goalie name block */
+  .goalie-name-block { margin-bottom:36px; }
+  .goalie-label { font-size:17px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .goalie-name  { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.9; color:#fff; letter-spacing:2px; }
+  .goalie-meta  { font-size:20px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.38); text-transform:uppercase; margin-top:6px; }
+
+  /* Stat row */
+  .stat-row { display:flex; gap:0; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:20px; overflow:hidden; margin-bottom:20px; }
+  .stat-cell { flex:1; text-align:center; padding:28px 16px; border-right:1px solid rgba(255,255,255,0.06); }
+  .stat-cell:last-child { border-right:none; }
+  .stat-cell.hi { background:rgba(245,166,35,0.08); }
+  .stat-num   { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:1; color:#fff; }
+  .stat-num.gold { color:#f5a623; }
+  .stat-lbl   { font-size:14px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:4px; }
+
+  /* Shutout hero */
+  .shutout-hero { background:rgba(245,166,35,0.10); border:2px solid rgba(245,166,35,0.35); border-radius:20px; padding:36px 40px; display:flex; align-items:center; gap:28px; margin-bottom:20px; }
+  .shutout-num  { font-family:'Bebas Neue',sans-serif; font-size:140px; line-height:1; color:#f5a623; letter-spacing:-4px; text-shadow:0 0 50px rgba(245,166,35,0.40); }
+  .shutout-info .shutout-label { font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:4px; }
+  .shutout-info .shutout-sub   { font-family:'Bebas Neue',sans-serif; font-size:44px; color:#fff; letter-spacing:2px; line-height:1.1; }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+{% if goalie.photo %}
+<div class="photo-bg"><img class="player-photo" src="{{ goalie.photo }}" alt="{{ goalie.name }}"></div>
+<div class="overlay-top"></div>
+<div class="overlay-bottom"></div>
+<div class="bg-glow-gold"></div>
+{% else %}
+<div class="no-photo-bg"></div>
+{% endif %}
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ team_code }} · Playoffs</div></div>
+
+<div class="slide">
+  <div class="section-eyebrow">2025–26 Season</div>
+  <div class="section-title">BETWEEN<br>THE PIPES</div>
+  <div class="team-sub">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+
+  <div class="spacer"></div>
+
+  <div class="goalie-name-block">
+    <div class="goalie-label">Season Starter</div>
+    <div class="goalie-name">{{ goalie.name }}</div>
+    <div class="goalie-meta">{{ goalie.gp }} games started · {{ goalie.wins }} wins</div>
+  </div>
+
+  <div class="shutout-hero">
+    <div class="shutout-num">{{ goalie.shutouts }}</div>
+    <div class="shutout-info">
+      <div class="shutout-label">Shutouts This Season</div>
+      <div class="shutout-sub">{{ goalie.wins }} Wins<br>{{ goalie.gp }} Starts</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-cell hi">
+      <div class="stat-num gold">{{ goalie.gaa }}</div>
+      <div class="stat-lbl">Goals Against Avg</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">{{ goalie.sv_pct }}</div>
+      <div class="stat-lbl">Save Percentage</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

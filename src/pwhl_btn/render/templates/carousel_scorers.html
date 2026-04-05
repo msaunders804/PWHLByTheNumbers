@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* Photo bg */
+  .photo-bg { position:absolute; inset:0; z-index:0; }
+  .player-photo { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.45; }
+  .overlay-top    { position:absolute; top:0; left:0; right:0; height:500px; z-index:1; background:linear-gradient(to bottom,rgba(7,0,15,0.96) 0%,transparent 100%); }
+  .overlay-bottom { position:absolute; bottom:0; left:0; right:0; height:1200px; z-index:1; background:linear-gradient(to top,rgba(7,0,15,1.0) 0%,rgba(7,0,15,0.92) 50%,transparent 100%); }
+  .bg-glow { position:absolute; inset:0; z-index:1; background:radial-gradient(ellipse at 50% 40%,rgba(94,23,235,0.22) 0%,transparent 60%); }
+  .bg-scanlines { position:absolute; inset:0; z-index:2; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px); }
+  .no-photo-bg { position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 50% 30%,rgba(94,23,235,0.28) 0%,transparent 60%); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge  { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:5; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 72px 80px; }
+
+  .section-eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .section-title   { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .team-sub        { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:0; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:22px 0 36px; }
+
+  .rank-badge { display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; background:rgba(140,82,255,0.25); border:2px solid rgba(140,82,255,0.5); font-family:'Bebas Neue',sans-serif; font-size:28px; color:#8c52ff; flex-shrink:0; }
+  .rank-badge.gold   { background:rgba(245,166,35,0.20); border-color:rgba(245,166,35,0.55); color:#f5a623; }
+
+  .player-card { display:flex; align-items:center; gap:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:22px 28px; margin-bottom:18px; }
+  .player-card.top { border-color:rgba(245,166,35,0.22); background:rgba(245,166,35,0.05); }
+
+  .player-avatar { width:88px; height:88px; border-radius:50%; object-fit:cover; object-position:top center; flex-shrink:0; border:2px solid rgba(140,82,255,0.35); }
+  .player-avatar-placeholder { width:88px; height:88px; border-radius:50%; flex-shrink:0; background:rgba(140,82,255,0.18); border:2px solid rgba(140,82,255,0.35); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:26px; color:rgba(140,82,255,0.7); }
+  .player-card.top .player-avatar { border-color:rgba(245,166,35,0.50); }
+  .player-card.top .player-avatar-placeholder { border-color:rgba(245,166,35,0.50); }
+
+  .player-info { flex:1; }
+  .player-name { font-family:'Bebas Neue',sans-serif; font-size:46px; line-height:1; letter-spacing:2px; color:#fff; }
+  .player-meta { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-top:3px; }
+
+  .player-stats { display:flex; gap:24px; align-items:center; flex-shrink:0; }
+  .stat-box { text-align:center; }
+  .stat-val  { font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1; color:#fff; }
+  .stat-val.hi { color:#f5a623; }
+  .stat-lbl  { font-size:13px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.30); margin-top:2px; }
+  .stat-div  { width:1px; height:50px; background:rgba(255,255,255,0.10); }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+{% if scorers and scorers[0].photo %}
+<div class="photo-bg"><img class="player-photo" src="{{ scorers[0].photo }}" alt="{{ scorers[0].name }}"></div>
+<div class="overlay-top"></div>
+<div class="overlay-bottom"></div>
+<div class="bg-glow"></div>
+{% else %}
+<div class="no-photo-bg"></div>
+{% endif %}
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ team_code }} · Playoffs</div></div>
+
+<div class="slide">
+  <div class="section-eyebrow">2025–26 Season</div>
+  <div class="section-title">TOP<br>SCORERS</div>
+  <div class="team-sub">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+
+  {% for s in scorers %}
+  <div class="player-card {% if loop.index == 1 %}top{% endif %}">
+    <div class="rank-badge {% if loop.index == 1 %}gold{% endif %}">{{ loop.index }}</div>
+    {% if s.photo %}
+      <img class="player-avatar" src="{{ s.photo }}" alt="{{ s.name }}">
+    {% else %}
+      <div class="player-avatar-placeholder">{{ s.name[0] }}</div>
+    {% endif %}
+    <div class="player-info">
+      <div class="player-name">{{ s.name }}</div>
+      <div class="player-meta">{{ s.pos }} · {{ s.gp }} GP</div>
+    </div>
+    <div class="player-stats">
+      <div class="stat-box"><div class="stat-val {% if loop.index == 1 %}hi{% endif %}">{{ s.goals }}</div><div class="stat-lbl">G</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-box"><div class="stat-val">{{ s.assists }}</div><div class="stat-lbl">A</div></div>
+      <div class="stat-div"></div>
+      <div class="stat-box"><div class="stat-val {% if loop.index == 1 %}hi{% endif %}">{{ s.points }}</div><div class="stat-lbl">PTS</div></div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

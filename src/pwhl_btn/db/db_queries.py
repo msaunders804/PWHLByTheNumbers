@@ -382,6 +382,183 @@ def get_clinch_slide_data(team_id: int, season_id: int = 8) -> dict:
         session.close()
 
 
+def get_clinch_carousel_data(team_code: str, season_id: int = 8) -> dict:
+    """
+    Returns all data needed to render the clinch carousel for a team:
+      - Team identity + season record
+      - Top 3 scorers with player photos
+      - Top 3 games by goal differential
+      - Top goalie season stats + photo
+    The blurb text is generated separately by the renderer using the Claude API.
+    """
+    session = Session()
+    try:
+        team = session.execute(text(
+            "SELECT team_id, team_name FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"
+        ), {"code": team_code, "sid": season_id}).fetchone()
+        if not team:
+            raise ValueError(f"Team '{team_code}' not found for season {season_id}")
+        team_id   = team.team_id
+        team_name = team.team_name
+
+        # ── Season record ──────────────────────────────────────────────────────
+        record = session.execute(text("""
+            SELECT
+                COUNT(*)                                                            AS gp,
+                SUM(CASE WHEN (g.home_team_id=:tid AND g.home_score>g.away_score)
+                           OR (g.away_team_id=:tid AND g.away_score>g.home_score)
+                         THEN 1 ELSE 0 END)                                         AS wins,
+                SUM(CASE WHEN result_type='REG'
+                          AND ((g.home_team_id=:tid AND g.home_score<g.away_score)
+                           OR  (g.away_team_id=:tid AND g.away_score<g.home_score))
+                         THEN 1 ELSE 0 END)                                         AS reg_losses,
+                SUM(CASE WHEN result_type IN ('OT','SO')
+                          AND ((g.home_team_id=:tid AND g.home_score<g.away_score)
+                           OR  (g.away_team_id=:tid AND g.away_score<g.home_score))
+                         THEN 1 ELSE 0 END)                                         AS otl,
+                SUM(CASE WHEN result_type='REG'
+                          AND ((g.home_team_id=:tid AND g.home_score>g.away_score)
+                           OR  (g.away_team_id=:tid AND g.away_score>g.home_score))
+                         THEN 3
+                         WHEN result_type IN ('OT','SO')
+                          AND ((g.home_team_id=:tid AND g.home_score>g.away_score)
+                           OR  (g.away_team_id=:tid AND g.away_score>g.home_score))
+                         THEN 2
+                         WHEN result_type IN ('OT','SO')
+                          AND ((g.home_team_id=:tid AND g.home_score<g.away_score)
+                           OR  (g.away_team_id=:tid AND g.away_score<g.home_score))
+                         THEN 1 ELSE 0 END)                                         AS points
+            FROM games g
+            WHERE g.season_id=:sid AND g.game_status='final'
+              AND (g.home_team_id=:tid OR g.away_team_id=:tid)
+        """), {"tid": team_id, "sid": season_id}).fetchone()
+
+        gp    = int(record.gp or 0)
+        wins  = int(record.wins or 0)
+        rl    = int(record.reg_losses or 0)
+        otl   = int(record.otl or 0)
+        pts   = int(record.points or 0)
+        losses_total = rl + otl
+        win_pct = round(wins / gp, 3) if gp else 0.0
+
+        # ── Top 3 scorers ──────────────────────────────────────────────────────
+        scorer_rows = session.execute(text("""
+            SELECT CONCAT(p.first_name,' ',p.last_name) AS player_name,
+                   p.position,
+                   SUM(s.goals)   AS goals,
+                   SUM(s.assists) AS assists,
+                   SUM(s.points)  AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games   g ON g.game_id   = s.game_id
+            WHERE s.team_id=:tid AND g.season_id=:sid AND g.game_status='final'
+            GROUP BY p.player_id, player_name, p.position
+            ORDER BY SUM(s.points) DESC, SUM(s.goals) DESC
+            LIMIT 3
+        """), {"tid": team_id, "sid": season_id}).fetchall()
+
+        scorers = [
+            {
+                "name":    r.player_name,
+                "pos":     r.position or "F",
+                "goals":   int(r.goals   or 0),
+                "assists": int(r.assists or 0),
+                "points":  int(r.pts     or 0),
+                "gp":      int(r.gp      or 0),
+                "photo":   _player_photo_uri(r.player_name),
+            }
+            for r in scorer_rows
+        ]
+
+        # ── Top 3 games by goal differential ──────────────────────────────────
+        game_rows = session.execute(text("""
+            SELECT g.date,
+                   g.home_score, g.away_score,
+                   g.result_type,
+                   ht.team_code AS home_code,
+                   at.team_code AS away_code
+            FROM games g
+            JOIN teams ht ON ht.team_id = g.home_team_id
+            JOIN teams at ON at.team_id = g.away_team_id
+            WHERE g.season_id=:sid AND g.game_status='final'
+              AND (
+                (g.home_team_id=:tid AND g.home_score > g.away_score) OR
+                (g.away_team_id=:tid AND g.away_score > g.home_score)
+              )
+            ORDER BY ABS(g.home_score - g.away_score) DESC, g.date DESC
+            LIMIT 3
+        """), {"tid": team_id, "sid": season_id}).fetchall()
+
+        top_games = []
+        for r in game_rows:
+            is_home = (r.home_code == team_code)
+            our_score = r.home_score if is_home else r.away_score
+            opp_score = r.away_score if is_home else r.home_score
+            opp_code  = r.away_code  if is_home else r.home_code
+            diff      = our_score - opp_score
+            won       = our_score > opp_score
+            suffix    = f" ({r.result_type})" if r.result_type in ("OT", "SO") else ""
+            top_games.append({
+                "date":      (r.date.strftime("%b {d}").replace("{d}", str(r.date.day)) if hasattr(r.date, "strftime") else str(r.date)),
+                "opponent":  opp_code,
+                "opp_logo":  _logo_uri(opp_code),
+                "our_score": our_score,
+                "opp_score": opp_score,
+                "diff":      abs(diff),
+                "result":    ("W" if won else "L") + suffix,
+                "won":       won,
+            })
+
+        # ── Top goalie ─────────────────────────────────────────────────────────
+        goalie_row = session.execute(text("""
+            SELECT CONCAT(p.first_name,' ',p.last_name) AS player_name,
+                   SUM(CASE WHEN s.decision='W' THEN 1 ELSE 0 END)              AS wins,
+                   SUM(CASE WHEN s.goals_against=0 AND s.decision='W'
+                            THEN 1 ELSE 0 END)                                   AS shutouts,
+                   ROUND(SUM(s.goals_against) /
+                         NULLIF(SUM(s.minutes_played)/3600.0, 0), 2)             AS gaa,
+                   ROUND(SUM(s.saves) /
+                         NULLIF(SUM(s.shots_against), 0), 3)                     AS sv_pct,
+                   COUNT(DISTINCT s.game_id)                                     AS gp
+            FROM goalie_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games   g ON g.game_id   = s.game_id
+            WHERE s.team_id=:tid AND g.season_id=:sid AND g.game_status='final'
+            GROUP BY p.player_id, player_name
+            ORDER BY wins DESC, gaa ASC
+            LIMIT 1
+        """), {"tid": team_id, "sid": season_id}).fetchone()
+
+        goalie = {
+            "name":     goalie_row.player_name if goalie_row else "—",
+            "wins":     int(goalie_row.wins     or 0) if goalie_row else 0,
+            "shutouts": int(goalie_row.shutouts or 0) if goalie_row else 0,
+            "gaa":      f"{float(goalie_row.gaa    or 0):.2f}" if goalie_row else "0.00",
+            "sv_pct":   f"{float(goalie_row.sv_pct or 0):.3f}" if goalie_row else ".000",
+            "gp":       int(goalie_row.gp       or 0) if goalie_row else 0,
+            "photo":    _player_photo_uri(goalie_row.player_name) if goalie_row else None,
+        }
+
+        return {
+            "team_code":    team_code,
+            "team_name":    team_name,
+            "team_logo":    _logo_uri(team_code),
+            "gp":           gp,
+            "wins":         wins,
+            "losses":       rl,
+            "otl":          otl,
+            "points":       pts,
+            "win_pct":      f"{win_pct:.3f}",
+            "record_str":   f"{wins}-{losses_total}-{otl}",
+            "scorers":      scorers,
+            "top_games":    top_games,
+            "goalie":       goalie,
+        }
+    finally:
+        session.close()
+
+
 def _team_id_for_code(team_code: str, session, season_id: int) -> int | None:
     """Look up team_id by team_code within a session."""
     row = session.execute(
