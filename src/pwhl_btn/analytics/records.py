@@ -485,6 +485,44 @@ def check_recent_records(days: int = 7) -> list[dict]:
     return results
 
 
+# ── Top attendance leaderboard ────────────────────────────────────────────────
+
+def get_top_attendance(top: int = 3) -> list[dict]:
+    """
+    Returns the top `top` highest-attended completed games of the current season.
+    Each dict has: home_code, away_code, home_score, away_score, result_type,
+    overtime_periods, venue, attendance, date.
+    """
+    from pwhl_btn.db.db_config import get_engine
+
+    engine = get_engine(pool_pre_ping=True)
+
+    with engine.connect() as conn:
+        rows = conn.execute(text("""
+            SELECT
+                g.date,
+                ht.team_code  AS home_code,
+                at.team_code  AS away_code,
+                g.home_score,
+                g.away_score,
+                g.result_type,
+                g.overtime_periods,
+                g.venue,
+                g.attendance
+            FROM games g
+            JOIN teams ht ON ht.team_id = g.home_team_id AND ht.season_id = g.season_id
+            JOIN teams at ON at.team_id = g.away_team_id AND at.season_id = g.season_id
+            WHERE g.season_id   = :sid
+              AND g.game_status = 'Final'
+              AND g.attendance IS NOT NULL
+              AND g.attendance  > 0
+            ORDER BY g.attendance DESC
+            LIMIT :top
+        """), {"sid": SEASON_ID, "top": top}).mappings().all()
+
+    return [dict(r) for r in rows]
+
+
 # ── Hat trick detector ─────────────────────────────────────────────────────────
 
 def check_recent_hat_tricks(days: int = 1) -> list[dict]:

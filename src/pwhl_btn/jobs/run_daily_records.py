@@ -29,6 +29,7 @@ from pwhl_btn.analytics.records import (
     check_recent_first_goals,
     check_recent_point_streaks,
     check_recent_shutout_streaks,
+    get_top_attendance,
 )
 from pwhl_btn.analytics.clinch import get_newly_clinched_teams
 from pwhl_btn.db.db_queries import get_clinch_slide_data
@@ -73,9 +74,26 @@ def main():
     print(f"        {len(shutout_streaks)} shutout streak record(s) found")
     all_contexts.extend(shutout_streaks)
 
-    print("  [6/6] Checking playoff clinches...")
+    print("  [6/7] Checking playoff clinches...")
     newly_clinched_ids = get_newly_clinched_teams(days=args.days)
     print(f"        {len(newly_clinched_ids)} newly clinched team(s)")
+
+    print("  [7/7] Top 3 attendance this season...")
+    top_att = get_top_attendance(top=3)
+    for i, g in enumerate(top_att, start=1):
+        rt = g.get("result_type") or "REG"
+        ot = g.get("overtime_periods") or 0
+        if rt == "SO":
+            label = "SO"
+        elif rt != "REG" and ot:
+            label = f"{'2OT' if ot == 2 else 'OT'}" if ot <= 2 else f"{ot}OT"
+        else:
+            label = "REG"
+        score   = f"{g['home_score']}-{g['away_score']}"
+        matchup = f"{g['away_code']} @ {g['home_code']}"
+        venue   = g.get("venue") or "Unknown Venue"
+        att     = f"{g['attendance']:,}"
+        print(f"        #{i}  {matchup:<16} {score} ({label})  |  {venue}  |  {att}")
 
     if not all_contexts and not newly_clinched_ids:
         print(f"\n  Nothing notable in the last {args.days} day(s). Exiting.")

@@ -132,7 +132,7 @@ def load_game(game_id: int, session=None, resume: bool = False) -> bool:
                result_type      = result_type,
                overtime_periods = ot_periods,
                attendance       = int(meta["attendance"]) if meta.get("attendance") else None,
-               venue            = None)
+               venue            = gs.get("venue") or None)
 
         # Skater stats
         for side, team_key in (("home_team_lineup", "home_team"),
