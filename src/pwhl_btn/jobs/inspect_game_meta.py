@@ -58,6 +58,20 @@ def main():
 
     _search(gs)
 
+    print(f"\n--- periods ---")
+    import json
+    print(json.dumps(gs.get("periods", {}), indent=2))
+
+    print(f"\n--- goalsByPeriod ---")
+    print(json.dumps(gs.get("goalsByPeriod", {}), indent=2))
+
+    print(f"\n--- goals[0] (first goal, all fields) ---")
+    goals = gs.get("goals", [])
+    if goals:
+        print(json.dumps(goals[0], indent=2))
+    else:
+        print("  (no goals)")
+
 
 if __name__ == "__main__":
     main()

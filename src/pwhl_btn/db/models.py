@@ -24,6 +24,12 @@ class Game(Base):
     overtime_periods  = Column(Integer, default=0)
     attendance        = Column(Integer, nullable=True)
     venue             = Column(String(100), nullable=True)
+    home_score_p1     = Column(Integer, nullable=True)
+    home_score_p2     = Column(Integer, nullable=True)
+    home_score_p3     = Column(Integer, nullable=True)
+    away_score_p1     = Column(Integer, nullable=True)
+    away_score_p2     = Column(Integer, nullable=True)
+    away_score_p3     = Column(Integer, nullable=True)
 
     home_team = relationship('Team', foreign_keys=[home_team_id])
     away_team = relationship('Team', foreign_keys=[away_team_id])

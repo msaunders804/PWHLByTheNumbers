@@ -96,6 +96,21 @@ def load_teams(season_id, session):
     print(f"  {len(teams)} teams loaded")
 
 
+def _period_scores(gs: dict) -> dict:
+    """Extract per-period goal counts from gs['goalsByPeriod']."""
+    gbp  = gs.get("goalsByPeriod", {})
+    home = gbp.get("home", {})
+    away = gbp.get("visitor", {})
+    return {
+        "home_score_p1": int(home.get("1", 0)),
+        "home_score_p2": int(home.get("2", 0)),
+        "home_score_p3": int(home.get("3", 0)),
+        "away_score_p1": int(away.get("1", 0)),
+        "away_score_p2": int(away.get("2", 0)),
+        "away_score_p3": int(away.get("3", 0)),
+    }
+
+
 def load_game(game_id: int, session=None, resume: bool = False) -> bool:
     # Each game gets its own session so a stale connection from a prior game
     # (dropped by MySQL during the API fetch + rate-limit sleep) never poisons
@@ -132,7 +147,8 @@ def load_game(game_id: int, session=None, resume: bool = False) -> bool:
                result_type      = result_type,
                overtime_periods = ot_periods,
                attendance       = int(meta["attendance"]) if meta.get("attendance") else None,
-               venue            = gs.get("venue") or None)
+               venue            = gs.get("venue") or None,
+               **_period_scores(gs))
 
         # Skater stats
         for side, team_key in (("home_team_lineup", "home_team"),

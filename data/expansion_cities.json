@@ -1,0 +1,112 @@
+{
+  "_notes": {
+    "tour_attendance": "Pulled live from DB via backfill_venue.py — games at non-home venues",
+    "nhl_market_score": "1-10. Based on NHL team presence, avg attendance %, season ticket demand, playoff history. Sources: ESPN, NHL.com attendance reports.",
+    "womens_sports_score": "1-10. Based on NWSL/WNBA presence and attendance, NCAA women's hockey proximity, women's sports culture indicators. Sources: NWSL, WNBA official attendance records.",
+    "arena_fit_score": "1-10. Based on availability of a 6,000-12,000 seat venue suitable for PWHL without being dwarfed. NHL arenas score lower (too big). Sources: Arena databases, team facility reports.",
+    "geo_balance_score": "1-10. How much adding this city improves league geographic spread. Current PWHL: BOS/NY/OTT/MTL/TOR (East-heavy), MIN (Midwest), SEA/VAN (West). More westward/south = higher score.",
+    "last_updated": "2026-04-11"
+  },
+
+  "existing_pwhl_home_venues": [
+    "Tsongas Center | Lowell",
+    "Grand Casino Arena | St. Paul",
+    "Place Bell | Laval",
+    "Prudential Center | Newark",
+    "TD Place | Ottawa",
+    "Climate Pledge Arena | Seattle",
+    "Coca-Cola Coliseum | Toronto",
+    "Pacific Coliseum | Vancouver"
+  ],
+
+  "candidates": [
+    {
+      "city": "Denver",
+      "state_province": "CO",
+      "country": "USA",
+      "nhl_team": "Colorado Avalanche",
+      "tour_venue": "Ball Arena | Denver",
+      "nhl_market_score": 8,
+      "nhl_market_notes": "Avalanche won 2022 Cup. Ball Arena routinely 95%+ capacity. Strong and growing hockey culture.",
+      "womens_sports_score": 7,
+      "womens_sports_notes": "No NWSL team currently (Colorado Spirit expansion incoming 2026). Colorado Mammoth (NLL) shows sports appetite. Denver strong women's college sports scene.",
+      "arena_fit_score": 5,
+      "arena_fit_notes": "Ball Arena (19,000) is too large for regular PWHL games but could host marquee events. Smaller alternatives limited — Magness Arena at DU (~7,200) is a viable home option.",
+      "geo_balance_score": 10,
+      "geo_balance_notes": "Only current US inland team is MIN. Denver fills a massive gap in Mountain West. Improves rivalry potential with SEA/MIN corridor.",
+      "narrative_hook": "Denver showed up 13,562 deep on average — for games featuring teams they have no connection to. Imagine a home team."
+    },
+    {
+      "city": "Detroit",
+      "state_province": "MI",
+      "country": "USA",
+      "nhl_team": "Detroit Red Wings",
+      "tour_venue": "Little Caesars Arena | Detroit",
+      "nhl_market_score": 9,
+      "nhl_market_notes": "Original Six franchise. Legendary hockey culture. Red Wings averaged 97% capacity 2024-25. Hockey is religion here.",
+      "womens_sports_score": 5,
+      "womens_sports_notes": "No NWSL or WNBA team. Detroit has shown appetite for women's sports but lacks existing infrastructure.",
+      "arena_fit_score": 6,
+      "arena_fit_notes": "Little Caesars Arena (~19,500) is too large for nightly PWHL. However Detroit has Compuware Arena (~4,000) and other mid-size options. Could use smaller rink and upgrade for big games.",
+      "geo_balance_score": 8,
+      "geo_balance_notes": "Fills Midwest gap between BOS/NY and MIN. Natural rival to BOS, MIN, BUF (if added). Cross-border appeal with Windsor, Ontario.",
+      "narrative_hook": "Original Six hockey market. 12,781 average at Takeover Tour games. Detroit doesn't just like hockey — it lives it."
+    },
+    {
+      "city": "Calgary",
+      "state_province": "AB",
+      "country": "Canada",
+      "nhl_team": "Calgary Flames",
+      "tour_venue": "Scotiabank Saddledome | Calgary",
+      "nhl_market_score": 8,
+      "nhl_market_notes": "Flames are a passionate market, especially for Canadian hockey. Saddledome consistently near capacity. Strong corporate sponsorship culture.",
+      "womens_sports_score": 6,
+      "womens_sports_notes": "No top-tier women's professional sports league team but strong amateur women's hockey infrastructure. Alberta has produced many PWHL players.",
+      "arena_fit_score": 5,
+      "arena_fit_notes": "Saddledome (19,289) is too large for regular PWHL. WinSport/Markin MacPhail Centre (~3,000) and other mid-size venues exist. New arena (Calgary Event Centre) under construction.",
+      "geo_balance_score": 9,
+      "geo_balance_notes": "Canadian expansion is politically and culturally important for the PWHL brand. Fills Alberta gap between VAN and OTT/MTL. Natural rivalry with Edmonton and VAN.",
+      "narrative_hook": "16,150 fans showed up in Calgary for a single game. The city has been lobbying for a team. The data agrees with them."
+    },
+    {
+      "city": "Washington",
+      "state_province": "DC",
+      "country": "USA",
+      "nhl_team": "Washington Capitals",
+      "tour_venue": "Capital One Arena | Washington",
+      "nhl_market_score": 8,
+      "nhl_market_notes": "Capitals fanbase transformed under Ovechkin era. 2018 Cup win. Strong mid-Atlantic hockey identity. Capital One Arena 98% capacity 2024-25.",
+      "womens_sports_score": 9,
+      "womens_sports_notes": "Washington Spirit (NWSL) — one of the league's best-run clubs. Washington Mystics (WNBA) strong attendance. DC has the strongest women's professional sports culture in the US.",
+      "arena_fit_score": 4,
+      "arena_fit_notes": "Capital One Arena (20,356) is oversized. Smaller options include Kettler Capitals Iceplex (~1,200) — too small. EagleBank Arena in Fairfax (~10,000) is a realistic home venue.",
+      "geo_balance_score": 5,
+      "geo_balance_notes": "Mid-Atlantic fills gap between BOS/NY and southern US. However it reinforces east-coast concentration. Best justified by women's sports culture, not geography.",
+      "narrative_hook": "17,228 fans for a single game — third highest attendance of any Takeover Tour stop. Washington already has the best women's sports infrastructure in the US."
+    },
+    {
+      "city": "Chicago",
+      "state_province": "IL",
+      "country": "USA",
+      "nhl_team": "Chicago Blackhawks",
+      "tour_venue": "Allstate Arena | Chicago",
+      "nhl_market_score": 9,
+      "nhl_market_notes": "Three Cups in six years built massive fanbase. 2024-25 rebuilding year but market depth remains. United Center one of NHL's largest and most profitable buildings.",
+      "womens_sports_score": 8,
+      "womens_sports_notes": "Chicago Red Stars (NWSL) — founding NWSL club, strong supporter culture. Chicago Sky (WNBA) — won 2021 championship. One of best women's pro sports cities in North America.",
+      "arena_fit_score": 8,
+      "arena_fit_notes": "Allstate Arena in Rosemont (~18,500 hockey) is large but PWHL used it. Wintrust Arena (~10,000) is near-ideal capacity. Chicago has excellent mid-size venue options.",
+      "geo_balance_score": 8,
+      "geo_balance_notes": "Fills US Midwest corridor between MIN and eastern teams. Chicago-MIN rivalry would be instant and intense. Central time zone anchor for TV scheduling.",
+      "narrative_hook": "The biggest hockey market in America that doesn't have a PWHL team. Chicago Red Stars fans already showed up for women's sports. The infrastructure exists today."
+    }
+  ],
+
+  "weights": {
+    "nhl_market":     0.25,
+    "tour_attendance": 0.35,
+    "womens_sports":  0.20,
+    "arena_fit":      0.10,
+    "geo_balance":    0.10
+  }
+}

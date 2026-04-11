@@ -1,0 +1,62 @@
+{
+  "_metadata": {
+    "description": "NHL market strength data for PWHL expansion candidate cities",
+    "api_source": "records.nhl.com/site/api/franchise-season-results (auto-fetched)",
+    "attendance_source": "Hockey Reference https://www.hockey-reference.com/leagues/NHL_2025.html (manually updated)",
+    "attendance_season": "3-season average: 2022-23, 2023-24, 2024-25",
+    "last_fetched": null,
+    "note": "Run python -m pwhl_btn.jobs.fetch_nhl_market_data to refresh API-derived fields. Update avg_home_attendance manually each season."
+  },
+  "candidates": {
+    "Denver": {
+      "nhl_team": "Colorado Avalanche",
+      "team_id": 21,
+      "avg_home_attendance": 17591,
+      "arena": "Ball Arena",
+      "arena_capacity": 18007,
+      "attendance_pct": 0.977,
+      "attendance_source_note": "Avg 2022-25 per Hockey Reference",
+      "api_derived": {}
+    },
+    "Detroit": {
+      "nhl_team": "Detroit Red Wings",
+      "team_id": 17,
+      "avg_home_attendance": 19176,
+      "arena": "Little Caesars Arena",
+      "arena_capacity": 19515,
+      "attendance_pct": 0.982,
+      "attendance_source_note": "Avg 2022-25 per Hockey Reference",
+      "api_derived": {}
+    },
+    "Calgary": {
+      "nhl_team": "Calgary Flames",
+      "team_id": 20,
+      "avg_home_attendance": 19289,
+      "arena": "Scotiabank Saddledome",
+      "arena_capacity": 19289,
+      "attendance_pct": 1.000,
+      "attendance_source_note": "Avg 2022-25 per Hockey Reference — consistently sold out",
+      "api_derived": {}
+    },
+    "Washington": {
+      "nhl_team": "Washington Capitals",
+      "team_id": 15,
+      "avg_home_attendance": 18573,
+      "arena": "Capital One Arena",
+      "arena_capacity": 18573,
+      "attendance_pct": 1.000,
+      "attendance_source_note": "Avg 2022-25 per Hockey Reference",
+      "api_derived": {}
+    },
+    "Chicago": {
+      "nhl_team": "Chicago Blackhawks",
+      "team_id": 16,
+      "avg_home_attendance": 18541,
+      "arena": "United Center",
+      "arena_capacity": 19717,
+      "attendance_pct": 0.940,
+      "attendance_source_note": "Avg 2022-25 per Hockey Reference — dipped during rebuild",
+      "api_derived": {}
+    }
+  }
+}
