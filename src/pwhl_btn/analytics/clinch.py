@@ -34,8 +34,8 @@ def check_clinched(teams: dict, playoff_spots: int = PLAYOFF_SPOTS) -> dict[int,
         dict of team_id -> bool  (True = clinched)
 
     A team is clinched when at least (total_teams - playoff_spots) other
-    teams can no longer reach that team's current point total regardless
-    of how their remaining games play out.
+    teams can no longer exceed (pass) that team's current point total
+    regardless of how their remaining games play out.
     """
     total_teams     = len(teams)
     must_eliminate  = total_teams - playoff_spots   # teams that must be eliminated
@@ -49,7 +49,7 @@ def check_clinched(teams: dict, playoff_spots: int = PLAYOFF_SPOTS) -> dict[int,
             if oid == tid:
                 continue
             max_other = other["pts"] + (other["games_remaining"] * 3)
-            if max_other < my_pts:
+            if max_other <= my_pts:
                 eliminated_count += 1
 
         clinched[tid] = eliminated_count >= must_eliminate
