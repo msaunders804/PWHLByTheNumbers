@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 25%,rgba(94,23,235,0.28) 0%,transparent 60%); z-index:0; }
+  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.04) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+  .top-bar { position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); z-index:5; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:60px 64px 56px; }
+
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:44px; }
+  .brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:5px; color:rgba(255,255,255,0.35); }
+  .pill { background:rgba(245,166,35,0.12); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 28px; font-size:19px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .hook-headline { text-align:center; margin-bottom:36px; }
+  .hook-eyebrow { font-size:22px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:6px; }
+  .hook-title { font-family:'Bebas Neue',sans-serif; font-size:96px; line-height:0.9; color:#fff; letter-spacing:2px; }
+  .hook-title span { color:#8c52ff; }
+  .hook-sub { font-size:26px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.38); text-transform:uppercase; margin-top:12px; }
+  .neon-rule { width:100px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:24px auto; border-radius:2px; box-shadow:0 0 14px rgba(140,82,255,0.6); }
+
+  /* Leaderboard table */
+  .table-wrap { flex:1; display:flex; flex-direction:column; gap:0; }
+  .table-header { display:grid; grid-template-columns:36px 1fr 54px 54px 54px 54px 72px; gap:0 12px; padding:12px 20px; margin-bottom:6px; }
+  .th { font-size:17px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.3); text-transform:uppercase; text-align:right; }
+  .th.left { text-align:left; }
+
+  .row { display:grid; grid-template-columns:36px 1fr 54px 54px 54px 54px 72px; gap:0 12px; align-items:center; padding:18px 20px; border-radius:14px; margin-bottom:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(140,82,255,0.1); position:relative; overflow:hidden; }
+  .row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:rgba(140,82,255,0.3); border-radius:2px 0 0 2px; }
+  .row.top { background:rgba(140,82,255,0.1); border-color:rgba(140,82,255,0.35); }
+  .row.top::before { background:#8c52ff; }
+  .row.highlight { background:rgba(245,166,35,0.07); border-color:rgba(245,166,35,0.3); }
+  .row.highlight::before { background:#f5a623; }
+
+  .rank { font-family:'Bebas Neue',sans-serif; font-size:30px; color:rgba(255,255,255,0.3); text-align:center; }
+  .row.top .rank { color:#8c52ff; }
+  .row.highlight .rank { color:#f5a623; }
+
+  .name-col { display:flex; flex-direction:column; gap:2px; }
+  .goalie-name { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:1px; color:#fff; line-height:1; }
+  .team-tag { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+  .row.top .team-tag { color:rgba(140,82,255,0.7); }
+  .row.highlight .team-tag { color:rgba(245,166,35,0.7); }
+
+  .cell { font-family:'Bebas Neue',sans-serif; font-size:34px; color:rgba(255,255,255,0.75); text-align:right; }
+  .cell.accent { color:#8c52ff; }
+  .row.highlight .cell.accent { color:#f5a623; }
+
+  .gsaa-cell { font-family:'Bebas Neue',sans-serif; font-size:34px; text-align:right; }
+  .gsaa-pos { color:#4ade80; }
+  .gsaa-neg { color:#f87171; }
+  .gsaa-zero { color:rgba(255,255,255,0.4); }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06); margin-top:16px; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+
+<div class="slide">
+
+  <div class="header">
+    <div class="brand">BTN</div>
+    <div class="pill">Goalie Watch</div>
+  </div>
+
+  <div class="hook-headline">
+    <div class="hook-eyebrow">PWHL · Season 8</div>
+    <div class="hook-title">WHO'S ACTUALLY<br><span>CARRYING</span><br>THEIR TEAM?</div>
+    <div class="hook-sub">Goals Saved Above Average</div>
+    <div class="neon-rule"></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="th">#</div>
+      <div class="th left">Goalie</div>
+      <div class="th">GP</div>
+      <div class="th">SV%</div>
+      <div class="th">GAA</div>
+      <div class="th">W</div>
+      <div class="th">GSAA</div>
+    </div>
+
+    {% for g in goalies %}
+    <div class="row {% if loop.index == 1 %}top{% elif g.highlight %}highlight{% endif %}">
+      <div class="rank">{{ loop.index }}</div>
+      <div class="name-col">
+        <div class="goalie-name">{{ g.name }}</div>
+        <div class="team-tag">{{ g.team_code }}</div>
+      </div>
+      <div class="cell">{{ g.gp }}</div>
+      <div class="cell accent">{{ g.sv_pct }}</div>
+      <div class="cell">{{ g.gaa }}</div>
+      <div class="cell">{{ g.wins }}</div>
+      <div class="gsaa-cell {% if g.gsaa_raw > 0 %}gsaa-pos{% elif g.gsaa_raw < 0 %}gsaa-neg{% else %}gsaa-zero{% endif %}">{{ g.gsaa }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>
