@@ -2026,3 +2026,216 @@ def get_simulation_inputs() -> dict[int, dict]:
 
     finally:
         session.close()
+
+
+# ── Gold Plan / Elimination ────────────────────────────────────────────────────
+
+def get_elimination_slide_data(team_code: str, elimination_date: str,
+                               season_id: int = SEASON_ID) -> dict:
+    """
+    Returns data needed to render the eliminated_announcement slide.
+
+    Args:
+        team_code:        e.g. "SEA"
+        elimination_date: human-readable string, e.g. "April 14, 2026"
+        season_id:        default 8 (Season 8)
+
+    Returns dict with:
+        team_code, team_name, team_logo, elimination_date
+    """
+    session = Session()
+    try:
+        row = session.execute(text(
+            "SELECT team_id, team_name FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"
+        ), {"code": team_code.upper(), "sid": season_id}).fetchone()
+        if not row:
+            raise ValueError(f"Team '{team_code}' not found for season {season_id}")
+
+        return {
+            "team_code":        team_code.upper(),
+            "team_name":        row.team_name,
+            "team_logo":        _logo_uri(team_code),
+            "elimination_date": elimination_date,
+        }
+    finally:
+        session.close()
+
+
+def get_gold_plan_slide_data(
+    eliminated_teams: list[dict],
+    updated_through:  str,
+    total_non_playoff: int = 4,
+    season_id: int = SEASON_ID,
+) -> dict:
+    """
+    Returns data needed to render the gold_plan_slide.
+
+    Args:
+        eliminated_teams: list of dicts for teams already eliminated, each with:
+            team_code       str   e.g. "SEA"
+            elim_date       str   e.g. "Apr 14"
+            games_remaining int
+            gold_pts        int   points earned in games played after elimination
+        updated_through:  human-readable string, e.g. "April 15, 2026"
+        total_non_playoff: total number of teams that will NOT make playoffs (default 4)
+        season_id:        default 8
+
+    Returns dict suitable for render_gold_plan_slide().
+    """
+    session = Session()
+    try:
+        # Enrich eliminated_teams with logo URIs
+        enriched: list[dict] = []
+        for t in eliminated_teams:
+            code = t["team_code"].upper()
+            row  = session.execute(text(
+                "SELECT team_name FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"
+            ), {"code": code, "sid": season_id}).fetchone()
+            enriched.append({
+                "team_code":       code,
+                "team_name":       row.team_name if row else code,
+                "team_logo":       _logo_uri(code),
+                "gold_pts":        t.get("gold_pts", 0),
+                "elim_date":       t.get("elim_date"),
+                "games_remaining": t.get("games_remaining"),
+            })
+
+        # Pad to total_non_playoff rows with TBD placeholders
+        while len(enriched) < total_non_playoff:
+            enriched.append({
+                "team_code":       None,
+                "team_name":       None,
+                "team_logo":       None,
+                "gold_pts":        None,
+                "elim_date":       None,
+                "games_remaining": None,
+            })
+
+        return {
+            "updated_through": updated_through,
+            "standings":       enriched,
+        }
+    finally:
+        session.close()
+
+
+def _fmt_date(d, fmt: str) -> str:
+    """strftime without leading zeros (cross-platform: no %-d)."""
+    return d.strftime(fmt).replace(" 0", " ").lstrip("0") if d else ""
+
+
+def find_elimination_date(team_code: str, season_id: int = SEASON_ID) -> tuple[date | None, int]:
+    """
+    Find the date a team became mathematically eliminated and their games remaining at that point.
+
+    Returns:
+        (elimination_date, games_remaining_at_elimination)
+        elimination_date is None if the team is not yet eliminated.
+    """
+    from pwhl_btn.analytics.clinch import check_eliminated
+
+    session = Session()
+    try:
+        rows = session.execute(text(
+            "SELECT DISTINCT date FROM games "
+            "WHERE season_id = :sid AND game_status = 'final' "
+            "ORDER BY date ASC"
+        ), {"sid": season_id}).fetchall()
+    finally:
+        session.close()
+
+    game_dates = [r.date for r in rows]
+
+    for i, d in enumerate(game_dates):
+        after_date = d + timedelta(days=1)
+        snapshot = get_clinch_data(season_id, before_date=after_date)
+        elim = check_eliminated(snapshot)
+        team_id = next((tid for tid, info in snapshot.items()
+                        if info["team_code"].upper() == team_code.upper()), None)
+        if team_id and elim.get(team_id):
+            games_remaining = snapshot[team_id]["games_remaining"]
+            return d, games_remaining
+
+    return None, 0
+
+
+def get_auto_gold_plan_data(season_id: int = SEASON_ID) -> dict:
+    """
+    Auto-derive all Gold Plan elimination data from the DB.
+
+    For each eliminated team, computes:
+      - elim_date:       the date they became eliminated (formatted "Mon DD")
+      - games_remaining: games left at elimination
+      - gold_pts:        points earned in games played after elimination
+
+    Returns dict suitable for render_gold_plan_standings():
+      {
+        "updated_through": str,    e.g. "April 19, 2026"
+        "standings": list[dict],   4 rows (padded with TBD if needed)
+      }
+    """
+    from pwhl_btn.analytics.clinch import check_eliminated
+
+    current_snapshot = get_clinch_data(season_id)
+    elim_status = check_eliminated(current_snapshot)
+    eliminated_team_ids = [tid for tid, is_elim in elim_status.items() if is_elim]
+
+    session = Session()
+    try:
+        team_rows = session.execute(text(
+            "SELECT team_id, team_code, team_name FROM teams WHERE season_id = :sid"
+        ), {"sid": season_id}).fetchall()
+        team_info = {r.team_id: {"team_code": r.team_code, "team_name": r.team_name}
+                     for r in team_rows}
+
+        # Get last played game date for "updated through"
+        last_game = session.execute(text(
+            "SELECT MAX(date) AS last_date FROM games "
+            "WHERE season_id = :sid AND game_status = 'final'"
+        ), {"sid": season_id}).scalar()
+    finally:
+        session.close()
+
+    last_date = last_game if hasattr(last_game, "strftime") else \
+        (date.fromisoformat(str(last_game)) if last_game else date.today())
+    updated_through = _fmt_date(last_date, "%B %d, %Y")
+
+    eliminated_teams: list[dict] = []
+    for tid in eliminated_team_ids:
+        code = team_info[tid]["team_code"]
+        elim_date_obj, games_rem = find_elimination_date(code, season_id)
+
+        # pts at elimination = pts earned before day after elim_date
+        pts_at_elim = 0
+        if elim_date_obj:
+            snap = get_clinch_data(season_id, before_date=elim_date_obj + timedelta(days=1))
+            pts_at_elim = snap.get(tid, {}).get("pts", 0)
+
+        current_pts = current_snapshot[tid]["pts"]
+        gold_pts = current_pts - pts_at_elim
+
+        elim_date_str = _fmt_date(elim_date_obj, "%b %d") if elim_date_obj else None
+
+        eliminated_teams.append({
+            "team_code":       code,
+            "team_name":       team_info[tid]["team_name"],
+            "team_logo":       _logo_uri(code),
+            "gold_pts":        gold_pts,
+            "elim_date":       elim_date_str,
+            "games_remaining": games_rem,
+        })
+
+    # Sort by gold_pts desc, then games_remaining asc as tiebreaker
+    eliminated_teams.sort(key=lambda t: (-t["gold_pts"], t["games_remaining"]))
+
+    total_non_playoff = 4
+    while len(eliminated_teams) < total_non_playoff:
+        eliminated_teams.append({
+            "team_code": None, "team_name": None, "team_logo": None,
+            "gold_pts": None, "elim_date": None, "games_remaining": None,
+        })
+
+    return {
+        "updated_through": updated_through,
+        "standings":       eliminated_teams,
+    }

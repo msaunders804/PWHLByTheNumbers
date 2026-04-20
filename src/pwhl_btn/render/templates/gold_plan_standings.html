@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-glow-top    { position:absolute; top:0; left:50%; transform:translateX(-50%); width:960px; height:700px; background:radial-gradient(ellipse,rgba(245,166,35,0.16) 0%,transparent 60%); z-index:0; }
+  .bg-glow-purple { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:1000px; height:700px; background:radial-gradient(ellipse,rgba(94,23,235,0.18) 0%,transparent 60%); z-index:0; }
+  .bg-grid        { position:absolute; inset:0; background-image:linear-gradient(rgba(245,166,35,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,166,35,0.03) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines   { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  .corner { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(140,82,255,0.35); border-left:2px solid rgba(140,82,255,0.35); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(140,82,255,0.35); border-right:2px solid rgba(140,82,255,0.35); }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+
+  /* ── Layout ── */
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; padding:108px 64px 72px; }
+
+  /* ── Header ── */
+  .header { text-align:center; margin-bottom:16px; width:100%; flex-shrink:0; }
+  .eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:6px; }
+  .gold-plan-word { font-family:'Bebas Neue',sans-serif; font-size:152px; line-height:0.88; color:#f5a623; letter-spacing:4px; text-shadow:0 0 50px rgba(245,166,35,0.45),0 0 120px rgba(245,166,35,0.20); }
+  .draft-subhead { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:6px; color:rgba(255,255,255,0.55); margin-top:6px; }
+  .updated-tag { font-size:16px; font-weight:600; letter-spacing:4px; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-top:12px; }
+
+  .gold-rule { width:180px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); border-radius:2px; box-shadow:0 0 18px rgba(245,166,35,0.65); margin:22px auto; flex-shrink:0; }
+
+  /* ── Rank #1 feature card ── */
+  .feature-card {
+    width:100%; flex-shrink:0;
+    background:rgba(245,166,35,0.08);
+    border:2px solid rgba(245,166,35,0.45);
+    border-radius:20px;
+    padding:28px 36px;
+    display:flex; align-items:center; gap:28px;
+    margin-bottom:28px;
+  }
+  .feature-rank {
+    font-family:'Bebas Neue',sans-serif; font-size:96px; line-height:1;
+    color:#f5a623; letter-spacing:2px; flex-shrink:0;
+    text-shadow:0 0 30px rgba(245,166,35,0.50);
+  }
+  .feature-rank-label { font-size:15px; font-weight:700; letter-spacing:5px; color:rgba(245,166,35,0.60); text-transform:uppercase; line-height:1; margin-top:-8px; }
+  .feature-divider { width:2px; height:100px; background:rgba(245,166,35,0.25); flex-shrink:0; }
+  .feature-logo { width:110px; height:110px; object-fit:contain; flex-shrink:0; }
+  .feature-logo-placeholder { width:110px; height:110px; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:2px; color:rgba(255,255,255,0.25); flex-shrink:0; }
+  .feature-info { flex:1; min-width:0; }
+  .feature-team-name { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:3px; color:#fff; line-height:1; }
+  .feature-meta { font-size:20px; font-weight:700; color:rgba(255,255,255,0.45); letter-spacing:2px; margin-top:6px; }
+  .feature-pts { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:2px; color:#f5a623; margin-top:4px; }
+
+  /* ── Full standings table ── */
+  .standings-section { width:100%; flex:1; display:flex; flex-direction:column; }
+  .section-label { font-size:14px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.28); text-transform:uppercase; text-align:center; margin-bottom:14px; flex-shrink:0; }
+
+  .standings-table { width:100%; border-collapse:collapse; }
+  .standings-table thead tr { border-bottom:1px solid rgba(245,166,35,0.25); }
+  .standings-table thead th { font-size:13px; font-weight:700; letter-spacing:4px; color:rgba(245,166,35,0.55); text-transform:uppercase; padding:10px 14px; text-align:left; }
+  .standings-table thead th.c { text-align:center; }
+
+  .standings-table tbody tr { border-bottom:1px solid rgba(255,255,255,0.06); }
+  .standings-table tbody tr.r1 { background:rgba(245,166,35,0.06); }
+
+  .standings-table tbody td { padding:22px 14px; vertical-align:middle; }
+
+  .td-rank { font-family:'Bebas Neue',sans-serif; font-size:38px; text-align:center; color:#f5a623; }
+  .td-rank.tbd-rank { color:rgba(255,255,255,0.20); }
+
+  .team-cell { display:flex; align-items:center; gap:18px; }
+  .team-cell-logo { width:52px; height:52px; object-fit:contain; flex-shrink:0; }
+  .team-cell-code { font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:2px; color:#fff; }
+  .team-cell-name { font-size:20px; font-weight:700; color:rgba(255,255,255,0.50); letter-spacing:1px; }
+  .team-cell-tbd  { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:3px; color:rgba(255,255,255,0.20); }
+
+  .td-pts-val  { font-family:'Bebas Neue',sans-serif; font-size:38px; color:#f5a623; text-align:center; }
+  .td-pts-tbd  { font-family:'Bebas Neue',sans-serif; font-size:30px; color:rgba(255,255,255,0.20); text-align:center; }
+  .td-date     { font-size:20px; font-weight:700; color:rgba(255,255,255,0.38); text-align:center; }
+  .td-date-tbd { font-size:18px; font-weight:600; color:rgba(255,255,255,0.16); text-align:center; font-style:italic; }
+  .td-rem      { font-size:22px; font-weight:700; color:rgba(255,255,255,0.40); text-align:center; }
+  .td-rem-tbd  { font-size:18px; color:rgba(255,255,255,0.18); text-align:center; }
+
+  /* ── Footer ── */
+  .footer { display:flex; justify-content:space-between; align-items:center; width:100%; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-glow-purple"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+
+<div class="slide">
+
+  <div class="header">
+    <div class="eyebrow">PWHL · Season 8 · 2025–26</div>
+    <div class="gold-plan-word">GOLD PLAN</div>
+    <div class="draft-subhead">2026 ENTRY DRAFT ORDER</div>
+    <div class="updated-tag">Updated through {{ updated_through }}</div>
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <!-- Featured rank-1 team card -->
+  {% set leader = standings[0] %}
+  <div class="feature-card">
+    <div>
+      <div class="feature-rank">1</div>
+      <div class="feature-rank-label">Overall</div>
+    </div>
+    <div class="feature-divider"></div>
+    {% if leader.team_logo %}
+      <img class="feature-logo" src="{{ leader.team_logo }}" alt="{{ leader.team_code }}">
+    {% else %}
+      <div class="feature-logo-placeholder">{{ leader.team_code or "?" }}</div>
+    {% endif %}
+    <div class="feature-info">
+      <div class="feature-team-name">{{ leader.team_name or "TBD" }}</div>
+      <div class="feature-meta">
+        Elim: {{ leader.elim_date or "—" }} &nbsp;·&nbsp; {{ leader.games_remaining if leader.games_remaining is not none else "—" }} Games Left
+      </div>
+      <div class="feature-pts">{{ leader.gold_pts if leader.gold_pts is not none else "0" }} Gold Plan Pts</div>
+    </div>
+  </div>
+
+  <!-- Full standings table -->
+  <div class="standings-section">
+    <div class="section-label">Full Draft Order Standings</div>
+    <table class="standings-table">
+      <thead>
+        <tr>
+          <th class="c">#</th>
+          <th>Team</th>
+          <th class="c">GP Pts</th>
+          <th class="c">Elim Date</th>
+          <th class="c">Rem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in standings %}
+        <tr {% if loop.index == 1 %}class="r1"{% endif %}>
+          <td class="td-rank {% if not row.team_code %}tbd-rank{% endif %}">{{ loop.index }}</td>
+          <td>
+            {% if row.team_logo %}
+            <div class="team-cell">
+              <img class="team-cell-logo" src="{{ row.team_logo }}" alt="{{ row.team_code }}">
+              <div>
+                <div class="team-cell-code">{{ row.team_code }}</div>
+                <div class="team-cell-name">{{ row.team_name }}</div>
+              </div>
+            </div>
+            {% elif row.team_code %}
+            <div class="team-cell">
+              <div>
+                <div class="team-cell-code">{{ row.team_code }}</div>
+                <div class="team-cell-name">{{ row.team_name }}</div>
+              </div>
+            </div>
+            {% else %}
+            <div class="team-cell-tbd">TBD</div>
+            {% endif %}
+          </td>
+          {% if row.gold_pts is not none %}
+            <td class="td-pts-val">{{ row.gold_pts }}</td>
+          {% else %}
+            <td class="td-pts-tbd">—</td>
+          {% endif %}
+          {% if row.elim_date %}
+            <td class="td-date">{{ row.elim_date }}</td>
+          {% else %}
+            <td class="td-date-tbd">Not yet</td>
+          {% endif %}
+          {% if row.games_remaining is not none %}
+            <td class="td-rem">{{ row.games_remaining }}</td>
+          {% else %}
+            <td class="td-rem-tbd">—</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>

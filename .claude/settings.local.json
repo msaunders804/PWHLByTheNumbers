@@ -23,7 +23,8 @@
       "Bash(/usr/bin/python3.12 -m pip install --target \"c:/Users/msaun/PWHLByTheNumbers/pwhl/lib/python3.12/site-packages\" \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
       "Bash(python3 -m pip install --target \"c:/Users/msaun/PWHLByTheNumbers/pwhl/lib/python3.12/site-packages\" \"fastapi>=0.110\" \"uvicorn[standard]>=0.27\" \"anthropic>=0.25\")",
       "Read(//c/Users/msaun/AppData/Local/Programs/**)",
-      "Read(//c/Users/msaun/AppData/Local/Microsoft/WindowsApps/**)"
+      "Read(//c/Users/msaun/AppData/Local/Microsoft/WindowsApps/**)",
+      "Bash(PYTHONPATH=src python *)"
     ]
   }
 }
