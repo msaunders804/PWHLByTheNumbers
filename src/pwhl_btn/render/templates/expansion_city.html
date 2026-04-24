@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Top accent bar ── */
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10;
+             background:linear-gradient(to right,#06b6d4,#0ea5e9,#f5a623); }
+
+  /* ── City photo zone ── */
+  .city-photo {
+    position:absolute; top:0; left:0; right:0; height:860px;
+    background-image:url('{{ city_image_path }}');
+    background-size:cover; background-position:center top;
+    z-index:0;
+  }
+  /* dark overlay so text stays readable */
+  .city-photo::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(
+      to bottom,
+      rgba(7,0,15,0.40) 0%,
+      rgba(7,0,15,0.55) 45%,
+      rgba(7,0,15,0.85) 72%,
+      #07000f 100%
+    );
+  }
+
+  /* ── Scanlines (full slide) ── */
+  .bg-scanlines { position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px); }
+
+  /* ── Corner brackets ── */
+  .corner { position:absolute; width:72px; height:72px; z-index:20; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(6,182,212,0.45); border-left:2px solid rgba(6,182,212,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(6,182,212,0.45); border-right:2px solid rgba(6,182,212,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+
+  /* ── Brand / label ── */
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.35); z-index:20; }
+  .label { position:absolute; top:40px; right:80px; font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.25); text-transform:uppercase; z-index:20; }
+
+  /* ── City identity (overlaid on photo) ── */
+  .city-identity {
+    position:absolute; top:0; left:0; right:0; height:860px;
+    z-index:5;
+    display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-end;
+    padding:0 80px 52px;
+  }
+  .rank-line {
+    font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:8px;
+    color:#06b6d4; margin-bottom:4px;
+  }
+  .city-name {
+    font-family:'Bebas Neue',sans-serif; font-size:148px; line-height:0.87;
+    letter-spacing:2px; color:#fff;
+    text-shadow:0 4px 40px rgba(0,0,0,0.80);
+  }
+  .city-sub {
+    margin-top:14px;
+    font-size:22px; font-weight:700; letter-spacing:5px;
+    color:rgba(255,255,255,0.50); text-transform:uppercase;
+  }
+
+  /* ── Data section ── */
+  .data-section {
+    position:absolute; top:860px; left:0; right:0; bottom:80px;
+    z-index:5; padding:40px 80px 0;
+    display:flex; flex-direction:column; gap:0;
+  }
+
+  /* ── Stat block ── */
+  .stat-block { padding:28px 0; }
+  .stat-block + .stat-block { border-top:1px solid rgba(255,255,255,0.08); }
+
+  .stat-label {
+    font-size:14px; font-weight:800; letter-spacing:5px;
+    color:rgba(255,255,255,0.30); text-transform:uppercase;
+    margin-bottom:10px;
+  }
+
+  /* Tour attendance — the hero number */
+  .tour-number {
+    font-family:'Bebas Neue',sans-serif; font-size:120px; line-height:0.90;
+    color:#f5a623;
+    text-shadow:0 0 50px rgba(245,166,35,0.35);
+    letter-spacing:2px;
+  }
+  .tour-sub {
+    margin-top:8px; font-size:22px; font-weight:600; letter-spacing:2px;
+    color:rgba(255,255,255,0.40);
+  }
+
+  /* NHL block */
+  .nhl-team  { font-family:'Bebas Neue',sans-serif; font-size:54px; letter-spacing:3px; color:#fff; line-height:1.05; }
+  .nhl-arena { font-size:24px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.40); margin-top:4px; }
+
+  /* Women's sports block */
+  .womens-row { display:flex; flex-direction:column; gap:10px; }
+  .womens-team {
+    display:flex; align-items:baseline; gap:16px;
+  }
+  .womens-team-name { font-family:'Bebas Neue',sans-serif; font-size:46px; letter-spacing:2px; color:#fff; line-height:1; }
+  .womens-league    { font-size:19px; font-weight:700; letter-spacing:3px; color:rgba(6,182,212,0.70); text-transform:uppercase; }
+  .womens-none      { font-size:22px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.25); font-style:italic; }
+
+  /* ── Score + hook row ── */
+  .bottom-block {
+    margin-top:auto; padding-top:24px;
+    border-top:1px solid rgba(245,166,35,0.25);
+  }
+  .score-row {
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:20px;
+  }
+  .score-label { font-size:16px; font-weight:800; letter-spacing:5px; color:rgba(255,255,255,0.30); text-transform:uppercase; }
+  .score-value { font-family:'Bebas Neue',sans-serif; font-size:72px; line-height:1; color:#f5a623; letter-spacing:2px; }
+  .score-denom { font-family:'Bebas Neue',sans-serif; font-size:36px; color:rgba(245,166,35,0.45); }
+
+  .hook {
+    padding:22px 28px;
+    background:rgba(255,255,255,0.04);
+    border-left:3px solid rgba(6,182,212,0.50);
+    border-radius:0 6px 6px 0;
+  }
+  .hook-text { font-size:21px; font-weight:600; line-height:1.50; color:rgba(255,255,255,0.60); font-style:italic; }
+
+  /* ── Footer ── */
+  .footer {
+    position:absolute; bottom:28px; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 80px; z-index:20;
+  }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.13); }
+  .footer-season { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.13); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="city-photo"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="label">EXPANSION</div>
+
+<!-- City name overlaid on photo -->
+<div class="city-identity">
+  <div class="rank-line">#{{ rank }} OF {{ total }} &nbsp;·&nbsp; EXPANSION ANALYSIS</div>
+  <div class="city-name">{{ city }}</div>
+  <div class="city-sub">{{ state_province }} · {{ country }}</div>
+</div>
+
+<!-- Data section -->
+<div class="data-section">
+
+  <!-- Takeover Tour -->
+  <div class="stat-block">
+    <div class="stat-label">Takeover Tour Attendance</div>
+    {% if tour_avg_att %}
+      <div class="tour-number">{{ tour_avg_att }}</div>
+      <div class="tour-sub">avg per game &nbsp;·&nbsp; {{ tour_game_count }} Takeover Tour game{{ 's' if tour_game_count != 1 else '' }}</div>
+    {% else %}
+      <div class="tour-number" style="font-size:56px;color:rgba(245,166,35,0.35);">NO DATA</div>
+      <div class="tour-sub">No Takeover Tour game on record</div>
+    {% endif %}
+  </div>
+
+  <!-- NHL Infrastructure -->
+  <div class="stat-block">
+    <div class="stat-label">NHL Infrastructure</div>
+    <div class="nhl-team">{{ nhl_team }}</div>
+    <div class="nhl-arena">{{ nhl_arena }}{% if nhl_capacity %} &nbsp;·&nbsp; {{ nhl_capacity }} seats{% endif %}</div>
+  </div>
+
+  <!-- Women's Pro Sports -->
+  <div class="stat-block">
+    <div class="stat-label">Women's Pro Sports</div>
+    {% if womens_teams %}
+      <div class="womens-row">
+        {% for team_name, league in womens_teams %}
+        <div class="womens-team">
+          <div class="womens-team-name">{{ team_name }}</div>
+          <div class="womens-league">{{ league }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="womens-none">{{ womens_none_text }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Score + hook -->
+  <div class="bottom-block">
+    <div class="score-row">
+      <div class="score-label">Composite Score</div>
+      <div>
+        <span class="score-value">{{ composite }}</span>
+        <span class="score-denom"> / 10</span>
+      </div>
+    </div>
+    <div class="hook">
+      <div class="hook-text">"{{ narrative_hook }}"</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">PWHL · 2025–26</div>
+</div>
+</body>
+</html>

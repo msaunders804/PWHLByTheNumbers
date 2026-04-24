@@ -24,7 +24,9 @@ from pwhl_btn.db.db_queries import (
     get_elimination_slide_data,
     get_auto_gold_plan_data,
     find_elimination_date,
+    get_clinch_data,
 )
+from pwhl_btn.analytics.clinch import check_eliminated
 from pwhl_btn.render.eliminated_render import (
     render_eliminated_announcement,
     render_gold_plan_standings,
@@ -33,10 +35,23 @@ from pwhl_btn.render.eliminated_render import (
 
 OUTPUT_DIR = Path(__file__).resolve().parents[3] / "render" / "output"
 
-_DEFAULT_TEAM = "VAN"
+
+def _latest_eliminated_team(season_id: int = 8) -> str | None:
+    """Return the team_code of the most recently eliminated team, or None if none."""
+    snapshot = get_clinch_data(season_id)
+    elim_status = check_eliminated(snapshot)
+    eliminated_codes = [info["team_code"] for tid, info in snapshot.items() if elim_status[tid]]
+    if not eliminated_codes:
+        return None
+    best_code, best_date = None, None
+    for code in eliminated_codes:
+        d, _ = find_elimination_date(code, season_id)
+        if d is not None and (best_date is None or d > best_date):
+            best_date, best_code = d, code
+    return best_code
 
 
-def run(team_code: str = _DEFAULT_TEAM,
+def run(team_code: str = "NY",
         gold_plan_only: bool = False,
         dry_run: bool = False) -> list[Path]:
 
@@ -79,13 +94,18 @@ def run(team_code: str = _DEFAULT_TEAM,
 
 def main():
     parser = argparse.ArgumentParser(description="PWHL Elimination & Gold Plan Slide Renderer")
-    parser.add_argument("--team",           default=_DEFAULT_TEAM, help="Team code (default: VAN)")
+    parser.add_argument("--team",           default=None, help="Team code (default: auto-detect latest eliminated team)")
     parser.add_argument("--gold-plan-only", action="store_true",   help="Skip elimination announcement, render only Gold Plan slides")
     parser.add_argument("--dry-run",        action="store_true",   help="Print config without rendering")
     args = parser.parse_args()
 
+    team_code = args.team or _latest_eliminated_team()
+    if not team_code:
+        print("No eliminated teams found.")
+        return
+
     run(
-        team_code=args.team,
+        team_code=team_code,
         gold_plan_only=args.gold_plan_only,
         dry_run=args.dry_run,
     )

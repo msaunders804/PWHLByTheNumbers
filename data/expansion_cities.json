@@ -12,11 +12,17 @@
     "Tsongas Center | Lowell",
     "Grand Casino Arena | St. Paul",
     "Place Bell | Laval",
+    "Bell Centre | Montréal",
+    "Scotiabank Arena | Toronto",
+    "TD Garden | Boston",
     "Prudential Center | Newark",
     "TD Place | Ottawa",
+    "Canadian Tire Centre | Ottawa",
     "Climate Pledge Arena | Seattle",
     "Coca-Cola Coliseum | Toronto",
-    "Pacific Coliseum | Vancouver"
+    "Pacific Coliseum | Vancouver",
+    "Rogers Arena | Vancouver",
+    "Xcel Energy Center | St. Paul"
   ],
 
   "candidates": [
@@ -99,6 +105,54 @@
       "geo_balance_score": 8,
       "geo_balance_notes": "Fills US Midwest corridor between MIN and eastern teams. Chicago-MIN rivalry would be instant and intense. Central time zone anchor for TV scheduling.",
       "narrative_hook": "The biggest hockey market in America that doesn't have a PWHL team. Chicago Red Stars fans already showed up for women's sports. The infrastructure exists today."
+    },
+    {
+      "city": "Raleigh",
+      "state_province": "NC",
+      "country": "USA",
+      "nhl_team": "Carolina Hurricanes",
+      "tour_venue": "Lenovo Center | Raleigh",
+      "nhl_market_score": 8,
+      "nhl_market_notes": "Hurricanes have built one of the NHL's loudest and most energized buildings over the past five years. Consistent playoff contender since 2019. Fanbase grew dramatically with sustained winning.",
+      "womens_sports_score": 8,
+      "womens_sports_notes": "NC Courage (NWSL) — four-time NWSL champions, based in Cary just outside Raleigh. One of the most successful women's soccer clubs in North America. Strong women's sports culture anchored by ACC universities.",
+      "arena_fit_score": 4,
+      "arena_fit_notes": "Lenovo Center (~18,680) is too large for regular PWHL games. No obvious mid-size NHL-quality alternative in the market currently. Would need a purpose-built or renovated facility.",
+      "geo_balance_score": 8,
+      "geo_balance_notes": "Southeast US is completely unserved by the PWHL. Raleigh fills a significant geographic gap and opens a new regional market. Strong ACC college hockey feeder culture in the Carolinas.",
+      "narrative_hook": "10,782 fans showed up in Raleigh for a neutral-site game with no home team. The NC Courage have won four NWSL titles. This market already knows how to support women's sports."
+    },
+    {
+      "city": "St. Louis",
+      "state_province": "MO",
+      "country": "USA",
+      "nhl_team": "St. Louis Blues",
+      "tour_venue": "Enterprise Center | St. Louis",
+      "nhl_market_score": 9,
+      "nhl_market_notes": "2019 Stanley Cup champions. One of the most passionate and loud hockey environments in the NHL. Blues fanbase has deep generational roots — this is a true hockey city.",
+      "womens_sports_score": 4,
+      "womens_sports_notes": "No NWSL or WNBA franchise. Women's pro sports infrastructure is limited. Strong NCAA presence via Missouri and SLU, but no top-tier professional women's league footprint yet.",
+      "arena_fit_score": 5,
+      "arena_fit_notes": "Enterprise Center (~19,150) is too large for regular PWHL play. Chaifetz Arena at SLU (~10,600) is a realistic right-sized alternative and already hosts hockey events.",
+      "geo_balance_score": 9,
+      "geo_balance_notes": "Central US anchor between MIN and the east coast cluster. Fills a major interior gap. Would create natural rivalries with MIN and CHI. Central time zone is valuable for national TV scheduling.",
+      "narrative_hook": "2019 Stanley Cup champions. 8,578 fans for a game that had nothing to do with them. St. Louis doesn't just support hockey — it bleeds it."
+    },
+    {
+      "city": "Buffalo",
+      "state_province": "NY",
+      "country": "USA",
+      "nhl_team": "Buffalo Sabres",
+      "tour_venue": "KeyBank Center | Buffalo",
+      "nhl_market_score": 6,
+      "nhl_market_notes": "Sabres have struggled for over a decade but fanbase remains loyal and passionate. True hockey-first city with generational roots in the sport. Lower score reflects team performance and market size.",
+      "womens_sports_score": 3,
+      "womens_sports_notes": "No NWSL or WNBA team. Limited women's professional sports infrastructure. Buffalo has sports appetite but no existing women's pro league presence to build on.",
+      "arena_fit_score": 5,
+      "arena_fit_notes": "KeyBank Center (~19,070) is too large. HarborCenter (~1,700) is too small. Mid-size gap is a challenge. New venue development would likely be required for a permanent home.",
+      "geo_balance_score": 3,
+      "geo_balance_notes": "Geographically close to Toronto, Boston, and New York — deepens the already east-heavy concentration. Cross-border proximity to southern Ontario is the strongest geographic argument.",
+      "narrative_hook": "The most hockey-obsessed city in America without a pro team of its own. 8,512 fans showed up despite living an hour from Toronto. Buffalo doesn't need convincing."
     }
   ],
 
