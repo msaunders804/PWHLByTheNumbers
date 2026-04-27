@@ -7,7 +7,6 @@
     "geo_balance_score": "1-10. How much adding this city improves league geographic spread. Current PWHL: BOS/NY/OTT/MTL/TOR (East-heavy), MIN (Midwest), SEA/VAN (West). More westward/south = higher score.",
     "last_updated": "2026-04-11"
   },
-
   "existing_pwhl_home_venues": [
     "Tsongas Center | Lowell",
     "Grand Casino Arena | St. Paul",
@@ -24,7 +23,6 @@
     "Rogers Arena | Vancouver",
     "Xcel Energy Center | St. Paul"
   ],
-
   "candidates": [
     {
       "city": "Denver",
@@ -153,14 +151,45 @@
       "geo_balance_score": 3,
       "geo_balance_notes": "Geographically close to Toronto, Boston, and New York — deepens the already east-heavy concentration. Cross-border proximity to southern Ontario is the strongest geographic argument.",
       "narrative_hook": "The most hockey-obsessed city in America without a pro team of its own. 8,512 fans showed up despite living an hour from Toronto. Buffalo doesn't need convincing."
+    },
+    {
+      "city": "Edmonton",
+      "state_province": "AB",
+      "country": "Canada",
+      "nhl_team": "Edmonton Oilers",
+      "tour_venue": "Rogers Place | Edmonton",
+      "nhl_market_score": 9,
+      "nhl_market_notes": "Oilers reached the 2024 Stanley Cup Finals. Rogers Place routinely sold out. One of the most passionate hockey markets in Canada.",
+      "womens_sports_score": 3,
+      "womens_sports_notes": "No NWSL or WNBA franchise. Strong amateur hockey roots but limited professional women sports infrastructure.",
+      "arena_fit_score": 5,
+      "arena_fit_notes": "Rogers Place (18,347) is NHL-caliber but large for PWHL. Game 1 drew 17,518; subsequent games averaged ~10,500 — inconsistent fill rate.",
+      "geo_balance_score": 8,
+      "geo_balance_notes": "Alberta expansion is culturally important for the PWHL brand. An Edmonton franchise creates an instant provincial rivalry with Calgary. Adds redundancy if Calgary is already selected.",
+      "narrative_hook": "Game 1 at Rogers Place drew 17,518 — nearly a sellout. The next two averaged 10,529. High ceiling, inconsistent floor."
+    },
+    {
+      "city": "Halifax",
+      "state_province": "NS",
+      "country": "Canada",
+      "nhl_team": "None (QMJHL Mooseheads)",
+      "tour_venue": "Scotiabank Centre | Halifax",
+      "nhl_market_score": 2,
+      "nhl_market_notes": "No NHL franchise. The Mooseheads are QMJHL. Strong grassroots hockey culture but no NHL infrastructure or market depth to leverage.",
+      "womens_sports_score": 2,
+      "womens_sports_notes": "No professional women sports franchise in market. Maritime Canada is largely untapped for women pro sports.",
+      "arena_fit_score": 2,
+      "arena_fit_notes": "Scotiabank Centre (10,595) is well below PWHL target arena size. Both tour games sold out at 98%+ but the building caps revenue potential significantly.",
+      "geo_balance_score": 10,
+      "geo_balance_notes": "Maritime Canada is entirely unserved by pro hockey. Halifax would be the only PWHL team east of Ottawa, opening a brand new regional market with a unique identity.",
+      "narrative_hook": "Sold out both tour games at 98.6% capacity. The demand is real. The arena is not PWHL-scale."
     }
   ],
-
   "weights": {
-    "nhl_market":     0.25,
+    "nhl_market": 0.25,
     "tour_attendance": 0.35,
-    "womens_sports":  0.20,
-    "arena_fit":      0.10,
-    "geo_balance":    0.10
+    "womens_sports": 0.2,
+    "arena_fit": 0.1,
+    "geo_balance": 0.1
   }
 }

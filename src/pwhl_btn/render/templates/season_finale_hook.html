@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff;
+         font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Background glows ── */
+  .bg-glow-top {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:1080px; height:900px;
+    background:radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.14) 0%, transparent 65%);
+    z-index:0;
+  }
+  .bg-glow-bottom {
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:900px; height:500px;
+    background:radial-gradient(ellipse, rgba(6,182,212,0.07) 0%, transparent 65%);
+    z-index:0;
+  }
+  .bg-scanlines {
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);
+  }
+
+  /* ── Top accent bar ── */
+  .top-bar {
+    position:absolute; top:0; left:0; right:0; height:6px; z-index:30;
+    background:linear-gradient(to right,#f5a623,#fbbf24,#06b6d4,#fbbf24,#f5a623);
+  }
+
+  /* ── Corner brackets ── */
+  .corner { position:absolute; width:72px; height:72px; z-index:20; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.25); border-left:2px solid rgba(245,166,35,0.25); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.25); border-right:2px solid rgba(245,166,35,0.25); }
+
+  /* ── Brand ── */
+  .brand {
+    position:absolute; top:36px; left:80px; z-index:25;
+    font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:6px;
+    color:rgba(255,255,255,0.22);
+  }
+  .stamp {
+    position:absolute; top:32px; right:80px; z-index:25;
+    display:flex; align-items:center; gap:10px;
+    background:rgba(245,166,35,0.08); border:1.5px solid rgba(245,166,35,0.40);
+    border-radius:100px; padding:9px 22px;
+  }
+  .stamp-dot  { width:7px; height:7px; border-radius:50%; background:#f5a623; }
+  .stamp-text { font-size:14px; font-weight:800; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  /* ── Hero text ── */
+  .hero {
+    position:relative; z-index:5;
+    padding:180px 80px 0;
+    text-align:center;
+  }
+  .hero-eyebrow {
+    font-size:18px; font-weight:800; letter-spacing:10px;
+    color:rgba(255,255,255,0.28); text-transform:uppercase;
+    margin-bottom:20px;
+  }
+  .hero-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:200px; line-height:0.84; letter-spacing:4px;
+    color:#fff;
+    text-shadow:0 0 120px rgba(245,166,35,0.25);
+  }
+  .hero-title .accent { color:#f5a623; }
+  .hero-sub {
+    margin-top:28px;
+    font-size:22px; font-weight:800; letter-spacing:8px;
+    color:rgba(255,255,255,0.30); text-transform:uppercase;
+  }
+
+  /* ── Stakes chips ── */
+  .stakes-row {
+    position:relative; z-index:5;
+    margin:60px 80px 0;
+    display:flex; gap:16px; justify-content:center;
+  }
+  .stake-chip {
+    display:flex; align-items:center; gap:10px;
+    padding:12px 24px;
+    border-radius:100px;
+    font-size:15px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  }
+  .stake-chip.gold {
+    background:rgba(245,166,35,0.10); border:1.5px solid rgba(245,166,35,0.50);
+    color:#f5a623;
+  }
+  .stake-chip.cyan {
+    background:rgba(6,182,212,0.10); border:1.5px solid rgba(6,182,212,0.50);
+    color:#06b6d4;
+  }
+  .stake-chip.muted {
+    background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.18);
+    color:rgba(255,255,255,0.45);
+  }
+  .chip-dot { width:7px; height:7px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+  /* ── Divider ── */
+  .divider {
+    position:relative; z-index:5;
+    margin:56px 80px 0;
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);
+  }
+  .divider-label {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#07000f; padding:0 20px;
+    font-size:12px; font-weight:800; letter-spacing:6px;
+    color:rgba(255,255,255,0.20); text-transform:uppercase;
+    white-space:nowrap;
+  }
+
+  /* ── Game rows ── */
+  .games {
+    position:relative; z-index:5;
+    margin:48px 80px 0;
+    display:flex; flex-direction:column; gap:0;
+  }
+
+  .game-row {
+    display:flex; align-items:center;
+    padding:32px 0;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+    gap:24px;
+  }
+  .game-row:first-child { border-top:1px solid rgba(255,255,255,0.07); }
+
+  .game-matchup {
+    display:flex; align-items:center; gap:0; flex-shrink:0; width:400px;
+  }
+  .game-team-block {
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .team-logo {
+    width:56px; height:56px; object-fit:contain;
+  }
+  .game-team {
+    font-family:'Bebas Neue',sans-serif; font-size:60px; letter-spacing:2px; line-height:1;
+    color:#fff;
+  }
+  .game-at {
+    font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px;
+    color:rgba(255,255,255,0.22); padding:0 16px; padding-top:16px;
+  }
+
+  .game-stake {
+    flex:1;
+    text-align:right;
+  }
+  .game-stake-type {
+    font-size:13px; font-weight:800; letter-spacing:5px;
+    text-transform:uppercase; margin-bottom:8px;
+  }
+  .game-stake-line {
+    font-size:28px; font-weight:800; letter-spacing:1px; line-height:1.20;
+    color:#fff;
+  }
+
+  .stake-gold .game-stake-type  { color:rgba(245,166,35,0.65); }
+  .stake-gold .game-stake-line  { color:#fff; }
+  .stake-cyan .game-stake-type  { color:rgba(6,182,212,0.65); }
+  .stake-cyan .game-stake-line  { color:#fff; }
+  .stake-muted .game-stake-type { color:rgba(255,255,255,0.28); }
+  .stake-muted .game-stake-line { color:rgba(255,255,255,0.50); }
+
+  /* ── Footer ── */
+  .footer {
+    position:absolute; bottom:32px; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 80px; z-index:25;
+  }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-glow-bottom"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="stamp">
+  <div class="stamp-dot"></div>
+  <div class="stamp-text">Season Finale</div>
+  <div class="stamp-dot"></div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">Season 8 · Regular Season</div>
+  <div class="hero-title">FINAL<br><span class="accent">DAY</span></div>
+  <div class="hero-sub">Saturday, April 25, 2026 · 4 Games</div>
+</div>
+
+<!-- Stakes chips -->
+<div class="stakes-row">
+  <div class="stake-chip gold"><div class="chip-dot"></div>1st Seed On The Line</div>
+  <div class="stake-chip cyan"><div class="chip-dot"></div>Playoff Spot</div>
+  <div class="stake-chip muted"><div class="chip-dot"></div>Season Closers</div>
+</div>
+
+<!-- Divider -->
+<div class="divider"><div class="divider-label">The Games</div></div>
+
+<!-- Game list -->
+<div class="games">
+  <div class="game-row stake-gold">
+    <div class="game-matchup">
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['MTL'] }}" alt="MTL">
+        <div class="game-team">MTL</div>
+      </div>
+      <div class="game-at">@</div>
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['SEA'] }}" alt="SEA">
+        <div class="game-team">SEA</div>
+      </div>
+    </div>
+    <div class="game-stake">
+      <div class="game-stake-type">1st Seed Race</div>
+      <div class="game-stake-line">MTL Controls<br>Their Own Fate</div>
+    </div>
+  </div>
+
+  <div class="game-row stake-gold">
+    <div class="game-matchup">
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['NY'] }}" alt="NY">
+        <div class="game-team">NY</div>
+      </div>
+      <div class="game-at">@</div>
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['BOS'] }}" alt="BOS">
+        <div class="game-team">BOS</div>
+      </div>
+    </div>
+    <div class="game-stake">
+      <div class="game-stake-type">1st Seed Race</div>
+      <div class="game-stake-line">BOS Needs<br>Help From Seattle</div>
+    </div>
+  </div>
+
+  <div class="game-row stake-cyan">
+    <div class="game-matchup">
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['TOR'] }}" alt="TOR">
+        <div class="game-team">TOR</div>
+      </div>
+      <div class="game-at">@</div>
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['OTT'] }}" alt="OTT">
+        <div class="game-team">OTT</div>
+      </div>
+    </div>
+    <div class="game-stake">
+      <div class="game-stake-type">4th Playoff Seed</div>
+      <div class="game-stake-line">TOR Must Win<br>In Regulation</div>
+    </div>
+  </div>
+
+  <div class="game-row stake-muted">
+    <div class="game-matchup">
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['MIN'] }}" alt="MIN">
+        <div class="game-team">MIN</div>
+      </div>
+      <div class="game-at">@</div>
+      <div class="game-team-block">
+        <img class="team-logo" src="file://{{ logos['VAN'] }}" alt="VAN">
+        <div class="game-team">VAN</div>
+      </div>
+    </div>
+    <div class="game-stake">
+      <div class="game-stake-type">Season Closer</div>
+      <div class="game-stake-line">Playoff Bound<br>vs. Playing Out</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 8 · Final Day</div>
+</div>
+</body>
+</html>
