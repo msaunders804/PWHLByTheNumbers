@@ -19,21 +19,18 @@ import requests
 from sqlalchemy import text
 
 from pwhl_btn.db.db_config import get_engine
+from pwhl_btn.ingest.hockeytech import API_BASE, with_auth
 
-API_BASE    = "https://lscluster.hockeytech.com/feed/index.php"
-API_KEY     = "446521baf8c38984"
-CLIENT_CODE = "pwhl"
 RATE_LIMIT  = 0.5
 
 
 def fetch_venue(game_id: int) -> tuple[str | None, int | None]:
     """Return (venue, attendance) from the API gamesummary, or (None, None) on error."""
     try:
-        r = requests.get(API_BASE, params={
+        r = requests.get(API_BASE, params=with_auth({
             "feed": "gc", "tab": "gamesummary",
             "game_id": game_id,
-            "key": API_KEY, "client_code": CLIENT_CODE, "fmt": "json",
-        }, timeout=15)
+        }), timeout=15)
         r.raise_for_status()
         gs   = r.json()["GC"]["Gamesummary"]
         meta = gs.get("meta", {})

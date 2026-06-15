@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow-purple { position:absolute; top:350px; left:50%; transform:translateX(-50%); width:1200px; height:1200px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.20) 0%,transparent 65%); z-index:0; }
+  .bg-glow-gold   { position:absolute; top:1280px; left:50%; transform:translateX(-50%); width:1000px; height:1000px; border-radius:50%; background:radial-gradient(circle,rgba(245,166,35,0.22) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines   { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .corner    { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .season { position:absolute; top:40px; right:80px; font-size:17px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.20); text-transform:uppercase; z-index:10; }
+
+  /* ── Header ── */
+  .header { position:absolute; top:96px; left:60px; right:60px; text-align:center; z-index:10; }
+  .eyebrow { font-size:16px; font-weight:700; letter-spacing:10px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:14px; }
+  .title { font-family:'Bebas Neue',sans-serif; font-size:108px; line-height:0.87; color:#fff; letter-spacing:3px; }
+  .title-accent { color:#f5a623; }
+  .neon-rule { width:200px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); border-radius:2px; box-shadow:0 0 16px rgba(245,166,35,0.55); margin:28px auto 0; }
+
+  /* ── Round labels ── */
+  .round-label { position:absolute; z-index:10; font-size:11px; font-weight:800; letter-spacing:6px; color:rgba(255,255,255,0.22); text-transform:uppercase; text-align:center; top:394px; }
+  .rl-r1  { left:60px;  width:380px; }
+  .rl-fin { left:560px; width:460px; }
+
+  /* ── R1 cards ── */
+  .r1-card { position:absolute; left:60px; width:380px; height:280px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.025); z-index:10; }
+  .r1-card-top { top:422px; }
+  .r1-card-bot { top:812px; }
+
+  .r1-team { height:129px; display:flex; align-items:center; gap:16px; padding:0 20px; }
+  .r1-team.winner { background:rgba(245,166,35,0.07); border-left:3px solid rgba(245,166,35,0.75); }
+  .r1-team.loser  { opacity:0.42; }
+  .t-logo { width:70px; height:70px; object-fit:contain; }
+  .t-info { flex:1; }
+  .t-code { font-family:'Bebas Neue',sans-serif; font-size:46px; letter-spacing:3px; line-height:1; color:#fff; }
+  .t-name { font-size:12px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+  .t-result { text-align:right; }
+  .t-result-val     { font-family:'Bebas Neue',sans-serif; font-size:48px; color:#f5a623; line-height:1; }
+  .t-result-val.dim { color:rgba(255,255,255,0.38); }
+  .t-result-lbl     { font-size:10px; font-weight:700; letter-spacing:2px; color:rgba(245,166,35,0.55); text-transform:uppercase; }
+  .t-result-lbl.dim { color:rgba(255,255,255,0.22); }
+
+  .r1-divider { height:22px; background:rgba(0,0,0,0.38); display:flex; align-items:center; justify-content:center; }
+  .r1-divider-text { font-size:10px; font-weight:800; letter-spacing:4px; color:rgba(255,255,255,0.20); }
+
+  /* ── Finals card ── */
+  .finals-card { position:absolute; left:560px; width:460px; top:641px; height:232px; border-radius:18px; background:rgba(140,82,255,0.10); border:1.5px solid rgba(140,82,255,0.38); z-index:10; overflow:hidden; }
+  .f-team { height:105px; display:flex; align-items:center; gap:16px; padding:0 20px; }
+  .f-logo { width:54px; height:54px; object-fit:contain; }
+  .f-info { flex:1; }
+  .f-code { font-family:'Bebas Neue',sans-serif; font-size:38px; letter-spacing:3px; color:#fff; }
+  .f-name { font-size:11px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .f-divider { height:22px; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; }
+  .f-divider-text { font-size:9px; font-weight:800; letter-spacing:5px; color:rgba(140,82,255,0.80); text-transform:uppercase; }
+
+  /* ── Section divider ── */
+  .section-div { position:absolute; top:1118px; left:60px; right:60px; display:flex; align-items:center; gap:20px; z-index:10; }
+  .sd-line { flex:1; height:1px; background:linear-gradient(to right,transparent,rgba(245,166,35,0.45),transparent); }
+  .sd-text { font-size:11px; font-weight:800; letter-spacing:7px; color:rgba(245,166,35,0.50); text-transform:uppercase; white-space:nowrap; }
+
+  /* ── Finals matchup section ── */
+  .final-matchup { position:absolute; top:1170px; left:60px; right:60px; text-align:center; z-index:10; }
+  .fm-pre { font-size:13px; font-weight:800; letter-spacing:9px; color:rgba(255,255,255,0.26); text-transform:uppercase; margin-bottom:36px; }
+  .fm-teams { display:flex; align-items:center; justify-content:center; gap:48px; margin-bottom:32px; }
+  .fm-team { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .fm-logo { width:220px; height:220px; object-fit:contain; filter:drop-shadow(0 0 32px rgba(140,82,255,0.45)); }
+  .fm-code { font-family:'Bebas Neue',sans-serif; font-size:80px; letter-spacing:8px; color:#fff; line-height:1; }
+  .fm-name { font-size:15px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.40); text-transform:uppercase; }
+  .fm-vs { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:4px; color:rgba(140,82,255,0.60); align-self:center; margin-top:-20px; }
+  .fm-cup { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:5px; color:rgba(245,166,35,0.65); margin-top:4px; }
+
+  /* ── Footer ── */
+  .footer { position:absolute; bottom:52px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 80px; z-index:10; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-purple"></div>
+<div class="bg-glow-gold"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="season">PWHL · Season 9</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="eyebrow">PWHL Playoffs 2025–26</div>
+  <div class="title">ROUND 1<br><span class="title-accent">RESULTS</span></div>
+  <div class="neon-rule"></div>
+</div>
+
+<!-- Round labels -->
+<div class="round-label rl-r1">Round 1</div>
+<div class="round-label rl-fin">Walter Cup Final</div>
+
+<!-- R1 Top: MTL vs MIN -->
+<div class="r1-card r1-card-top">
+  <div class="r1-team winner">
+    <img class="t-logo" src="{{ r1a.winner_logo }}" alt="{{ r1a.winner_code }}">
+    <div class="t-info">
+      <div class="t-code">{{ r1a.winner_code }}</div>
+      <div class="t-name">{{ r1a.winner_name }}</div>
+    </div>
+    <div class="t-result">
+      <div class="t-result-val">{{ r1a.winner_series }}</div>
+      <div class="t-result-lbl">SERIES</div>
+    </div>
+  </div>
+  <div class="r1-divider"><span class="r1-divider-text">VS</span></div>
+  <div class="r1-team loser">
+    <img class="t-logo" src="{{ r1a.loser_logo }}" alt="{{ r1a.loser_code }}">
+    <div class="t-info">
+      <div class="t-code">{{ r1a.loser_code }}</div>
+      <div class="t-name">{{ r1a.loser_name }}</div>
+    </div>
+    <div class="t-result">
+      <div class="t-result-val dim">{{ r1a.loser_series }}</div>
+      <div class="t-result-lbl dim">SERIES</div>
+    </div>
+  </div>
+</div>
+
+<!-- R1 Bottom: OTT vs BOS -->
+<div class="r1-card r1-card-bot">
+  <div class="r1-team winner">
+    <img class="t-logo" src="{{ r1b.winner_logo }}" alt="{{ r1b.winner_code }}">
+    <div class="t-info">
+      <div class="t-code">{{ r1b.winner_code }}</div>
+      <div class="t-name">{{ r1b.winner_name }}</div>
+    </div>
+    <div class="t-result">
+      <div class="t-result-val">{{ r1b.winner_series }}</div>
+      <div class="t-result-lbl">SERIES</div>
+    </div>
+  </div>
+  <div class="r1-divider"><span class="r1-divider-text">VS</span></div>
+  <div class="r1-team loser">
+    <img class="t-logo" src="{{ r1b.loser_logo }}" alt="{{ r1b.loser_code }}">
+    <div class="t-info">
+      <div class="t-code">{{ r1b.loser_code }}</div>
+      <div class="t-name">{{ r1b.loser_name }}</div>
+    </div>
+    <div class="t-result">
+      <div class="t-result-val dim">{{ r1b.loser_series }}</div>
+      <div class="t-result-lbl dim">SERIES</div>
+    </div>
+  </div>
+</div>
+
+<!-- SVG bracket connector (identical geometry to pred_cover) -->
+<svg style="position:absolute;left:420px;top:562px;width:160px;height:390px;z-index:10;overflow:visible;" viewBox="0 0 160 390" fill="none">
+  <polyline points="20,0 110,0 110,390 20,390" stroke="rgba(245,166,35,0.12)" stroke-width="8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="110" y1="195" x2="140" y2="195" stroke="rgba(245,166,35,0.12)" stroke-width="8" stroke-linecap="round"/>
+  <polyline points="20,0 110,0 110,390 20,390" stroke="rgba(245,166,35,0.55)" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="110" y1="195" x2="140" y2="195" stroke="rgba(245,166,35,0.55)" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="110" cy="195" r="4" fill="rgba(245,166,35,0.80)"/>
+</svg>
+
+<!-- Finals card: MTL vs OTT, no predicted winner -->
+<div class="finals-card">
+  <div class="f-team">
+    <img class="f-logo" src="{{ fin_a_logo }}" alt="{{ fin_a_code }}">
+    <div class="f-info">
+      <div class="f-code">{{ fin_a_code }}</div>
+      <div class="f-name">{{ fin_a_name }}</div>
+    </div>
+  </div>
+  <div class="f-divider"><span class="f-divider-text">Walter Cup Final</span></div>
+  <div class="f-team">
+    <img class="f-logo" src="{{ fin_b_logo }}" alt="{{ fin_b_code }}">
+    <div class="f-info">
+      <div class="f-code">{{ fin_b_code }}</div>
+      <div class="f-name">{{ fin_b_name }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Section divider -->
+<div class="section-div">
+  <div class="sd-line"></div>
+  <div class="sd-text">Walter Cup Final</div>
+  <div class="sd-line"></div>
+</div>
+
+<!-- Finals matchup — no winner -->
+<div class="final-matchup">
+  <div class="fm-pre">The Final</div>
+  <div class="fm-teams">
+    <div class="fm-team">
+      <img class="fm-logo" src="{{ fin_a_logo }}" alt="{{ fin_a_code }}">
+      <div class="fm-code">{{ fin_a_code }}</div>
+      <div class="fm-name">{{ fin_a_name }}</div>
+    </div>
+    <div class="fm-vs">VS</div>
+    <div class="fm-team">
+      <img class="fm-logo" src="{{ fin_b_logo }}" alt="{{ fin_b_code }}" style="filter:drop-shadow(0 0 32px rgba(245,166,35,0.45));">
+      <div class="fm-code">{{ fin_b_code }}</div>
+      <div class="fm-name">{{ fin_b_name }}</div>
+    </div>
+  </div>
+  <div class="fm-cup">Walter Cup 2025–26</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 9 · 2025–26</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:22%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.20) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:200px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.09) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 80px 80px; }
+
+  .eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.32); text-transform:uppercase; margin-bottom:4px; }
+  .title   { font-family:'Bebas Neue',sans-serif; font-size:96px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .sub     { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:24px 0 44px; }
+
+  /* Hero stat */
+  .hero-block { text-align:center; margin-bottom:44px; }
+  .hero-label { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:8px; }
+  .hero-name  { font-family:'Bebas Neue',sans-serif; font-size:68px; letter-spacing:3px; color:#fff; margin-bottom:4px; }
+  .hero-val   { font-family:'Bebas Neue',sans-serif; font-size:240px; line-height:0.85; color:#f5a623; letter-spacing:-6px; text-shadow:0 0 80px rgba(245,166,35,0.30); }
+  .hero-sub   { font-size:20px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-top:8px; }
+
+  /* Goalie stat grid */
+  .goalie-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px; margin-bottom:44px; }
+  .gc { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:22px 14px; text-align:center; }
+  .gc.hi { border-color:rgba(140,82,255,0.28); background:rgba(140,82,255,0.07); }
+  .gc-val  { font-family:'Bebas Neue',sans-serif; font-size:64px; line-height:1; color:#fff; }
+  .gc-val.pu { color:#8c52ff; }
+  .gc-lbl  { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.26); text-transform:uppercase; margin-top:4px; }
+
+  /* Comparison section */
+  .compare-label { font-size:16px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:16px; }
+  .compare-row { display:flex; gap:16px; }
+  .comp-card { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:28px 24px; text-align:center; }
+  .comp-card.active { border-color:rgba(245,166,35,0.28); background:rgba(245,166,35,0.05); }
+  .comp-opp { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; }
+  .comp-logo { width:40px; height:40px; object-fit:contain; }
+  .comp-opp-label { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .comp-sv { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:1; }
+  .comp-sv.active { color:#f5a623; }
+  .comp-sv.dim    { color:rgba(255,255,255,0.35); }
+  .comp-detail  { font-size:16px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-top:4px; }
+  .comp-detail.active { color:rgba(245,166,35,0.60); }
+
+  /* Player photo strip — replaces spacer, fills remaining height */
+  .player-strip { flex:1; position:relative; overflow:hidden; margin-top:28px; min-height:80px; }
+  .player-strip img { position:absolute; bottom:0; left:0; width:100%; height:115%; object-fit:cover; object-position:center top; }
+  .player-strip::before {
+    content:''; position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(to bottom, #07000f 0%, rgba(7,0,15,0.35) 45%, transparent 75%),
+      linear-gradient(to top,    rgba(7,0,15,0.80) 0%, transparent 35%);
+  }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.22); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.22); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ badge_label }}</div></div>
+
+<div class="slide">
+  <div class="eyebrow">2025&#x2013;26 Regular Season</div>
+  <div class="title">{{ title_line1 }}<br>{{ title_line2 }}</div>
+  <div class="sub">{{ goalie_name }}</div>
+  <div class="neon-rule"></div>
+
+  <div class="hero-block">
+    <div class="hero-label">{{ hero_label }}</div>
+    <div class="hero-val">{{ hero_sv }}</div>
+    <div class="hero-sub">{{ hero_sub }}</div>
+  </div>
+
+  <div class="goalie-grid">
+    <div class="gc hi">
+      <div class="gc-val pu">{{ goalie_wins }}</div>
+      <div class="gc-lbl">Wins</div>
+    </div>
+    <div class="gc">
+      <div class="gc-val">{{ goalie_sa }}</div>
+      <div class="gc-lbl">Shots Faced</div>
+    </div>
+    <div class="gc">
+      <div class="gc-val">{{ goalie_sv_num }}</div>
+      <div class="gc-lbl">Saves</div>
+    </div>
+    <div class="gc hi">
+      <div class="gc-val pu">{{ goalie_ga }}</div>
+      <div class="gc-lbl">Goals Against</div>
+    </div>
+  </div>
+
+  <div class="compare-label">{{ compare_label }}</div>
+  <div class="compare-row">
+    <div class="comp-card active">
+      <div class="comp-opp">
+        <img class="comp-logo" src="{{ comp_a_logo }}" alt="{{ comp_a_code }}">
+        <div class="comp-opp-label">{{ comp_a_label }}</div>
+      </div>
+      <div class="comp-sv active">{{ comp_a_sv }}</div>
+      <div class="comp-detail active">{{ comp_a_detail }}</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-opp">
+        <img class="comp-logo" src="{{ comp_b_logo }}" alt="{{ comp_b_code }}" style="opacity:0.55;">
+        <div class="comp-opp-label" style="color:rgba(255,255,255,0.28);">{{ comp_b_label }}</div>
+      </div>
+      <div class="comp-sv dim">{{ comp_b_sv }}</div>
+      <div class="comp-detail">{{ comp_b_detail }}</div>
+    </div>
+  </div>
+
+  {% if goalie_photo %}
+  <div class="player-strip">
+    <img src="{{ goalie_photo }}" alt="{{ goalie_name }}">
+  </div>
+  {% else %}
+  <div style="flex:1;"></div>
+  {% endif %}
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 &#xB7; 2025&#x2013;26</div>
+  </div>
+</div>
+</body>
+</html>

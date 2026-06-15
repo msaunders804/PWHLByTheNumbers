@@ -18,19 +18,15 @@ from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 
 from pwhl_btn.db.db_config import get_engine
+from pwhl_btn.ingest.hockeytech import API_BASE, with_auth
 from pwhl_btn.jobs.backfill import SEASON_ID
-
-API_BASE    = "https://lscluster.hockeytech.com/feed/index.php"
-API_KEY     = "446521baf8c38984"
-CLIENT_CODE = "pwhl"
 
 engine  = get_engine()
 Session = sessionmaker(bind=engine)
 
 
 def api_get(params: dict) -> dict:
-    params.update({"key": API_KEY, "client_code": CLIENT_CODE, "fmt": "json"})
-    r = requests.get(API_BASE, params=params, timeout=15)
+    r = requests.get(API_BASE, params=with_auth(params), timeout=15)
     r.raise_for_status()
     return r.json()
 

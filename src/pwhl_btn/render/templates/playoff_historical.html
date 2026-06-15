@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:22%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.22) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:180px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.10) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(94,23,235,0.18); border:1.5px solid rgba(140,82,255,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 80px 80px; }
+
+  .eyebrow { font-size:17px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:4px; }
+  .title   { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .title span { color:#8c52ff; }
+  .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,#8c52ff,rgba(140,82,255,0)); border-radius:2px; margin:24px 0 36px; }
+
+  /* Intro box */
+  .intro-box { background:rgba(140,82,255,0.07); border:1px solid rgba(140,82,255,0.22); border-radius:18px; padding:28px 32px; margin-bottom:44px; }
+  .intro-text { font-size:23px; font-weight:600; line-height:1.5; color:rgba(255,255,255,0.70); }
+  .intro-text strong { color:#fff; font-weight:800; }
+
+  /* Season card */
+  .season-card { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:36px 36px; margin-bottom:28px; position:relative; overflow:hidden; }
+  .season-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(to bottom,#8c52ff,#5e17eb); border-radius:20px 0 0 20px; }
+
+  .sc-season { font-size:16px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px; }
+  .sc-title { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:3px; color:#fff; margin-bottom:20px; line-height:1; }
+
+  .sc-matchup { display:flex; align-items:center; gap:0; margin-bottom:20px; }
+  .sc-team { display:flex; align-items:center; gap:14px; flex:1; }
+  .sc-team.loser { opacity:0.55; }
+  .sc-logo { width:56px; height:56px; object-fit:contain; }
+  .sc-info {}
+  .sc-code { font-family:'Bebas Neue',sans-serif; font-size:40px; letter-spacing:3px; line-height:1; }
+  .sc-role { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .sc-role.seed { color:#f5a623; }
+
+  .sc-mid { display:flex; flex-direction:column; align-items:center; gap:4px; padding:0 24px; }
+  .sc-result { font-family:'Bebas Neue',sans-serif; font-size:56px; letter-spacing:2px; }
+  .sc-result.upset { color:#f5a623; }
+  .sc-result-sub { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.30); text-transform:uppercase; }
+
+  .sc-note { font-size:20px; font-weight:600; color:rgba(255,255,255,0.50); line-height:1.4; }
+  .sc-note strong { color:rgba(245,166,35,0.90); }
+
+  /* Now moment box */
+  .now-box { background:rgba(245,166,35,0.07); border:1px solid rgba(245,166,35,0.30); border-radius:18px; padding:28px 32px; }
+  .now-label { font-size:14px; font-weight:700; letter-spacing:6px; color:rgba(245,166,35,0.65); text-transform:uppercase; margin-bottom:10px; }
+  .now-text { font-size:26px; font-weight:700; line-height:1.4; color:#fff; }
+  .now-text span { color:#f5a623; }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">PWHL History</div></div>
+
+<div class="slide">
+  <div class="eyebrow">1st Seed Pick Rights &#xB7; PWHL Playoffs</div>
+  <div class="title">THE<br><span>UPSET</span><br>PATTERN</div>
+  <div class="neon-rule"></div>
+
+  <div class="intro-box">
+    <div class="intro-text">
+      In both previous PWHL playoffs, the <strong>1st seed chose their opponent</strong>
+      &#x2014; and <strong>lost to the team they picked</strong>.
+      MTL just made the same call.
+    </div>
+  </div>
+
+  {% for s in seasons %}
+  <div class="season-card">
+    <div class="sc-season">{{ s.season_label }}</div>
+    <div class="sc-title">{{ s.title }}</div>
+    <div class="sc-matchup">
+      <div class="sc-team {% if not s.seed_won %}loser{% endif %}">
+        <img class="sc-logo" src="{{ s.seed_logo }}" alt="{{ s.seed_code }}">
+        <div class="sc-info">
+          <div class="sc-code">{{ s.seed_code }}</div>
+          <div class="sc-role seed">1st Seed · Chose Opponent</div>
+        </div>
+      </div>
+      <div class="sc-mid">
+        <div class="sc-result upset">{{ s.result }}</div>
+        <div class="sc-result-sub">{{ s.series_label }}</div>
+      </div>
+      <div class="sc-team {% if s.seed_won %}loser{% endif %}">
+        <img class="sc-logo" src="{{ s.upset_logo }}" alt="{{ s.upset_code }}">
+        <div class="sc-info">
+          <div class="sc-code">{{ s.upset_code }}</div>
+          <div class="sc-role">Chosen Opponent</div>
+        </div>
+      </div>
+    </div>
+    <div class="sc-note">{{ s.note | safe }}</div>
+  </div>
+  {% endfor %}
+
+  <div class="now-box">
+    <div class="now-label">2025&#x2013;26 &#xB7; Now</div>
+    <div class="now-text">
+      <span>MTL</span> holds the 1st seed and picks <span>MIN</span> &#x2014;
+      a team they went 4&#x2013;0 against this season.
+      History says beware the team you chose.
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 &#xB7; 2025&#x2013;26</div>
+  </div>
+</div>
+</body>
+</html>

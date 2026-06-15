@@ -26,7 +26,18 @@
       "Read(//c/Users/msaun/AppData/Local/Microsoft/WindowsApps/**)",
       "Bash(PYTHONPATH=src python *)",
       "Bash(PYTHONPATH=src python -m pwhl_btn.jobs.tour_attendance)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(PYTHONPATH=src PYTHONIOENCODING=utf-8 python *)",
+      "Bash(PYTHONIOENCODING=utf-8 PYTHONPATH=src python *)",
+      "Bash(dir C:\\\\Users\\\\msaun\\\\PWHLByTheNumbers\\\\assets\\\\logos\\\\ *)",
+      "Bash(Get-ChildItem src\\\\pwhl_btn\\\\render\\\\*.py)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\msaun\\\\PWHLByTheNumbers\\\\assets\\\\players\")",
+      "Bash(Select-Object Name)",
+      "Bash(PYTHONPATH=src ./pwhl/bin/python -m uvicorn pwhl_btn.web.app:app --reload --port 8000)",
+      "Bash(PYTHONPATH=src ./pwhl/bin/uvicorn pwhl_btn.web.app:app --reload --port 8000)",
+      "Bash(PYTHONPATH=src python3 -c \"from pwhl_btn.web.app import app; print\\('app imports ok'\\)\")",
+      "Bash(PYTHONPATH=src python3 -m uvicorn pwhl_btn.web.app:app --reload --port 8000)"
     ]
   }
 }

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:22%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.18) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:140px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.08) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(94,23,235,0.18); border:1.5px solid rgba(94,23,235,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:116px 80px 76px; }
+
+  .eyebrow { font-size:17px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:6px; }
+  .title   { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.88; color:#fff; letter-spacing:2px; margin-bottom:6px; }
+  .title span { color:#8c52ff; }
+  .sub     { font-size:20px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+  .neon-rule { width:110px; height:3px; background:linear-gradient(90deg,#8c52ff,rgba(140,82,255,0)); border-radius:2px; margin:22px 0 36px; }
+
+  /* Concept explainer */
+  .concept-box { background:rgba(140,82,255,0.07); border:1px solid rgba(140,82,255,0.22); border-radius:18px; padding:28px 32px; margin-bottom:36px; }
+  .concept-text { font-size:22px; font-weight:600; line-height:1.5; color:rgba(255,255,255,0.70); }
+  .concept-text strong { color:#fff; font-weight:800; }
+
+  /* Shift display — the hero for each matchup */
+  .matchup-shift { margin-bottom:28px; }
+  .ms-header { display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+  .ms-logos  { display:flex; align-items:center; gap:-8px; }
+  .ms-logo   { width:52px; height:52px; object-fit:contain; }
+  .ms-vs     { font-family:'Bebas Neue',sans-serif; font-size:24px; color:rgba(255,255,255,0.20); margin:0 4px; }
+  .ms-label  { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:3px; color:#fff; }
+
+  .shift-row { display:flex; gap:12px; align-items:stretch; margin-bottom:10px; }
+  .shift-card { flex:1; border-radius:14px; padding:22px 24px; }
+  .shift-card.mle   { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+  .shift-card.bayes { background:rgba(140,82,255,0.08); border:1px solid rgba(140,82,255,0.28); }
+  .sc-label  { font-size:13px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px; }
+  .sc-label.bayes { color:rgba(140,82,255,0.70); }
+  .sc-teams  { display:flex; justify-content:space-between; gap:8px; }
+  .sc-team   { text-align:center; flex:1; }
+  .sc-code   { font-size:15px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:4px; }
+  .sc-pct    { font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1; color:rgba(255,255,255,0.40); }
+  .sc-pct.winner { color:#fff; }
+  .sc-pct.shifted { color:#8c52ff; }
+  .sc-div    { width:1px; background:rgba(255,255,255,0.08); align-self:stretch; }
+
+  .shift-arrow { display:flex; align-items:center; justify-content:center; gap:14px; padding:12px 20px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25); border-radius:12px; }
+  .sa-team   { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.40); text-transform:uppercase; }
+  .sa-arrow  { font-family:'Bebas Neue',sans-serif; font-size:36px; color:#f5a623; }
+  .sa-amount { font-family:'Bebas Neue',sans-serif; font-size:44px; color:#f5a623; letter-spacing:1px; }
+  .sa-label  { font-size:14px; font-weight:700; letter-spacing:2px; color:rgba(245,166,35,0.60); text-transform:uppercase; }
+
+  /* Lambda shift table */
+  .lambda-section { margin-bottom:0; }
+  .lambda-table { width:100%; border-collapse:collapse; }
+  .lambda-table th { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.25); text-transform:uppercase; padding:10px 16px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .lambda-table th:not(:first-child) { text-align:center; }
+  .lambda-table td { padding:14px 16px; font-size:20px; font-weight:700; color:rgba(255,255,255,0.55); border-bottom:1px solid rgba(255,255,255,0.04); }
+  .lambda-table td:first-child { font-size:17px; letter-spacing:2px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .lambda-table td:not(:first-child) { text-align:center; font-family:'Bebas Neue',sans-serif; font-size:32px; }
+  .lambda-table td.mle-val  { color:rgba(255,255,255,0.35); }
+  .lambda-table td.post-val { color:#8c52ff; }
+  .lambda-table td.ott-val  { color:#f5a623; }
+
+  .divider-line { width:100%; height:1px; background:rgba(255,255,255,0.06); margin:24px 0; }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div><div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Model · Bayesian Update</div></div>
+
+<div class="slide">
+  <div class="eyebrow">2025–26 Playoffs · Methodology</div>
+  <div class="title">THE<br><span>BAYESIAN</span><br>CORRECTION</div>
+  <div class="neon-rule"></div>
+
+  <div class="concept-box">
+    <div class="concept-text">
+      Season data gives us a <strong>prior</strong>. Head-to-head results
+      tell a <strong>different story</strong>. The Bayesian update blends
+      both — weighting each by the evidence behind it.
+    </div>
+  </div>
+
+  <!-- MTL vs MIN shift -->
+  <div class="matchup-shift">
+    <div class="ms-header">
+      <div class="ms-logos">
+        <img class="ms-logo" src="{{ mtl_logo }}" alt="MTL">
+        <div class="ms-vs">vs</div>
+        <img class="ms-logo" src="{{ min_logo }}" alt="MIN" style="opacity:0.55;">
+      </div>
+      <div class="ms-label">MTL vs MIN</div>
+    </div>
+    <div class="shift-row">
+      <div class="shift-card mle">
+        <div class="sc-label">Season Model Only</div>
+        <div class="sc-teams">
+          <div class="sc-team"><div class="sc-code">MTL</div><div class="sc-pct winner">{{ mtl_mle }}%</div></div>
+          <div class="sc-div"></div>
+          <div class="sc-team"><div class="sc-code">MIN</div><div class="sc-pct">{{ min_mle }}%</div></div>
+        </div>
+      </div>
+      <div class="shift-card bayes">
+        <div class="sc-label bayes">+ H2H Update</div>
+        <div class="sc-teams">
+          <div class="sc-team"><div class="sc-code">MTL</div><div class="sc-pct shifted">{{ mtl_bayes }}%</div></div>
+          <div class="sc-div"></div>
+          <div class="sc-team"><div class="sc-code">MIN</div><div class="sc-pct">{{ min_bayes }}%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="shift-arrow">
+      <div class="sa-team">MTL</div>
+      <div class="sa-arrow">↑</div>
+      <div class="sa-amount">{{ mtl_shift }}pp</div>
+      <div class="sa-label">H2H data reinforced the model</div>
+    </div>
+  </div>
+
+  <div class="divider-line"></div>
+
+  <!-- OTT vs BOS shift -->
+  <div class="matchup-shift">
+    <div class="ms-header">
+      <div class="ms-logos">
+        <img class="ms-logo" src="{{ ott_logo }}" alt="OTT">
+        <div class="ms-vs">vs</div>
+        <img class="ms-logo" src="{{ bos_logo }}" alt="BOS" style="opacity:0.55;">
+      </div>
+      <div class="ms-label">OTT vs BOS</div>
+    </div>
+    <div class="shift-row">
+      <div class="shift-card mle">
+        <div class="sc-label">Season Model Only</div>
+        <div class="sc-teams">
+          <div class="sc-team"><div class="sc-code">OTT</div><div class="sc-pct">{{ ott_mle }}%</div></div>
+          <div class="sc-div"></div>
+          <div class="sc-team"><div class="sc-code">BOS</div><div class="sc-pct winner">{{ bos_mle }}%</div></div>
+        </div>
+      </div>
+      <div class="shift-card bayes">
+        <div class="sc-label bayes">+ H2H Update</div>
+        <div class="sc-teams">
+          <div class="sc-team"><div class="sc-code">OTT</div><div class="sc-pct shifted">{{ ott_bayes }}%</div></div>
+          <div class="sc-div"></div>
+          <div class="sc-team"><div class="sc-code">BOS</div><div class="sc-pct winner">{{ bos_bayes }}%</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="shift-arrow">
+      <div class="sa-team">OTT</div>
+      <div class="sa-arrow">↑</div>
+      <div class="sa-amount">{{ ott_shift }}pp</div>
+      <div class="sa-label">4 H2H games moved the needle</div>
+    </div>
+  </div>
+
+  <!-- Lambda detail for OTT vs BOS (the more interesting case) -->
+  <div class="divider-line"></div>
+  <div class="section-label" style="font-size:13px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:14px;">Expected Goals Shift · OTT vs BOS</div>
+  <table class="lambda-table">
+    <tr>
+      <th>Config</th>
+      <th>Team</th>
+      <th>MLE λ</th>
+      <th>Posterior λ</th>
+    </tr>
+    {% for row in lambda_rows %}
+    <tr>
+      <td>{{ row.config }}</td>
+      <td>{{ row.team }}</td>
+      <td class="mle-val">{{ row.mle }}</td>
+      <td class="{% if row.is_ott %}ott-val{% else %}post-val{% endif %}">{{ row.post }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

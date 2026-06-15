@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Chrome ──────────────────────────────────────────────────── */
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:30; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:5; pointer-events:none; }
+
+  .brand  { position:absolute; top:38px; left:80px; z-index:30; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.45); }
+  .badge  { position:absolute; top:30px; right:80px; z-index:30; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; white-space:nowrap; }
+
+  /* ── Split photo panels ─────────────────────────────────────── */
+  .panel-left {
+    position:absolute; top:0; left:0; width:540px; height:100%;
+    overflow:hidden; z-index:1;
+  }
+  .panel-right {
+    position:absolute; top:0; right:0; width:540px; height:100%;
+    overflow:hidden; z-index:1;
+  }
+  .panel-left img {
+    width:100%; height:100%; object-fit:cover; object-position:center 25%;
+    opacity:0.75;
+    transform:scaleX(-1);  /* mirror so player faces inward */
+  }
+  .panel-right img {
+    width:100%; height:100%; object-fit:cover; object-position:60% center;
+    opacity:0.75;
+  }
+
+  /* ── Team colour washes ─────────────────────────────────────── */
+  .wash-left {
+    position:absolute; top:0; left:0; width:540px; height:100%; z-index:2;
+    background:linear-gradient(to right,
+      rgba(7,0,15,0.35) 0%,
+      rgba(94,23,235,0.20) 60%,
+      rgba(94,23,235,0.06) 100%
+    );
+  }
+  .wash-right {
+    position:absolute; top:0; right:0; width:540px; height:100%; z-index:2;
+    background:linear-gradient(to left,
+      rgba(7,0,15,0.35) 0%,
+      rgba(245,166,35,0.14) 60%,
+      rgba(245,166,35,0.04) 100%
+    );
+  }
+
+  /* ── Bottom content fade ────────────────────────────────────── */
+  .bottom-fade {
+    position:absolute; bottom:0; left:0; right:0; height:680px; z-index:3;
+    background:linear-gradient(to top, #07000f 55%, rgba(7,0,15,0.85) 72%, transparent 100%);
+  }
+  /* Slim dark band at very top behind chrome */
+  .top-fade {
+    position:absolute; top:0; left:0; right:0; height:160px; z-index:3;
+    background:linear-gradient(to bottom, rgba(7,0,15,0.72) 0%, transparent 100%);
+  }
+
+  /* ── VS spine ───────────────────────────────────────────────── */
+  .vs-spine {
+    position:absolute; left:50%; top:0; bottom:0;
+    transform:translateX(-50%);
+    width:4px;
+    background:linear-gradient(to bottom,
+      transparent 8%,
+      rgba(245,166,35,0.55) 30%,
+      rgba(245,166,35,0.80) 50%,
+      rgba(245,166,35,0.55) 70%,
+      transparent 92%
+    );
+    z-index:10;
+  }
+  .vs-circle {
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%, -50%);
+    width:110px; height:110px; border-radius:50%;
+    background:#07000f;
+    border:3px solid rgba(245,166,35,0.75);
+    display:flex; align-items:center; justify-content:center;
+    z-index:11;
+    box-shadow:0 0 40px rgba(245,166,35,0.25);
+  }
+  .vs-text {
+    font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:4px;
+    color:#f5a623; line-height:1;
+  }
+
+  /* ── Content block at bottom ────────────────────────────────── */
+  .content { position:absolute; bottom:0; left:0; right:0; z-index:20; padding:0 72px 80px; }
+
+  /* Team name rows */
+  .team-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+
+  .team-block { display:flex; align-items:center; gap:16px; }
+  .team-block.right { flex-direction:row-reverse; }
+
+  .team-logo { width:72px; height:72px; object-fit:contain; }
+
+  .team-info { }
+  .team-info.right { text-align:right; }
+
+  .team-code-lg { font-family:'Bebas Neue',sans-serif; font-size:72px; letter-spacing:4px; line-height:0.9; }
+  .team-code-lg.a { color:#fff; }
+  .team-code-lg.b { color:rgba(255,255,255,0.85); }
+  .team-name-sm { font-size:14px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+
+  /* Player name plates */
+  .player-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:44px; }
+
+  .player-block { flex:1; }
+  .player-block.right { text-align:right; }
+
+  .player-name {
+    font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:2px;
+    line-height:0.90; color:#fff;
+  }
+  .player-pos {
+    font-size:13px; font-weight:700; letter-spacing:4px;
+    color:rgba(255,255,255,0.32); text-transform:uppercase; margin-top:6px;
+  }
+  .player-divider { width:2px; background:rgba(255,255,255,0.10); margin:0 28px; align-self:stretch; }
+
+  /* Neon divider rule */
+  .neon-rule { width:100%; height:2px; background:linear-gradient(90deg,transparent,rgba(245,166,35,0.60),transparent); border-radius:2px; margin-bottom:32px; }
+
+  /* Hero title */
+  .title-eyebrow { font-size:16px; font-weight:700; letter-spacing:10px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px; }
+  .title-main { font-family:'Bebas Neue',sans-serif; font-size:136px; line-height:0.85; letter-spacing:4px; color:#fff; }
+  .title-sub  { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:0.88; letter-spacing:6px; color:#f5a623; margin-bottom:48px; }
+
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:6px; color:rgba(255,255,255,0.16); }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-scanlines"></div>
+
+<!-- Split player photos -->
+<div class="panel-left"><img src="{{ photo_a }}" alt="{{ player_a_name }}"></div>
+<div class="panel-right"><img src="{{ photo_b }}" alt="{{ player_b_name }}"></div>
+
+<!-- Team colour washes -->
+<div class="wash-left"></div>
+<div class="wash-right"></div>
+
+<!-- Top/bottom fades -->
+<div class="top-fade"></div>
+<div class="bottom-fade"></div>
+
+<!-- VS spine -->
+<div class="vs-spine"></div>
+<div class="vs-circle"><div class="vs-text">VS</div></div>
+
+<!-- Chrome -->
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Walter Cup Final</div></div>
+
+<!-- Content -->
+<div class="content">
+  <div class="title-eyebrow">PWHL 2025–26 Playoffs</div>
+  <div class="title-main">WALTER</div>
+  <div class="title-sub">CUP FINAL</div>
+
+  <div class="neon-rule"></div>
+
+  <div class="team-row">
+    <div class="team-block">
+      <img class="team-logo" src="{{ logo_a }}" alt="{{ team_a }}">
+      <div class="team-info">
+        <div class="team-code-lg a">{{ team_a }}</div>
+        <div class="team-name-sm">{{ name_a }}</div>
+      </div>
+    </div>
+    <div class="team-block right">
+      <img class="team-logo" src="{{ logo_b }}" alt="{{ team_b }}">
+      <div class="team-info right">
+        <div class="team-code-lg b">{{ team_b }}</div>
+        <div class="team-name-sm">{{ name_b }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="player-row">
+    <div class="player-block">
+      <div class="player-name">{{ player_a_name | replace('\n', '<br>') | safe }}</div>
+      <div class="player-pos">{{ player_a_pos }}</div>
+    </div>
+    <div class="player-divider"></div>
+    <div class="player-block right">
+      <div class="player-name">{{ player_b_name | replace('\n', '<br>') | safe }}</div>
+      <div class="player-pos">{{ player_b_pos }}</div>
+    </div>
+  </div>
+
+  <div class="footer-brand">BY THE NUMBERS</div>
+</div>
+</body>
+</html>

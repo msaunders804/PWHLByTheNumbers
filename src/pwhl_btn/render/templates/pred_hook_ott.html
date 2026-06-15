@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  /* OTT-side gold glow, BOS-side dim */
+  .bg-glow-ott { position:absolute; top:30%; left:22%; transform:translate(-50%,-50%); width:1100px; height:1100px; border-radius:50%; background:radial-gradient(circle,rgba(245,166,35,0.22) 0%,transparent 60%); z-index:0; }
+  .bg-glow-bos { position:absolute; top:30%; right:-10%; width:700px; height:700px; border-radius:50%; background:radial-gradient(circle,rgba(94,23,235,0.10) 0%,transparent 65%); z-index:0; }
+  .bg-glow-bottom { position:absolute; bottom:80px; left:50%; transform:translateX(-50%); width:1000px; height:600px; background:radial-gradient(ellipse,rgba(245,166,35,0.10) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .corner { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .season { position:absolute; top:40px; right:80px; font-size:17px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.20); text-transform:uppercase; z-index:10; }
+
+  /* ── Main layout ── */
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+  /* Round badge */
+  .round-badge { background:rgba(245,166,35,0.12); border:1.5px solid rgba(245,166,35,0.40); border-radius:100px; padding:14px 36px; margin-bottom:72px; }
+  .round-badge-text { font-size:18px; font-weight:800; letter-spacing:8px; color:rgba(245,166,35,0.85); text-transform:uppercase; }
+
+  /* Logos row */
+  .logos-row { display:flex; align-items:center; justify-content:center; margin-bottom:64px; }
+
+  /* OTT — dominant side */
+  .team-block-ott { display:flex; flex-direction:column; align-items:center; gap:18px; width:390px; }
+  .pick-badge { background:rgba(245,166,35,0.15); border:1.5px solid rgba(245,166,35,0.60); border-radius:8px; padding:6px 18px; margin-bottom:6px; }
+  .pick-badge-text { font-size:14px; font-weight:800; letter-spacing:6px; color:#f5a623; text-transform:uppercase; }
+  .logo-ott { width:300px; height:300px; object-fit:contain; filter:drop-shadow(0 0 48px rgba(245,166,35,0.60)) drop-shadow(0 0 18px rgba(245,166,35,0.35)); }
+  .code-ott { font-family:'Bebas Neue',sans-serif; font-size:88px; letter-spacing:6px; color:#f5a623; line-height:1; text-shadow:0 0 40px rgba(245,166,35,0.45); }
+  .city-ott { font-size:18px; font-weight:700; letter-spacing:5px; color:rgba(245,166,35,0.55); text-transform:uppercase; }
+
+  /* VS divider */
+  .vs-block { display:flex; flex-direction:column; align-items:center; gap:10px; width:80px; }
+  .vs-text { font-family:'Bebas Neue',sans-serif; font-size:44px; color:rgba(255,255,255,0.15); }
+  .vs-line { width:1px; height:140px; background:rgba(255,255,255,0.08); }
+
+  /* BOS — dimmed side */
+  .team-block-bos { display:flex; flex-direction:column; align-items:center; gap:18px; width:310px; opacity:0.40; }
+  .logo-bos { width:200px; height:200px; object-fit:contain; filter:saturate(0.4) brightness(0.7); }
+  .code-bos { font-family:'Bebas Neue',sans-serif; font-size:66px; letter-spacing:5px; color:rgba(255,255,255,0.70); }
+  .city-bos { font-size:16px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+
+  /* H2H record strip */
+  .record-strip { display:flex; align-items:center; gap:0; margin-bottom:60px; border:1px solid rgba(245,166,35,0.25); border-radius:12px; overflow:hidden; }
+  .rec-cell { padding:18px 36px; text-align:center; }
+  .rec-cell.ott { background:rgba(245,166,35,0.10); border-right:1px solid rgba(245,166,35,0.25); }
+  .rec-cell.divider { padding:18px 24px; background:rgba(0,0,0,0.25); border-right:1px solid rgba(255,255,255,0.07); }
+  .rec-cell.bos { background:rgba(255,255,255,0.025); }
+  .rec-val { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; }
+  .rec-val.gold { color:#f5a623; }
+  .rec-val.dim  { color:rgba(255,255,255,0.40); }
+  .rec-val.vs   { color:rgba(255,255,255,0.18); font-size:36px; }
+  .rec-lbl { font-size:12px; font-weight:800; letter-spacing:4px; text-transform:uppercase; margin-top:4px; }
+  .rec-lbl.gold { color:rgba(245,166,35,0.55); }
+  .rec-lbl.dim  { color:rgba(255,255,255,0.22); }
+  .rec-lbl.vs   { color:rgba(255,255,255,0.15); }
+
+  /* Headline */
+  .neon-rule { width:220px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); border-radius:2px; box-shadow:0 0 18px rgba(245,166,35,0.65); margin-bottom:44px; }
+  .headline { font-family:'Bebas Neue',sans-serif; font-size:96px; letter-spacing:3px; color:#fff; text-align:center; line-height:0.90; margin-bottom:22px; padding:0 60px; }
+  .headline span { color:#f5a623; }
+  .subline  { font-size:22px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.32); text-align:center; text-transform:uppercase; }
+
+  .footer { position:absolute; bottom:52px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 80px; z-index:10; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-ott"></div>
+<div class="bg-glow-bos"></div>
+<div class="bg-glow-bottom"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="season">PWHL &#xB7; Season 8</div>
+
+<div class="slide">
+  <div class="round-badge">
+    <div class="round-badge-text">Round 1 &#xB7; PWHL Playoffs 2025&#x2013;26</div>
+  </div>
+
+  <div class="logos-row">
+    <!-- OTT — winner/pick side -->
+    <div class="team-block-ott">
+      <div class="pick-badge"><div class="pick-badge-text">Our Pick</div></div>
+      <img class="logo-ott" src="{{ ott_logo }}" alt="OTT">
+      <div class="code-ott">OTT</div>
+      <div class="city-ott">Ottawa</div>
+    </div>
+
+    <div class="vs-block">
+      <div class="vs-line"></div>
+      <div class="vs-text">VS</div>
+      <div class="vs-line"></div>
+    </div>
+
+    <!-- BOS — dimmed side -->
+    <div class="team-block-bos">
+      <img class="logo-bos" src="{{ bos_logo }}" alt="BOS">
+      <div class="code-bos">BOS</div>
+      <div class="city-bos">Boston</div>
+    </div>
+  </div>
+
+  <!-- H2H regular-season record -->
+  <div class="record-strip">
+    <div class="rec-cell ott">
+      <div class="rec-val gold">3</div>
+      <div class="rec-lbl gold">OTT wins</div>
+    </div>
+    <div class="rec-cell divider">
+      <div class="rec-val vs">&#x2013;</div>
+      <div class="rec-lbl vs">H2H</div>
+    </div>
+    <div class="rec-cell bos">
+      <div class="rec-val dim">1</div>
+      <div class="rec-lbl dim">BOS wins</div>
+    </div>
+  </div>
+
+  <div class="neon-rule"></div>
+  <div class="headline">Will Ottawa<br><span>Charge Forward</span><br>Against the Fleet?</div>
+  <div class="subline">The numbers behind the matchup</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 8 &#xB7; 2025&#x2013;26</div>
+</div>
+</body>
+</html>

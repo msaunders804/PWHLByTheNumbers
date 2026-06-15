@@ -12,6 +12,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from pwhl_btn.db.db_config import get_engine
+from pwhl_btn.ingest.hockeytech import API_BASE, with_auth
 
 engine  = get_engine()
 Session = sessionmaker(bind=engine)
@@ -1226,13 +1227,11 @@ def get_upcoming_schedule(start_date, end_date):
     from datetime import datetime as _dt
 
     # Fetch full season schedule from API
-    params = {
+    params = with_auth({
         "feed": "modulekit", "view": "schedule",
         "season_id": SEASON_ID,
-        "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
-    }
-    resp = _req.get("https://lscluster.hockeytech.com/feed/index.php",
-                    params=params, timeout=15)
+    })
+    resp = _req.get(API_BASE, params=params, timeout=15)
     resp.raise_for_status()
     schedule = resp.json().get("SiteKit", {}).get("Schedule", [])
 
@@ -1345,12 +1344,10 @@ def get_game_to_watch(start_date, end_date):
         # Upcoming games this week — fetch from API since only finals are in DB
         import requests as _req
         from datetime import datetime as _dt2
-        api_params = {
+        api_params = with_auth({
             "feed": "modulekit", "view": "schedule", "season_id": SEASON_ID,
-            "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
-        }
-        api_schedule = _req.get("https://lscluster.hockeytech.com/feed/index.php",
-                                 params=api_params, timeout=15).json()
+        })
+        api_schedule = _req.get(API_BASE, params=api_params, timeout=15).json()
         raw_games = api_schedule.get("SiteKit", {}).get("Schedule", [])
 
         # Build a simple game list with team IDs for scoring
@@ -1885,7 +1882,7 @@ def get_simulation_inputs() -> dict[int, dict]:
     Returns per-team inputs needed to calculate win probability in Monte Carlo.
 
     Inputs per team:
-      - pts_pct       : season points / (games played * 2)
+      - pts_pct       : season points / (games played * 3)
       - rank_score    : raw power ranking score (streak*3 + ppg*20 + last5_gd*1.5)
       - last5_gd      : goal differential in last 5 games
       - home_win_pct  : wins at home / home games played
@@ -1980,7 +1977,7 @@ def get_simulation_inputs() -> dict[int, dict]:
             pts = int(r.pts or 0)
 
             # Points percentage
-            pts_pct = pts / (gp * 2) if gp else 0.0
+            pts_pct = pts / (gp * 3) if gp else 0.0
 
             # Home win %
             home_gp   = int(r.home_gp   or 0)
@@ -2239,3 +2236,251 @@ def get_auto_gold_plan_data(season_id: int = SEASON_ID) -> dict:
         "updated_through": updated_through,
         "standings":       eliminated_teams,
     }
+
+
+# ── Season Recap ───────────────────────────────────────────────────────────────
+
+TEAM_COLORS = {
+    "BOS": "#007A33",
+    "MIN": "#813EA0",
+    "MTL": "#862633",
+    "NY":  "#00b2a9",
+    "OTT": "#c8102e",
+    "TOR": "#00205b",
+    "SEA": "#005c5c",
+    "VAN": "#00843d",
+}
+
+
+def _hex_to_rgba(hex_color: str, alpha: float = 0.3) -> str:
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
+
+def get_all_season_teams(season_id: int = 8) -> list[dict]:
+    """Returns all teams in the season as {team_id, team_code, team_name, logo}."""
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT team_id, team_name, team_code FROM teams
+            WHERE season_id = :sid ORDER BY team_code
+        """), {"sid": season_id}).fetchall()
+        return [{"team_id": r.team_id, "team_code": r.team_code,
+                 "team_name": r.team_name, "logo": _logo_uri(r.team_code)}
+                for r in rows]
+    finally:
+        session.close()
+
+
+def get_season_recap_data(team_code: str, season_id: int = 8) -> dict:
+    """
+    Returns all data needed for the 4-slide season recap for a single team.
+    """
+    session = Session()
+    try:
+        team = session.execute(text("""
+            SELECT team_id, team_name, team_code FROM teams
+            WHERE team_code = :code AND season_id = :sid LIMIT 1
+        """), {"code": team_code, "sid": season_id}).fetchone()
+
+        if not team:
+            return {}
+
+        tid  = team.team_id
+        code = team.team_code
+        tc   = TEAM_COLORS.get(code, "#8c52ff")
+
+        standings = get_standings(season_id)
+        team_row  = next((t for t in standings if t["abbr"] == code), {})
+
+        offense = session.execute(text("""
+            SELECT COALESCE(SUM(s.shots), 0) AS total_shots,
+                   COALESCE(SUM(s.goals), 0) AS total_goals
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_goals = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.goals) AS goals,
+                   SUM(s.assists) AS assists, SUM(s.points) AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY goals DESC, pts DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_points = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.goals) AS goals,
+                   SUM(s.assists) AS assists, SUM(s.points) AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY pts DESC, goals DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        defense = session.execute(text("""
+            SELECT COALESCE(SUM(s.shots_against), 0) AS shots_against,
+                   COALESCE(SUM(s.saves), 0) AS total_saves,
+                   COUNT(CASE WHEN s.goals_against = 0 AND s.decision = 'W' THEN 1 END) AS shutouts,
+                   ROUND(SUM(s.saves) / NULLIF(SUM(s.shots_against), 0), 3) AS sv_pct
+            FROM goalie_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_goalie = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   SUM(CASE WHEN s.decision = 'W' THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN s.goals_against = 0 AND s.decision = 'W' THEN 1 ELSE 0 END) AS shutouts,
+                   ROUND(SUM(s.goals_against) / NULLIF(SUM(s.minutes_played) / 3600.0, 0), 2) AS gaa,
+                   ROUND(SUM(s.saves) / NULLIF(SUM(s.shots_against), 0), 3) AS sv_pct,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM goalie_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name
+            ORDER BY wins DESC, shutouts DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        total_pim = session.execute(text("""
+            SELECT COALESCE(SUM(s.pim), 0) AS total_pim
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_pim = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.pim) AS pim,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY pim DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_pm = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.plus_minus) AS plus_minus,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid
+              AND g.game_status = 'final'
+              AND p.position NOT IN ('G', 'GK')
+            GROUP BY p.player_id, name, p.position
+            ORDER BY plus_minus DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        extra = session.execute(text("""
+            SELECT
+              SUM(CASE WHEN result_type = 'OT' AND (
+                  (home_team_id = :tid AND home_score > away_score) OR
+                  (away_team_id = :tid AND away_score > home_score)) THEN 1 ELSE 0 END) AS ot_wins,
+              SUM(CASE WHEN result_type = 'SO' AND (
+                  (home_team_id = :tid AND home_score > away_score) OR
+                  (away_team_id = :tid AND away_score > home_score)) THEN 1 ELSE 0 END) AS so_wins
+            FROM games
+            WHERE season_id = :sid AND game_status = 'final'
+              AND (home_team_id = :tid OR away_team_id = :tid)
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        def _svp(val) -> str:
+            if val is None:
+                return ".000"
+            return f".{round(float(val) * 1000):03d}"
+
+        hw_str = team_row.get("home_record", "0-0-0")
+        aw_str = team_row.get("away_record", "0-0-0")
+        hw = int(hw_str.split("-")[0]) if hw_str else 0
+        aw = int(aw_str.split("-")[0]) if aw_str else 0
+
+        return {
+            "team_id":         tid,
+            "team_name":       team.team_name,
+            "team_code":       code,
+            "team_logo":       _logo_uri(code),
+            "team_color":      tc,
+            "team_color_dim":  _hex_to_rgba(tc, 0.15),
+            "team_color_glow": _hex_to_rgba(tc, 0.32),
+            # Record
+            "gp":          team_row.get("gp", 0),
+            "wins":        team_row.get("wins", 0),
+            "losses":      team_row.get("losses", 0),
+            "otl":         team_row.get("otl", 0),
+            "points":      team_row.get("points", 0),
+            "record_str":  f"{team_row.get('wins',0)}-{team_row.get('losses',0)}-{team_row.get('otl',0)}",
+            "home_record": hw_str,
+            "away_record": aw_str,
+            "home_wins":   hw,
+            "away_wins":   aw,
+            # Offense
+            "total_shots": int(offense.total_shots or 0),
+            "total_goals": int(offense.total_goals or 0),
+            "top_scorer": {
+                "name":    top_goals.name if top_goals else "—",
+                "pos":     top_goals.position if top_goals else "",
+                "goals":   int(top_goals.goals or 0) if top_goals else 0,
+                "assists": int(top_goals.assists or 0) if top_goals else 0,
+                "pts":     int(top_goals.pts or 0) if top_goals else 0,
+                "gp":      int(top_goals.gp or 0) if top_goals else 0,
+                "photo":   _player_photo_uri(top_goals.name) if top_goals else None,
+            },
+            "top_points_leader": {
+                "name":    top_points.name if top_points else "—",
+                "pos":     top_points.position if top_points else "",
+                "goals":   int(top_points.goals or 0) if top_points else 0,
+                "assists": int(top_points.assists or 0) if top_points else 0,
+                "pts":     int(top_points.pts or 0) if top_points else 0,
+                "gp":      int(top_points.gp or 0) if top_points else 0,
+                "photo":   _player_photo_uri(top_points.name) if top_points else None,
+            },
+            # Defense
+            "shots_against": int(defense.shots_against or 0),
+            "total_saves":   int(defense.total_saves or 0),
+            "shutouts":      int(defense.shutouts or 0),
+            "team_sv_pct":   _svp(defense.sv_pct),
+            "top_goalie": {
+                "name":     top_goalie.name if top_goalie else "—",
+                "wins":     int(top_goalie.wins or 0) if top_goalie else 0,
+                "shutouts": int(top_goalie.shutouts or 0) if top_goalie else 0,
+                "gaa":      f"{float(top_goalie.gaa):.2f}" if top_goalie and top_goalie.gaa else "0.00",
+                "sv_pct":   _svp(top_goalie.sv_pct) if top_goalie else ".000",
+                "gp":       int(top_goalie.gp or 0) if top_goalie else 0,
+                "photo":    _player_photo_uri(top_goalie.name) if top_goalie else None,
+            },
+            # Fun
+            "total_pim": int(total_pim.total_pim or 0),
+            "top_pim": {
+                "name":  top_pim.name if top_pim else "—",
+                "pos":   top_pim.position if top_pim else "",
+                "pim":   int(top_pim.pim or 0) if top_pim else 0,
+                "gp":    int(top_pim.gp or 0) if top_pim else 0,
+                "photo": _player_photo_uri(top_pim.name) if top_pim else None,
+            },
+            "top_plus_minus": {
+                "name":       top_pm.name if top_pm else "—",
+                "pos":        top_pm.position if top_pm else "",
+                "plus_minus": int(top_pm.plus_minus or 0) if top_pm else 0,
+                "pm_str":     f"{int(top_pm.plus_minus or 0):+d}" if top_pm else "+0",
+                "gp":         int(top_pm.gp or 0) if top_pm else 0,
+            },
+            "ot_wins": int(extra.ot_wins or 0) if extra else 0,
+            "so_wins": int(extra.so_wins or 0) if extra else 0,
+        }
+    finally:
+        session.close()

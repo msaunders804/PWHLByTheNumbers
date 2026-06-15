@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Split photo background ──────────────────────────────────────────────── */
+  .bg-split { position:absolute; inset:0; display:flex; z-index:0; }
+
+  .split-half { flex:1; position:relative; overflow:hidden; }
+
+  .bg-photo { width:100%; height:100%; object-fit:cover; object-position:center top; display:block; }
+
+  /* MTL side: full brightness, gold tint at inner edge */
+  .split-left .bg-photo { filter:brightness(0.80) contrast(1.05); }
+  .split-left::after {
+    content:'';
+    position:absolute; inset:0;
+    background:
+      linear-gradient(to right, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%),
+      linear-gradient(to top,   rgba(7,0,15,0.98) 0%, rgba(7,0,15,0.50) 28%, transparent 55%),
+      linear-gradient(to bottom,rgba(7,0,15,0.70) 0%, transparent 20%);
+  }
+
+  /* MIN side: dimmed, purple tint */
+  .split-right .bg-photo { filter:brightness(0.45) saturate(0.7) contrast(1.05); }
+  .split-right::after {
+    content:'';
+    position:absolute; inset:0;
+    background:
+      linear-gradient(to left,  rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.30) 100%),
+      linear-gradient(to top,   rgba(7,0,15,0.98) 0%, rgba(7,0,15,0.50) 28%, transparent 55%),
+      linear-gradient(to bottom,rgba(7,0,15,0.70) 0%, transparent 20%);
+  }
+
+  /* Center glow divider */
+  .center-line {
+    position:absolute; left:50%; top:0; bottom:0; width:2px;
+    transform:translateX(-50%);
+    background:linear-gradient(to bottom,
+      transparent 0%,
+      rgba(245,166,35,0.80) 20%,
+      rgba(245,166,35,0.90) 50%,
+      rgba(245,166,35,0.80) 80%,
+      transparent 100%);
+    box-shadow:0 0 18px rgba(245,166,35,0.70);
+    z-index:3;
+  }
+
+  /* ── Fixed UI layers ─────────────────────────────────────────────────────── */
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:10; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px); z-index:4; pointer-events:none; }
+
+  .brand  { position:absolute; top:36px; left:56px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.50); z-index:10; }
+  .season { position:absolute; top:40px; right:56px; font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.35); text-transform:uppercase; z-index:10; }
+
+  /* ── Content overlay ─────────────────────────────────────────────────────── */
+  .ui { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; }
+
+  /* Seed badge */
+  .seed-badge { margin-top:100px; background:rgba(245,166,35,0.18); border:1.5px solid rgba(245,166,35,0.55); border-radius:100px; padding:12px 32px; }
+  .seed-badge-text { font-size:18px; font-weight:700; letter-spacing:6px; color:#f5a623; text-transform:uppercase; }
+
+  /* Mid: team identifiers floating over photos */
+  .teams-mid { position:absolute; top:340px; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:0 60px; }
+  .team-id { display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .team-logo { width:110px; height:110px; object-fit:contain; filter:drop-shadow(0 0 20px rgba(245,166,35,0.55)); }
+  .team-logo.dim { filter:drop-shadow(0 0 12px rgba(255,255,255,0.15)) brightness(0.7); }
+  .team-code { font-family:'Bebas Neue',sans-serif; font-size:64px; letter-spacing:5px; color:#fff; line-height:1; text-shadow:0 2px 20px rgba(0,0,0,0.80); }
+  .team-code.dim { color:rgba(255,255,255,0.50); }
+  .team-city { font-size:16px; font-weight:700; letter-spacing:4px; color:rgba(255,255,255,0.40); text-transform:uppercase; }
+  .team-city.dim { color:rgba(255,255,255,0.25); }
+
+  /* VS center */
+  .vs-center { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .vs-text { font-family:'Bebas Neue',sans-serif; font-size:48px; color:rgba(255,255,255,0.20); text-shadow:0 0 20px rgba(0,0,0,1); }
+
+  /* Player name strips — bottom of photo area */
+  .player-strips { position:absolute; bottom:560px; left:0; right:0; display:flex; }
+  .player-strip { flex:1; padding:18px 24px; }
+  .player-strip.a { background:linear-gradient(to right, rgba(245,166,35,0.22), rgba(245,166,35,0.06)); border-top:1px solid rgba(245,166,35,0.40); }
+  .player-strip.b { background:linear-gradient(to left,  rgba(140,82,255,0.10), rgba(0,0,0,0.05)); border-top:1px solid rgba(255,255,255,0.10); text-align:right; }
+  .ps-name { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:#fff; line-height:1; }
+  .ps-name.dim { color:rgba(255,255,255,0.45); }
+  .ps-pos { font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(245,166,35,0.70); margin-top:3px; }
+  .ps-pos.dim { color:rgba(255,255,255,0.25); }
+
+  /* Bottom text block */
+  .bottom-block { position:absolute; bottom:0; left:0; right:0; padding:0 72px 70px; text-align:center; }
+  .neon-rule { width:200px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); border-radius:2px; box-shadow:0 0 18px rgba(245,166,35,0.7); margin:0 auto 32px; }
+  .headline { font-family:'Bebas Neue',sans-serif; font-size:108px; letter-spacing:4px; color:#fff; line-height:0.88; margin-bottom:18px; text-shadow:0 4px 30px rgba(0,0,0,0.90); }
+  .headline span { color:#f5a623; }
+  .subline { font-size:22px; font-weight:700; letter-spacing:7px; color:rgba(255,255,255,0.40); text-transform:uppercase; }
+
+  /* Footer */
+  .footer { position:absolute; bottom:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 56px 28px; z-index:10; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:4px; color:rgba(255,255,255,0.18); }
+  .footer-season { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.18); text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<!-- Split photo background -->
+<div class="bg-split">
+  <div class="split-half split-left">
+    <img class="bg-photo" src="{{ poulin_photo }}" alt="Marie-Philip Poulin">
+  </div>
+  <div class="split-half split-right">
+    <img class="bg-photo" src="{{ heise_photo }}" alt="Taylor Heise">
+  </div>
+</div>
+<div class="center-line"></div>
+<div class="bg-scanlines"></div>
+<div class="top-bar"></div>
+<div class="brand">BTN</div>
+<div class="season">PWHL &#xB7; Season 8</div>
+
+<!-- UI overlay -->
+<div class="ui">
+  <div class="seed-badge">
+    <div class="seed-badge-text">1st Seed &#xB7; First Pick</div>
+  </div>
+</div>
+
+<!-- Team identifiers mid-slide -->
+<div class="teams-mid">
+  <div class="team-id">
+    <img class="team-logo" src="{{ mtl_logo }}" alt="MTL">
+    <div class="team-code">MTL</div>
+    <div class="team-city">Montr&#xe9;al</div>
+  </div>
+  <div class="vs-center">
+    <div class="vs-text">VS</div>
+  </div>
+  <div class="team-id" style="align-items:flex-end;">
+    <img class="team-logo dim" src="{{ min_logo }}" alt="MIN">
+    <div class="team-code dim">MIN</div>
+    <div class="team-city dim">Minnesota</div>
+  </div>
+</div>
+
+<!-- Player name strips -->
+<div class="player-strips">
+  <div class="player-strip a">
+    <div class="ps-name">Marie-Philip Poulin</div>
+    <div class="ps-pos">Forward &#xB7; #29</div>
+  </div>
+  <div class="player-strip b">
+    <div class="ps-name dim">Taylor Heise</div>
+    <div class="ps-pos dim">Forward &#xB7; #9</div>
+  </div>
+</div>
+
+<!-- Bottom headline block -->
+<div class="bottom-block">
+  <div class="neon-rule"></div>
+  <div class="headline">MTL PICKS<br><span>MINNESOTA</span></div>
+  <div class="subline">The numbers behind the choice</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 8 &#xB7; 2025&#x2013;26</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); z-index:5; }
+  .bg-glow  { position:absolute; top:25%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.16) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .season { position:absolute; top:40px; right:80px; font-size:17px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.20); text-transform:uppercase; z-index:10; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:108px 80px 72px; }
+
+  .eyebrow  { font-size:15px; font-weight:700; letter-spacing:9px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:10px; }
+  .title    { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.87; color:#fff; letter-spacing:2px; }
+  .title span { color:#f5a623; }
+  .subtitle { font-size:20px; font-weight:600; letter-spacing:5px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:12px; }
+  .rule     { width:100px; height:3px; background:linear-gradient(90deg,#f5a623,transparent); border-radius:2px; margin:22px 0 32px; }
+
+  /* ── Step cards ── */
+  .step { display:flex; gap:28px; align-items:flex-start; margin-bottom:32px; }
+
+  .step-num {
+    flex-shrink:0; width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px;
+  }
+  .n1 { background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.60); }
+  .n2 { background:rgba(140,82,255,0.18);  border:1.5px solid rgba(140,82,255,0.45); color:#8c52ff; }
+  .n3 { background:rgba(140,82,255,0.18);  border:1.5px solid rgba(140,82,255,0.45); color:#8c52ff; }
+  .n4 { background:rgba(245,166,35,0.14);  border:1.5px solid rgba(245,166,35,0.42); color:#f5a623; }
+
+  .step-body { flex:1; }
+  .step-title { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:2px; color:#fff; line-height:1; margin-bottom:8px; }
+  .step-desc  { font-size:20px; font-weight:500; line-height:1.50; color:rgba(255,255,255,0.62); }
+  .step-desc b { color:#fff; font-weight:800; }
+  .step-desc u { text-decoration:none; color:#8c52ff; font-weight:700; }
+  .step-desc s { text-decoration:none; color:#f5a623; font-weight:700; }
+
+  .step-tag {
+    display:inline-flex; align-items:center; gap:10px;
+    margin-top:14px; padding:9px 18px;
+    border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  }
+  .tag-label { font-size:11px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .tag-val   { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; }
+  .tv-white  { color:rgba(255,255,255,0.75); }
+  .tv-purple { color:#8c52ff; }
+  .tv-gold   { color:#f5a623; }
+  .tv-green  { color:#4ade80; }
+  .tv-red    { color:#f87171; }
+
+  /* connector dots between steps */
+  .connector { display:flex; flex-direction:column; align-items:center; gap:4px; margin:0 0 8px 27px; }
+  .dot { width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,0.15); }
+
+  /* ── Footer ── */
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="season">PWHL · Season 8</div>
+
+<div class="slide">
+  <div class="eyebrow">PWHL Playoffs 2025–26</div>
+  <div class="title">HOW WE<br><span>DID THE MATH</span></div>
+  <div class="subtitle">Prediction methodology</div>
+  <div class="rule"></div>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <div class="step-num n1">01</div>
+    <div class="step-body">
+      <div class="step-title">Train on the full season</div>
+      <div class="step-desc">
+        We ran all <b>{{ n_reg_games }} regular-season games</b> through a
+        Dixon-Coles model. Every goal scored and allowed goes in —
+        and out comes an <u>Attack</u> and <u>Defense rating</u>
+        for each team. That gives us a baseline win probability
+        for any matchup before we even look at the playoff opponent.
+      </div>
+      <div class="step-tag">
+        <div class="tag-label">Input</div>
+        <div class="tag-val tv-white">{{ n_reg_games }} games &nbsp;·&nbsp; 6 teams</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <div class="step-num n2">02</div>
+    <div class="step-body">
+      <div class="step-title">Isolate the head-to-head</div>
+      <div class="step-desc">
+        Next we zoom into <b>just the games these two teams
+        played each other</b> this season. One team can
+        consistently over- or under-perform against a specific
+        opponent even if their overall record looks similar —
+        that's the signal a full-season model misses.
+      </div>
+      <div class="step-tag">
+        <div class="tag-label">{{ ex_matchup }} H2H</div>
+        <div class="tag-val tv-purple">{{ ex_h2h_games }} games analysed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+  <!-- Step 3 -->
+  <div class="step">
+    <div class="step-num n3">03</div>
+    <div class="step-body">
+      <div class="step-title">Bayesian update</div>
+      <div class="step-desc">
+        The season model is our <u>prior</u> — the best guess
+        from a big sample. The H2H games are new evidence.
+        Bayesian math blends them, giving the season
+        <b>10× more weight</b> than the {{ ex_h2h_games }}-game
+        H2H sample. The result: a probability that reflects
+        <s>both</s>, not just one.
+      </div>
+      <div class="step-tag">
+        <div class="tag-label">{{ ex_team }} · season &rarr; updated</div>
+        <div class="tag-val tv-purple">{{ ex_mle_pct }}% &nbsp;&rarr;&nbsp; {{ ex_bayes_pct }}%
+          &nbsp;<span class="tag-val {% if ex_shift >= 0 %}tv-green{% else %}tv-red{% endif %}" style="font-size:20px;">({% if ex_shift >= 0 %}+{% endif %}{{ ex_shift }}pp)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+  <!-- Step 4 -->
+  <div class="step">
+    <div class="step-num n4">04</div>
+    <div class="step-body">
+      <div class="step-title">Simulate the series</div>
+      <div class="step-desc">
+        Using updated per-game probabilities and the
+        <b>2-2-1 home/away schedule</b>, we play out the
+        best-of-5 series <s>{{ n_sims_fmt }} times</s>.
+        The series win percentage is simply how often
+        each team won across all those runs.
+        No magic formula — just a lot of math.
+      </div>
+      <div class="step-tag">
+        <div class="tag-label">Simulations run</div>
+        <div class="tag-val tv-gold">{{ n_sims_fmt }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

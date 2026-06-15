@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:20%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.18) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:140px; left:50%; transform:translateX(-50%); width:900px; height:500px; background:radial-gradient(ellipse,rgba(245,166,35,0.08) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:116px 80px 76px; }
+
+  /* Header */
+  .eyebrow { font-size:17px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:6px; }
+  .title   { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .neon-rule { width:110px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:20px 0 32px; }
+
+  /* Team logos row */
+  .teams-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; }
+  .t-block { display:flex; align-items:center; gap:18px; }
+  .t-block.right { flex-direction:row-reverse; }
+  .t-logo { width:96px; height:96px; object-fit:contain; }
+  .t-code { font-family:'Bebas Neue',sans-serif; font-size:64px; letter-spacing:4px; color:#fff; line-height:1; }
+  .t-name { font-size:15px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .t-vs   { font-family:'Bebas Neue',sans-serif; font-size:40px; color:rgba(255,255,255,0.15); }
+
+  /* Win probability hero */
+  .winprob-section { margin-bottom:28px; }
+  .winprob-label { font-size:15px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:12px; }
+  .winprob-bar-wrap { position:relative; width:100%; height:72px; border-radius:14px; overflow:hidden; background:rgba(255,255,255,0.06); margin-bottom:12px; }
+  .winprob-bar-a { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#5e17eb,#8c52ff); border-radius:14px 0 0 14px; display:flex; align-items:center; padding-left:20px; }
+  .winprob-bar-b { position:absolute; right:0; top:0; bottom:0; display:flex; align-items:center; justify-content:flex-end; padding-right:20px; }
+  .winprob-pct-a { font-family:'Bebas Neue',sans-serif; font-size:44px; color:#fff; letter-spacing:1px; }
+  .winprob-pct-b { font-family:'Bebas Neue',sans-serif; font-size:36px; color:rgba(255,255,255,0.35); letter-spacing:1px; }
+  .winprob-names  { display:flex; justify-content:space-between; }
+  .wpn { font-size:14px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.30); text-transform:uppercase; }
+  .wpn.hi { color:rgba(140,82,255,0.80); }
+
+  /* CI badge */
+  .ci-row { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  .ci-badge { background:rgba(140,82,255,0.12); border:1px solid rgba(140,82,255,0.30); border-radius:10px; padding:10px 20px; }
+  .ci-label { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .ci-value { font-family:'Bebas Neue',sans-serif; font-size:30px; color:#8c52ff; letter-spacing:1px; }
+
+  /* Series length */
+  .section-label { font-size:15px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:14px; }
+  .len-bars { display:flex; gap:12px; margin-bottom:32px; }
+  .len-bar-wrap { flex:1; }
+  .len-bar-bg { width:100%; height:160px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:12px; overflow:hidden; position:relative; display:flex; align-items:flex-end; }
+  .len-bar-fill { width:100%; background:linear-gradient(to top,rgba(94,23,235,0.70),rgba(140,82,255,0.25)); border-radius:0 0 10px 10px; }
+  .len-bar-fill.gold { background:linear-gradient(to top,rgba(245,166,35,0.60),rgba(245,166,35,0.15)); }
+  .len-bar-label { text-align:center; margin-top:10px; }
+  .len-games { font-family:'Bebas Neue',sans-serif; font-size:52px; color:#fff; line-height:1; }
+  .len-pct   { font-size:20px; font-weight:700; color:rgba(255,255,255,0.45); letter-spacing:2px; }
+  .len-sub   { font-size:13px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.22); text-transform:uppercase; }
+
+  /* Expected goals */
+  .xg-section { margin-bottom:0; }
+  .xg-row { display:flex; gap:14px; }
+  .xg-card { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:22px 20px; }
+  .xg-card.hi { border-color:rgba(245,166,35,0.22); background:rgba(245,166,35,0.04); }
+  .xg-venue { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:14px; }
+  .xg-teams-row { display:flex; justify-content:space-between; align-items:center; }
+  .xg-team { text-align:center; }
+  .xg-lambda { font-family:'Bebas Neue',sans-serif; font-size:64px; line-height:1; color:#fff; }
+  .xg-lambda.fav { color:#f5a623; }
+  .xg-code { font-size:14px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-top:4px; }
+  .xg-divider { font-family:'Bebas Neue',sans-serif; font-size:28px; color:rgba(255,255,255,0.12); }
+
+  .spacer { flex:1; }
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+  .model-note { font-size:13px; font-weight:700; letter-spacing:2px; color:rgba(140,82,255,0.55); text-transform:uppercase; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div><div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ badge_label | default('Series Prediction') }}</div></div>
+
+<div class="slide">
+  <div class="eyebrow">{{ eyebrow | default('2025–26 Playoffs · Best-of-5') }}</div>
+  <div class="title">{{ team_a }} vs {{ team_b }}</div>
+  <div class="neon-rule"></div>
+
+  <div class="teams-row">
+    <div class="t-block">
+      <img class="t-logo" src="{{ logo_a }}" alt="{{ team_a }}">
+      <div>
+        <div class="t-code">{{ team_a }}</div>
+        <div class="t-name">{{ name_a }}</div>
+      </div>
+    </div>
+    <div class="t-vs">VS</div>
+    <div class="t-block right">
+      <img class="t-logo" src="{{ logo_b }}" alt="{{ team_b }}" style="opacity:{{ '1.0' if favored == team_b else '0.60' }};">
+      <div style="text-align:right;">
+        <div class="t-code" style="color:{{ '#fff' if favored == team_b else 'rgba(255,255,255,0.45)' }};">{{ team_b }}</div>
+        <div class="t-name">{{ name_b }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Win probability bar -->
+  <div class="winprob-section">
+    <div class="winprob-label">Series Win Probability</div>
+    <div class="winprob-bar-wrap">
+      <div class="winprob-bar-a" style="width:{{ p_a_pct }}%;">
+        <div class="winprob-pct-a">{{ p_a_pct }}%</div>
+      </div>
+      <div class="winprob-bar-b">
+        <div class="winprob-pct-b">{{ p_b_pct }}%</div>
+      </div>
+    </div>
+    <div class="winprob-names">
+      <div class="wpn hi">{{ team_a }}</div>
+      <div class="wpn">{{ team_b }}</div>
+    </div>
+  </div>
+
+  <!-- CI -->
+  <div class="ci-row">
+    <div class="ci-badge">
+      <div class="ci-label">90% Credible Interval · {{ team_a }}</div>
+      <div class="ci-value">{{ ci_low }}% – {{ ci_high }}%</div>
+    </div>
+  </div>
+
+  <!-- Series length distribution -->
+  <div class="section-label">Series Length Distribution</div>
+  <div class="len-bars">
+    {% for g in lengths %}
+    <div class="len-bar-wrap">
+      <div class="len-bar-bg">
+        <div class="len-bar-fill {% if g.pct == max_pct %}gold{% endif %}" style="height:{{ g.bar_h }}%;"></div>
+      </div>
+      <div class="len-bar-label">
+        <div class="len-games">{{ g.games }}</div>
+        <div class="len-pct">{{ g.pct }}%</div>
+        <div class="len-sub">games</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Expected goals -->
+  <div class="section-label">Expected Goals per Game (Bayesian λ)</div>
+  <div class="xg-row">
+    <div class="xg-card hi">
+      <div class="xg-venue">{{ team_a }} Home</div>
+      <div class="xg-teams-row">
+        <div class="xg-team">
+          <div class="xg-lambda fav">{{ lam_a_home }}</div>
+          <div class="xg-code">{{ team_a }}</div>
+        </div>
+        <div class="xg-divider">–</div>
+        <div class="xg-team">
+          <div class="xg-lambda">{{ lam_b_at_a }}</div>
+          <div class="xg-code">{{ team_b }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="xg-card">
+      <div class="xg-venue">{{ team_b }} Home</div>
+      <div class="xg-teams-row">
+        <div class="xg-team">
+          <div class="xg-lambda {% if lam_b_home_val > lam_a_at_b_val %}fav{% endif %}">{{ lam_b_home }}</div>
+          <div class="xg-code">{{ team_b }}</div>
+        </div>
+        <div class="xg-divider">–</div>
+        <div class="xg-team">
+          <div class="xg-lambda {% if lam_a_at_b_val > lam_b_home_val %}fav{% endif %}">{{ lam_a_at_b }}</div>
+          <div class="xg-code">{{ team_a }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

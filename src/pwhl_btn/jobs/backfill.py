@@ -10,27 +10,23 @@ Usage:
 
 import os, sys, time, argparse, requests
 from datetime import datetime, date
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from pwhl_btn.db.models import Base, Game, Team, Player, PlayerGameStats, GoalieGameStats
 
-from pwhl_btn.db.db_config import get_db_url
-DATABASE_URL = get_db_url()
+from pwhl_btn.db.db_config import get_db_url, get_engine
+from pwhl_btn.ingest.hockeytech import API_BASE, with_auth
 
-SEASON_ID   = 8
-API_BASE    = "https://lscluster.hockeytech.com/feed/index.php"
-API_KEY     = "446521baf8c38984"
-CLIENT_CODE = "pwhl"
+SEASON_ID   = 9
 RATE_LIMIT  = 0.5
 
-engine  = create_engine(DATABASE_URL, pool_pre_ping=True)
+engine  = get_engine(pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 
 
 # ── API helpers ────────────────────────────────────────────────────────────────
 def api_get(params: dict) -> dict:
-    params.update({"key": API_KEY, "client_code": CLIENT_CODE, "fmt": "json"})
-    r = requests.get(API_BASE, params=params, timeout=15)
+    r = requests.get(API_BASE, params=with_auth(params), timeout=15)
     r.raise_for_status()
     return r.json()
 
