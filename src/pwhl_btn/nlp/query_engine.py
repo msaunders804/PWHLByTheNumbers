@@ -47,8 +47,12 @@ games
   game_id INT PK, season_id INT, date DATE,
   home_team_id INT, away_team_id INT,
   home_score INT, away_score INT,
-  result_type VARCHAR,   -- 'REG' | 'OT' | 'SO'
-  game_status VARCHAR    -- 'final' for completed games
+  result_type VARCHAR,       -- 'REG' | 'OT' | 'SO'
+  game_status VARCHAR,       -- 'final' for completed games
+  venue VARCHAR,             -- arena name where the game was played
+  attendance INT,            -- crowd size (NULL if not recorded)
+  home_score_p1 INT, home_score_p2 INT, home_score_p3 INT,
+  away_score_p1 INT, away_score_p2 INT, away_score_p3 INT
 
 player_game_stats
   game_id INT, player_id INT, team_id INT,
@@ -56,15 +60,18 @@ player_game_stats
   shots INT, plus_minus INT, pim INT, toi_seconds INT
 
 goalie_game_stats
-  game_id INT, team_id INT,
+  game_id INT, goalie_id INT, team_id INT,
   saves INT, shots_against INT, goals_against INT, toi INT
+  -- toi is in minutes (e.g. 60 = full game)
 
 teams
   team_id INT PK, team_code VARCHAR, team_name VARCHAR, season_id INT
   -- team_code values: BOS MIN MTL TOR OTT NY VAN SEA
 
 players
-  player_id INT PK, first_name VARCHAR, last_name VARCHAR, position VARCHAR
+  player_id INT PK, first_name VARCHAR, last_name VARCHAR,
+  position VARCHAR,          -- 'F' | 'D' | 'G'
+  avg_toi_seconds INT        -- season-average time on ice in seconds
 
 ## Rules
 1. Default to season_id = 8 unless the user specifies otherwise.
@@ -77,6 +84,8 @@ players
 6. Return ONLY the raw SQL query — no markdown fences, no explanation,
    no trailing semicolon.
 7. Only generate SELECT statements.
+8. When asked about period scoring, use home_score_p1/p2/p3 and away_score_p1/p2/p3.
+9. goalie_game_stats.toi is in minutes; multiply by 60 to compare against toi_seconds.
 """
 
 

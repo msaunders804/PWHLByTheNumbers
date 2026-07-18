@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=540">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 540px; height: 540px;
+    background: #08010f;
+    font-family: 'Barlow Condensed', sans-serif;
+    overflow: hidden; position: relative;
+  }
+
+  /* ── Background layers ── */
+  .bg-gradient {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 15% 15%, rgba(94,23,235,0.45) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 85%, rgba(140,82,255,0.30) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 10%, rgba(140,82,255,0.18) 0%, transparent 35%),
+      radial-gradient(ellipse at 15% 90%, rgba(94,23,235,0.18) 0%, transparent 35%),
+      linear-gradient(160deg, #0d0020 0%, #08010f 55%, #0a0018 100%);
+  }
+
+  .bg-noise {
+    position: absolute; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    background-size: 200px 200px; opacity: 0.5; mix-blend-mode: overlay;
+  }
+
+  /* ── Grid lines (stat-chart aesthetic) ── */
+  .grid-lines {
+    position: absolute; inset: 0; z-index: 2;
+    background-image:
+      linear-gradient(rgba(140,82,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140,82,255,0.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  /* ── Corner accents ── */
+  .corner {
+    position: absolute; z-index: 4;
+    width: 30px; height: 30px;
+  }
+  .corner-tl { top: 24px; left: 24px; border-top: 2px solid #8c52ff; border-left: 2px solid #8c52ff; }
+  .corner-tr { top: 24px; right: 24px; border-top: 2px solid #8c52ff; border-right: 2px solid #8c52ff; }
+  .corner-bl { bottom: 24px; left: 24px; border-bottom: 2px solid #8c52ff; border-left: 2px solid #8c52ff; }
+  .corner-br { bottom: 24px; right: 24px; border-bottom: 2px solid #8c52ff; border-right: 2px solid #8c52ff; }
+
+  /* ── Top bar ── */
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 10;
+    background: linear-gradient(to right, #5e17eb, #8c52ff, #c49fff, #8c52ff, #5e17eb);
+  }
+
+  /* ── Main layout ── */
+  .slide {
+    position: relative; z-index: 10;
+    width: 540px; height: 540px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    text-align: center;
+  }
+
+  /* ── Monogram ring ── */
+  .monogram-wrap {
+    position: relative;
+    width: 130px; height: 130px;
+    margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .monogram-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(140,82,255,0.35);
+    background: radial-gradient(ellipse at center, rgba(94,23,235,0.25) 0%, rgba(8,1,15,0.6) 100%);
+    box-shadow: 0 0 30px rgba(140,82,255,0.25), inset 0 0 20px rgba(94,23,235,0.15);
+  }
+  .monogram-ring::before {
+    content: '';
+    position: absolute; inset: 4px;
+    border-radius: 50%;
+    border: 1px solid rgba(140,82,255,0.15);
+  }
+  .monogram {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 55px; letter-spacing: 3px;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(140,82,255,0.6);
+    line-height: 1;
+    position: relative; z-index: 2;
+  }
+
+  /* ── Wordmark ── */
+  .wordmark-pwhl {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 6px; color: #8c52ff;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .wordmark-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px; line-height: 0.88;
+    letter-spacing: 4px;
+    color: #ffffff;
+    text-shadow: 0 2px 15px rgba(140,82,255,0.3);
+    margin-bottom: 3px;
+  }
+  .wordmark-sub {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 50px; line-height: 0.88;
+    letter-spacing: 4px;
+    color: #8c52ff;
+    text-shadow: 0 2px 20px rgba(140,82,255,0.5);
+    margin-bottom: 18px;
+  }
+
+  /* ── Rule ── */
+  .rule {
+    width: 110px; height: 1px;
+    background: linear-gradient(90deg, transparent, #8c52ff, transparent);
+    margin-bottom: 18px;
+  }
+
+  /* ── Tagline ── */
+  .tagline {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── Stat pills ── */
+  .stat-pills {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 0;
+  }
+  .pill {
+    background: rgba(140,82,255,0.10);
+    border: 1px solid rgba(140,82,255,0.30);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; color: #c49fff;
+    text-transform: uppercase;
+  }
+  .pill-dot {
+    width: 3px; height: 3px;
+    border-radius: 50%; background: rgba(140,82,255,0.4);
+  }
+
+  /* ── Handle ── */
+  .handle {
+    position: absolute; bottom: 34px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; color: rgba(255,255,255,0.20);
+    text-transform: uppercase;
+  }
+
+  /* ── Watermark ── */
+  .watermark {
+    position: absolute; z-index: 3;
+    bottom: -40px; right: -15px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 240px; line-height: 1;
+    color: rgba(140,82,255,0.03);
+    pointer-events: none;
+    letter-spacing: -5px;
+  }
+</style>
+</head>
+<body>
+<div class="bg-gradient"></div>
+<div class="bg-noise"></div>
+<div class="grid-lines"></div>
+<div class="top-bar"></div>
+
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="watermark">BTN</div>
+
+<div class="slide">
+
+  <div class="monogram-wrap">
+    <div class="monogram-ring"></div>
+    <div class="monogram">BTN</div>
+  </div>
+
+  <div class="wordmark-pwhl">PWHL</div>
+  <div class="wordmark-main">BY THE</div>
+  <div class="wordmark-sub">NUMBERS</div>
+
+  <div class="rule"></div>
+
+  <div class="tagline">Data · Analytics · Storytelling</div>
+
+  <div class="stat-pills">
+    <div class="pill">Monte Carlo</div>
+    <div class="pill-dot"></div>
+    <div class="pill">NLP</div>
+    <div class="pill-dot"></div>
+    <div class="pill">ML</div>
+  </div>
+
+  <div class="handle">@bythenumberssports</div>
+
+</div>
+</body>
+</html>

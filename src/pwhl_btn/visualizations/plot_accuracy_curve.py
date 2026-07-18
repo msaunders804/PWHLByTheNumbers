@@ -2,13 +2,15 @@
 plot_accuracy_curve.py — Spearman rank correlation vs season progress chart.
 
 Season 7 hardcoded (complete, values fixed).
+Season 8 computed live from the DB (season complete) via run_validation at each
+snapshot. Requires PWHL_DATABASE_URL to be set.
 
 Outputs:
     output/accuracy_curve.png
     output/accuracy_curve.svg
 
-Run from: src/pwhl_btn/
-    python visualizations/plot_accuracy_curve.py
+Run from repo root:
+    PYTHONPATH=src python src/pwhl_btn/visualizations/plot_accuracy_curve.py
 """
 
 from pathlib import Path
@@ -17,9 +19,14 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 
+from pwhl_btn.analytics.monte_carlo import run_validation
+
 PWHL_BTN_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR   = PWHL_BTN_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
+
+S8_SEASON_ID = 8
+SNAPSHOT_PCTS = [33, 50, 67, 80, 90]
 
 # ── Season 7 — hardcoded (season complete) ────────────────────────────────────
 
@@ -32,12 +39,30 @@ S7_DATA = [
     (90,  0.943, True),
 ]
 
+# ── Season 8 — computed live from the DB (season complete) ────────────────────
+
+print("  Running Season 8 validation at each snapshot...")
+S8_DATA = []
+for pct in SNAPSHOT_PCTS:
+    result = run_validation(season_id=S8_SEASON_ID, game_pct=pct / 100, verbose=False)
+    if not result:
+        print(f"    {pct}% — skipped (no data)")
+        continue
+    rho = result["spearman"]
+    sig = result["p_value"] < 0.05
+    S8_DATA.append((pct, rho, sig))
+    print(f"    {pct}% — rho={rho:.3f}  p={result['p_value']:.3f}  {'*' if sig else ''}")
+
+if not S8_DATA:
+    raise SystemExit("  No Season 8 data returned — is season_id=8 populated in the DB?")
+
 # ── BTN brand colors ──────────────────────────────────────────────────────────
 
 BG       = "#ffffff"
 FG       = "#000000"
 GRID     = "#dddddd"
-S7_COLOR = "#8c52ff"
+S7_COLOR = "#8c52ff"   # purple — Season 7
+S8_COLOR = "#ff8c42"   # orange — Season 8 (colorblind-safe pair with purple)
 
 # ── Figure setup ──────────────────────────────────────────────────────────────
 
@@ -100,12 +125,35 @@ for x, y in s7_sig:
     ax.annotate(f"rho={y:.3f}", xy=(x, y), xytext=(dx, dy),
                 textcoords="offset points", color=S7_COLOR, fontsize=12.5)
 
+# ── Season 8 ──────────────────────────────────────────────────────────────────
+
+s8_all = sorted(S8_DATA, key=lambda p: p[0])
+ax.plot([x for x, _, _ in s8_all], [y for _, y, _ in s8_all],
+        color=S8_COLOR, linewidth=2.2, linestyle="-",
+        zorder=4, label="Season 8 - validation")
+
+# Labels placed below the S8 line to avoid colliding with S7 labels above.
+for x, y, sig in s8_all:
+    ax.plot(x, y, "o", color=S8_COLOR, markersize=8 if sig else 7,
+            markerfacecolor=S8_COLOR if sig else BG,
+            markeredgewidth=1.5, zorder=5)
+    ax.annotate(f"rho={y:.3f}", xy=(x, y), xytext=(5, -16),
+                textcoords="offset points", color=S8_COLOR,
+                fontsize=12.5 if sig else 12,
+                alpha=1.0 if sig else 0.65)
+
 # ── Legend ────────────────────────────────────────────────────────────────────
 
 handles = [
     mlines.Line2D([], [], color=S7_COLOR, linewidth=2.2, linestyle="-",
                   marker="o", markersize=7, markerfacecolor=S7_COLOR,
-                  label="Season 7 — solid: p < 0.05  (hollow markers: not significant)"),
+                  label="Season 7 (6 teams)"),
+    mlines.Line2D([], [], color=S8_COLOR, linewidth=2.2, linestyle="-",
+                  marker="o", markersize=7, markerfacecolor=S8_COLOR,
+                  label="Season 8 (8 teams)"),
+    mlines.Line2D([], [], color=FG, linewidth=0, marker="o", markersize=7,
+                  markerfacecolor=BG, markeredgecolor=FG, markeredgewidth=1.5,
+                  label="hollow = not significant (p ≥ 0.05)"),
 ]
 ax.legend(handles=handles, loc="lower right", fontsize=9,
           facecolor="#f5f5f5", edgecolor=GRID,

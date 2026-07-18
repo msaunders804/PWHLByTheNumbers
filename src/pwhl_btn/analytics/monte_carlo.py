@@ -559,10 +559,15 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
             "p_value":  float(pval),
             "teams": {
                 team_code_map.get(tid, str(tid)): {
-                    "pred_rank":   pred_rank[tid],
-                    "actual_rank": actual_rank[tid],
-                    "pred_pts":    round(mean(pts_accumulator[tid]), 1),
-                    "actual_pts":  actual_pts[tid],
+                    "pred_rank":       pred_rank[tid],
+                    "actual_rank":     actual_rank[tid],
+                    "pred_pts":        round(mean(pts_accumulator[tid]), 1),
+                    "pred_pts_low":    sorted(pts_accumulator[tid])[int(N * 0.10)],
+                    "pred_pts_high":   sorted(pts_accumulator[tid])[int(N * 0.90)],
+                    "actual_pts":      actual_pts[tid],
+                    "playoff_pct":     round(playoff_counts[tid] / N * 100, 1),
+                    "snapshot_pts":    current_pts[tid],
+                    "games_remaining": teams_simple[tid]["games_remaining"],
                 }
                 for tid in tids_sorted
             },

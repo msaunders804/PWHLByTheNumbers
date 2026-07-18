@@ -1,8 +1,9 @@
 """
-plot_playoff_probs.py — Season 8 playoff qualification probability chart.
+plot_playoff_probs.py — Season 8 playoff forecast at 67% vs actual outcome.
 
-Horizontal bar chart showing each team's Monte Carlo-derived probability of
-finishing in the top 4 (playoff spot), based on current standings.
+Horizontal bar chart of each team's Monte Carlo top-4 probability computed at
+the 67% snapshot of Season 8, annotated with whether the team *actually*
+finished in the top 4. Validates the mid-season forecast against reality.
 
 Outputs:
     output/playoff_probs.png
@@ -22,35 +23,39 @@ PWHL_BTN_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR   = PWHL_BTN_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-from pwhl_btn.analytics.monte_carlo import run_simulation
+from pwhl_btn.analytics.monte_carlo import run_validation
+
+S8_SEASON_ID = 8
+SNAPSHOT_PCT = 0.67
+PLAYOFF_SPOTS = 4
 
 # ── Brand colors ──────────────────────────────────────────────────────────────
 
 BG           = "#ffffff"
 FG           = "#000000"
 GRID         = "#dddddd"
-BAR_IN       = "#8c52ff"   # top 4 — in playoff position
-BAR_OUT      = "#d0d0d0"   # 5th–8th — out
+BAR_IN       = "#8c52ff"   # predicted top 4 — in playoff position
+BAR_OUT      = "#d0d0d0"   # predicted 5th–8th — out
 BAR_EDGE_IN  = "#8c52ff"
 BAR_EDGE_OUT = "#aaaaaa"
 LINE_COLOR   = "#ff6b6b"   # 50% coin-flip line
 
-# ── Run simulation ─────────────────────────────────────────────────────────────
+# ── Run 67% snapshot validation ────────────────────────────────────────────────
 
-print("  Running Monte Carlo simulation...")
-results = run_simulation()
+print(f"  Running Season {S8_SEASON_ID} validation at {SNAPSHOT_PCT:.0%} snapshot...")
+result = run_validation(season_id=S8_SEASON_ID, game_pct=SNAPSHOT_PCT, verbose=False)
+if not result or not result.get("teams"):
+    raise SystemExit(f"  No data for season_id={S8_SEASON_ID} — is it populated in the DB?")
 
-# Sort teams by playoff probability descending
-teams = sorted(results.values(), key=lambda t: t["playoff_pct"], reverse=True)
+# result["teams"] is keyed by team_code → {pred_rank, actual_rank, playoff_pct, ...}
+team_rows = [{"team_code": code, **vals} for code, vals in result["teams"].items()]
+
+# Sort by predicted playoff probability descending
+teams = sorted(team_rows, key=lambda t: t["playoff_pct"], reverse=True)
 n = len(teams)
 
-labels   = [t["team_code"]    for t in teams]
-probs    = [t["playoff_pct"]  for t in teams]
-cur_pts  = [t["current_pts"]  for t in teams]
-gp_rem   = [t["games_remaining"] for t in teams]
-proj_pts = [t["proj_pts_mean"] for t in teams]
-
-PLAYOFF_SPOTS = 4
+labels = [t["team_code"]   for t in teams]
+probs  = [t["playoff_pct"] for t in teams]
 
 # ── Figure ────────────────────────────────────────────────────────────────────
 
@@ -61,9 +66,10 @@ ax.set_facecolor(BG)
 y_pos = list(range(n))
 
 for i, (team, prob) in enumerate(zip(teams, probs)):
-    in_playoffs = i < PLAYOFF_SPOTS
-    color       = BAR_IN  if in_playoffs else BAR_OUT
-    edge        = BAR_EDGE_IN if in_playoffs else BAR_EDGE_OUT
+    predicted_in = i < PLAYOFF_SPOTS   # top 4 by predicted prob
+
+    color = BAR_IN  if predicted_in else BAR_OUT
+    edge  = BAR_EDGE_IN if predicted_in else BAR_EDGE_OUT
 
     ax.barh(i, prob, height=0.62, color=color,
             edgecolor=edge, linewidth=0.8, zorder=2)
@@ -74,11 +80,6 @@ for i, (team, prob) in enumerate(zip(teams, probs)):
     ax.text(label_x, i, f"{prob:.1f}%",
             va="center", ha=ha, color=FG,
             fontsize=10.5, fontweight="600", zorder=3)
-
-    # Right-side annotation: pts + games remaining
-    ax.text(102, i,
-            f"{team['current_pts']} pts  |  {team['games_remaining']} GP left",
-            va="center", ha="left", color="#888888", fontsize=8.5)
 
 # Playoff cutoff line (horizontal, between 4th and 5th)
 if n > PLAYOFF_SPOTS:
@@ -112,19 +113,29 @@ ax.set_axisbelow(True)
 
 # ── Labels & title ────────────────────────────────────────────────────────────
 
-ax.set_xlabel("Probability of finishing Top 4",
+ax.set_xlabel("Predicted probability of finishing Top 4  (67% snapshot)",
               color="#888888", fontsize=10, labelpad=8)
+
+# Count correct forecasts (predicted Top-4 vs actual Top-4)
+hits = sum(1 for i, t in enumerate(teams)
+           if (i < PLAYOFF_SPOTS) == (t["actual_rank"] <= PLAYOFF_SPOTS))
+
+# Bold title (method) with a subtitle reporting accuracy vs final standings
 ax.set_title(
-    "25-26 Season Playoff Qualification Probabilities (67% Snapshot)",
-    color=FG, fontsize=16, fontweight="500", pad=14, loc="center",
+    "Monte Carlo Playoff Prediction @ 67% of the Season",
+    color=FG, fontsize=15, fontweight="600", pad=24, loc="center",
 )
+ax.text(0.5, 1.035,
+        f"{hits}/{n} correct with Season Final Results",
+        transform=ax.transAxes, ha="center", va="bottom",
+        color="#888888", fontsize=10)
 fig.text(0.99, 0.01, "ByTheNumbers · PWHL Analytics",
          ha="right", va="bottom", color="#444444", fontsize=7.5)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 
 plt.tight_layout(pad=1.4)
-plt.subplots_adjust(right=0.78)   # make room for right-side annotations
+plt.subplots_adjust(right=0.9)   # breathing room at the 100% edge
 
 png_path = OUTPUT_DIR / "playoff_probs.png"
 svg_path = OUTPUT_DIR / "playoff_probs.svg"

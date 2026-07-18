@@ -1,8 +1,12 @@
 """
-plot_predicted_vs_actual.py — Predicted vs Actual Season 7 Standings.
+plot_predicted_vs_actual.py — Model calibration: predicted vs actual final points.
 
-Scatter plots (one per snapshot) showing how the model's predicted final rank
-compares to the actual final rank for each PWHL team.
+Calibration scatter. For each team the model projects a final-points distribution
+from the 67% snapshot; this plots the projected mean (x) against the actual final
+points (y), one dot per team, for Season 8 (8 teams).
+Horizontal bars show each team's 10–90% projection interval, so the fraction of
+dots whose interval crosses the 45° line measures how well-calibrated the model's
+uncertainty is (a true 10–90% interval should contain the outcome ~80% of the time).
 
 Outputs:
     output/predicted_vs_actual.png
@@ -17,157 +21,130 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
-import numpy as np
+
+from pwhl_btn.analytics.monte_carlo import run_validation
 
 PWHL_BTN_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR   = PWHL_BTN_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-from pwhl_btn.analytics.monte_carlo import run_validation
-
 # ── Config ────────────────────────────────────────────────────────────────────
 
-S7_SEASON_ID = 5   # season_id 5 = PWHL Season 7
-SNAPSHOTS    = [
-    (0.67, "67% of Season"),
+SNAPSHOT_PCT = 0.67
+SEASONS = [
+    # (season_id, legend label, color)
+    (8, "Season 8 (8 teams)", "#8c52ff"),   # purple
 ]
 
-# BTN brand colors
-BG       = "#ffffff"
-FG       = "#000000"
-GRID     = "#dddddd"
-ACCENT   = "#8c52ff"
-DOT_GOOD = "#8c52ff"   # on or near diagonal
-DOT_BAD  = "#ff6b6b"   # far from diagonal
-DIAG     = "#aaaaaa"
+# BTN brand palette
+BG   = "#ffffff"
+FG   = "#000000"
+GRID = "#dddddd"
+DIAG = "#aaaaaa"
 
 # ── Fetch data ─────────────────────────────────────────────────────────────────
 
-print("  Running Season 7 validation at each snapshot...")
-snapshot_results = []
+series = []   # list of (label, color, teams_dict)
+for season_id, label, color in SEASONS:
+    print(f"  Running {label} validation at {SNAPSHOT_PCT:.0%} snapshot...")
+    result = run_validation(season_id=season_id, game_pct=SNAPSHOT_PCT, verbose=False)
+    if not result or not result.get("teams"):
+        print(f"    skipped (no data for season_id={season_id})")
+        continue
+    series.append((label, color, result["teams"]))
+    print(f"    rho={result['spearman']:.3f}  p={result['p_value']:.3f}")
 
-for pct, label in SNAPSHOTS:
-    print(f"    {label} ({pct:.0%})...")
-    result = run_validation(season_id=S7_SEASON_ID, game_pct=pct, verbose=False)
-    if result and result.get("teams"):
-        snapshot_results.append((label, pct, result))
-        print(f"      rho={result['spearman']:.3f}  p={result['p_value']:.3f}")
-    else:
-        print(f"      skipped (no data)")
-
-if not snapshot_results:
-    print("  No data returned — is season_id=5 (Season 7) in the DB?")
-    raise SystemExit(1)
+if not series:
+    raise SystemExit("  No data returned — are season_id=5 and season_id=8 in the DB?")
 
 # ── Figure ────────────────────────────────────────────────────────────────────
 
-n_plots = len(snapshot_results)
-fig, axes = plt.subplots(1, n_plots, figsize=(4.5 * n_plots, 5.2))
+fig, ax = plt.subplots(figsize=(6.2, 6.2))
 fig.patch.set_facecolor(BG)
+ax.set_facecolor(BG)
 
-if n_plots == 1:
-    axes = [axes]
+# Determine shared square axis range from all values
+all_vals = []
+for _, _, teams in series:
+    for d in teams.values():
+        all_vals += [d["pred_pts"], d["actual_pts"],
+                     d["pred_pts_low"], d["pred_pts_high"]]
+lo = min(all_vals) - 3
+hi = max(all_vals) + 3
 
-N_TEAMS = 8   # PWHL always 8 teams
+# 45° line = perfect calibration
+ax.plot([lo, hi], [lo, hi], color=DIAG, linewidth=1.3, linestyle="--",
+        zorder=1, label="Perfect prediction")
 
-for ax, (label, pct, result) in zip(axes, snapshot_results):
-    ax.set_facecolor(BG)
-
-    teams = result["teams"]
-    rho   = result["spearman"]
-    pval  = result["p_value"]
-
-    pred_ranks   = [d["pred_rank"]   for d in teams.values()]
-    actual_ranks = [d["actual_rank"] for d in teams.values()]
-    codes        = list(teams.keys())
-
-    # 45° diagonal (perfect prediction)
-    ax.plot([0.5, N_TEAMS + 0.5], [0.5, N_TEAMS + 0.5],
-            color=DIAG, linewidth=1.2, linestyle="--", zorder=1,
-            label="Perfect prediction")
-
-    # Color each dot by distance from diagonal
+covered = 0
+total   = 0
+for label, color, teams in series:
     for code, d in teams.items():
-        pr = d["pred_rank"]
-        ar = d["actual_rank"]
-        dist = abs(pr - ar)
-        color = DOT_GOOD if dist <= 1 else DOT_BAD
+        p, a  = d["pred_pts"], d["actual_pts"]
+        lo_i  = d["pred_pts_low"]
+        hi_i  = d["pred_pts_high"]
+        total += 1
+        if lo_i <= a <= hi_i:
+            covered += 1
 
-        ax.scatter(pr, ar, s=110, color=color, zorder=3,
+        # Horizontal 10–90% projection interval
+        ax.errorbar(p, a, xerr=[[p - lo_i], [hi_i - p]],
+                    fmt="none", ecolor=color, elinewidth=1.3,
+                    capsize=3, alpha=0.55, zorder=2)
+        ax.scatter(p, a, s=90, color=color, zorder=3,
                    edgecolors=FG, linewidths=0.5)
-        # Label offset: push right/up to avoid overlap
-        ax.annotate(
-            code,
-            xy=(pr, ar),
-            xytext=(7, 4),
-            textcoords="offset points",
-            color=FG,
-            fontsize=8.5,
-            fontweight="500",
-        )
+        ax.annotate(code, xy=(p, a), xytext=(7, 4),
+                    textcoords="offset points", color=FG,
+                    fontsize=8, fontweight="500")
 
-    # Axes
-    ticks = list(range(1, N_TEAMS + 1))
-    ax.set_xlim(0.3, N_TEAMS + 0.7)
-    ax.set_ylim(0.3, N_TEAMS + 0.7)
-    ax.set_xticks(ticks)
-    ax.set_yticks(ticks)
-    ax.tick_params(colors=FG, which="both", length=0, labelsize=9)
-    for spine in ax.spines.values():
-        spine.set_edgecolor(GRID)
-    ax.xaxis.grid(True, color=GRID, linewidth=0.4, linestyle=":", zorder=0)
-    ax.yaxis.grid(True, color=GRID, linewidth=0.4, linestyle=":", zorder=0)
-    ax.set_axisbelow(True)
+# ── Axes ───────────────────────────────────────────────────────────────────────
 
-    ax.set_xlabel("Predicted rank", color=FG, fontsize=10, labelpad=6)
-    if ax is axes[0]:
-        ax.set_ylabel("Actual final rank", color=FG, fontsize=10, labelpad=6)
-    else:
-        ax.set_yticklabels([])
+ax.set_xlim(lo, hi)
+ax.set_ylim(lo, hi)
+ax.set_aspect("equal", adjustable="box")
+ax.tick_params(colors=FG, which="both", length=0, labelsize=9)
+for spine in ax.spines.values():
+    spine.set_edgecolor(GRID)
+ax.xaxis.grid(True, color=GRID, linewidth=0.4, linestyle=":", zorder=0)
+ax.yaxis.grid(True, color=GRID, linewidth=0.4, linestyle=":", zorder=0)
+ax.set_axisbelow(True)
 
-    sig_str = f"p={pval:.3f}" if pval >= 0.05 else f"p={pval:.3f} ✓"
-    ax.set_title(
-        f"{label}\nρ = {rho:.3f}  ({sig_str})",
-        color=FG, fontsize=11, fontweight="500", pad=4,
-    )
+ax.set_xlabel("Predicted final points  (67% snapshot)", color=FG, fontsize=11, labelpad=7)
+ax.set_ylabel("Actual final points", color=FG, fontsize=11, labelpad=7)
 
-# ── Shared legend ─────────────────────────────────────────────────────────────
+# ── Legend ─────────────────────────────────────────────────────────────────────
 
 legend_handles = [
-    mlines.Line2D([], [], color=DIAG,     linewidth=1.2, linestyle="--",
+    mlines.Line2D([], [], color=DIAG, linewidth=1.3, linestyle="--",
                   label="Perfect prediction"),
-    mlines.Line2D([], [], color=DOT_GOOD, marker="o",   linestyle="None",
-                  markersize=8, markeredgecolor=FG, markeredgewidth=0.5,
-                  label="Off by ≤ 1 rank"),
-    mlines.Line2D([], [], color=DOT_BAD,  marker="o",   linestyle="None",
-                  markersize=8, markeredgecolor=FG, markeredgewidth=0.5,
-                  label="Off by 2+ ranks"),
 ]
-axes[-1].legend(
-    handles=legend_handles, loc="upper left",
-    fontsize=8.5, facecolor="#f5f5f5", edgecolor=GRID,
-    labelcolor=FG, framealpha=0.9,
-)
+for label, color, _ in series:
+    legend_handles.append(
+        mlines.Line2D([], [], color=color, marker="o", linestyle="None",
+                      markersize=8, markeredgecolor=FG, markeredgewidth=0.5,
+                      label=label))
+legend_handles.append(
+    mlines.Line2D([], [], color="#888888", marker="|", linestyle="None",
+                  markersize=10, label="10–90% projection interval"))
+ax.legend(handles=legend_handles, loc="upper left", fontsize=8.5,
+          facecolor="#f5f5f5", edgecolor=GRID, labelcolor=FG, framealpha=0.9)
 
-# ── Titles & watermark ────────────────────────────────────────────────────────
+# ── Title & watermark ──────────────────────────────────────────────────────────
 
-fig.suptitle(
-    "Predicted vs Actual 24-25 Season Standings",
-    color=FG, fontsize=18, fontweight="500", y=1.00,
+ax.set_title(
+    "Season 8 Calibration: Predicted vs Actual Final Points",
+    color=FG, fontsize=14, fontweight="600", pad=24, loc="center",
 )
-fig.text(
-    0.5, -0.04,
-    "Perfect ranking match at 80% and 90% snapshots.",
-    ha="center", color="#888888", fontsize=9, style="italic",
-)
-fig.text(
-    0.99, -0.04, "ByTheNumbers · PWHL Analytics",
-    ha="right", color="#444444", fontsize=7.5,
-)
+ax.text(0.5, 1.03,
+        f"67% snapshot · {covered}/{total} actual finishes fell inside the 10–90% projection",
+        transform=ax.transAxes, ha="center", va="bottom",
+        color="#888888", fontsize=9.5)
+fig.text(0.99, 0.01, "ByTheNumbers · PWHL Analytics",
+         ha="right", va="bottom", color="#444444", fontsize=7.5)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
 
-plt.tight_layout(pad=1.6)
+plt.tight_layout(pad=1.4)
 png_path = OUTPUT_DIR / "predicted_vs_actual.png"
 svg_path = OUTPUT_DIR / "predicted_vs_actual.svg"
 fig.savefig(png_path, dpi=200, bbox_inches="tight", facecolor=BG)
@@ -176,3 +153,4 @@ plt.close()
 
 print(f"\n  Saved -> {png_path}")
 print(f"  Saved -> {svg_path}")
+print(f"  Interval coverage: {covered}/{total}")
