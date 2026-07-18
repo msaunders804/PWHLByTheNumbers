@@ -32,9 +32,8 @@
   .clinch-header { text-align:center; margin-bottom:28px; flex-shrink:0; }
   .eyebrow { font-size:20px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
   .clinch-word { font-family:'Bebas Neue',sans-serif; font-size:130px; line-height:0.85; color:#f5a623; letter-spacing:4px; text-shadow:0 0 40px rgba(245,166,35,0.4); }
-  .seed-line { font-family:'Bebas Neue',sans-serif; font-size:42px; color:rgba(255,255,255,0.5); letter-spacing:6px; margin-top:6px; }
-  .seed-line span { color:#8c52ff; }
   .neon-rule { width:120px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); margin:18px auto; border-radius:2px; box-shadow:0 0 16px rgba(245,166,35,0.6); }
+  .milestone { font-size:22px; font-weight:700; letter-spacing:3px; color:#f5a623; text-transform:uppercase; text-align:center; margin-top:8px; line-height:1.3; max-width:860px; }
 
   /* ── Team block ── */
   .team-block { display:flex; flex-direction:column; align-items:center; gap:16px; margin-bottom:32px; flex-shrink:0; }
@@ -88,7 +87,7 @@
   <div class="clinch-header">
     <div class="eyebrow">PWHL · Season 8</div>
     <div class="clinch-word">CLINCHED</div>
-    <div class="seed-line"><span>{{ seed_label }} SEED</span> · Playoffs</div>
+    {% if milestone %}<div class="milestone">{{ milestone }}</div>{% endif %}
     <div class="neon-rule"></div>
   </div>
 

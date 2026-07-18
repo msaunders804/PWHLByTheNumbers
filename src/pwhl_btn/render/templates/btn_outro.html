@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Backgrounds ── */
+  .bg-radial-top  { position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:1200px; height:1200px; border-radius:50%; background:radial-gradient(circle, rgba(94,23,235,0.45) 0%, transparent 60%); z-index:0; }
+  .bg-radial-bot  { position:absolute; bottom:-200px; left:50%; transform:translateX(-50%); width:1000px; height:800px; background:radial-gradient(ellipse, rgba(245,166,35,0.12) 0%, transparent 65%); z-index:0; }
+  .bg-grid        { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.05) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines   { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+
+  /* ── Accent bars ── */
+  .top-bar    { position:absolute; top:0; left:0; right:0; height:8px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); z-index:5; }
+  .bottom-bar { position:absolute; bottom:0; left:0; right:0; height:8px; background:linear-gradient(to right,#f5a623,#8c52ff,#5e17eb); z-index:5; }
+
+  /* ── Corner brackets ── */
+  .corner { position:absolute; width:80px; height:80px; z-index:3; }
+  .corner-tl { top:52px; left:52px; border-top:2px solid rgba(140,82,255,0.4); border-left:2px solid rgba(140,82,255,0.4); }
+  .corner-tr { top:52px; right:52px; border-top:2px solid rgba(140,82,255,0.4); border-right:2px solid rgba(140,82,255,0.4); }
+  .corner-bl { bottom:52px; left:52px; border-bottom:2px solid rgba(140,82,255,0.4); border-left:2px solid rgba(140,82,255,0.4); }
+  .corner-br { bottom:52px; right:52px; border-bottom:2px solid rgba(140,82,255,0.4); border-right:2px solid rgba(140,82,255,0.4); }
+
+  /* ── Layout ── */
+  .slide {
+    position:relative; z-index:2;
+    width:1080px; height:1920px;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:120px 80px;
+    gap:0;
+  }
+
+  /* ── BTN Wordmark ── */
+  .wordmark-wrap { display:flex; flex-direction:column; align-items:center; margin-bottom:56px; }
+  .wordmark-by   { font-size:26px; font-weight:700; letter-spacing:10px; color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:-8px; }
+  .wordmark-main { font-family:'Bebas Neue',sans-serif; font-size:220px; line-height:0.88; letter-spacing:8px; color:#fff; text-shadow:0 0 80px rgba(140,82,255,0.5), 0 0 160px rgba(94,23,235,0.25); }
+  .wordmark-numbers { font-size:30px; font-weight:700; letter-spacing:12px; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-top:4px; }
+
+  /* ── Neon divider ── */
+  .neon-rule { width:160px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); border-radius:2px; box-shadow:0 0 18px rgba(140,82,255,0.7); margin:44px auto; }
+
+  /* ── PWHL badge ── */
+  .pwhl-badge {
+    display:flex; align-items:center; gap:14px;
+    background:rgba(140,82,255,0.1); border:1.5px solid rgba(140,82,255,0.35);
+    border-radius:100px; padding:14px 40px; margin-bottom:56px;
+  }
+  .pwhl-dot  { width:10px; height:10px; border-radius:50%; background:#8c52ff; flex-shrink:0; }
+  .pwhl-text { font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:8px; color:#8c52ff; }
+
+  /* ── Handle block ── */
+  .handle-block { text-align:center; margin-bottom:64px; }
+  .handle-label { font-size:20px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.22); text-transform:uppercase; margin-bottom:10px; }
+  .handle       { font-family:'Bebas Neue',sans-serif; font-size:72px; letter-spacing:3px; color:#f5a623; text-shadow:0 0 40px rgba(245,166,35,0.35); }
+
+  /* ── Tagline ── */
+  .tagline { text-align:center; margin-bottom:64px; }
+  .tagline-main { font-family:'Barlow',sans-serif; font-size:34px; font-weight:500; color:rgba(255,255,255,0.55); line-height:1.45; max-width:760px; }
+  .tagline-main em { color:#fff; font-style:normal; font-weight:600; }
+
+  /* ── Platform pills ── */
+  .platforms { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; }
+  .platform-pill {
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:100px; padding:12px 28px;
+  }
+  .platform-dot  { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.3); }
+  .platform-name { font-size:20px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.45); text-transform:uppercase; }
+
+  /* ── Season label ── */
+  .season-label { position:absolute; bottom:36px; left:50%; transform:translateX(-50%); font-size:17px; font-weight:600; letter-spacing:4px; color:rgba(255,255,255,0.12); text-transform:uppercase; white-space:nowrap; z-index:10; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bottom-bar"></div>
+<div class="bg-radial-top"></div>
+<div class="bg-radial-bot"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="slide">
+
+  <div class="wordmark-wrap">
+    <div class="wordmark-by">PWHL</div>
+    <div class="wordmark-main">BTN</div>
+    <div class="wordmark-numbers">BY THE NUMBERS</div>
+  </div>
+
+  <div class="pwhl-badge">
+    <div class="pwhl-dot"></div>
+    <div class="pwhl-text">Data-Driven PWHL Coverage</div>
+    <div class="pwhl-dot"></div>
+  </div>
+
+  <div class="neon-rule"></div>
+
+  <div class="handle-block">
+    <div class="handle-label">Follow for more</div>
+    <div class="handle">@PWHLByTheNumbers</div>
+  </div>
+
+  <div class="tagline">
+    <div class="tagline-main">
+      Stats, analytics, and storytelling for the<br>
+      <em>fastest growing league in women's sports.</em>
+    </div>
+  </div>
+
+  <div class="platforms">
+    <div class="platform-pill"><div class="platform-dot"></div><div class="platform-name">TikTok</div></div>
+    <div class="platform-pill"><div class="platform-dot"></div><div class="platform-name">Instagram</div></div>
+    <div class="platform-pill"><div class="platform-dot"></div><div class="platform-name">Twitter / X</div></div>
+  </div>
+
+</div>
+
+<div class="season-label">PWHL · Season 8 · 2025–26</div>
+
+</body>
+</html>

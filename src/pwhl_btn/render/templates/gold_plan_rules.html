@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-glow-top    { position:absolute; top:0; left:50%; transform:translateX(-50%); width:900px; height:600px; background:radial-gradient(ellipse,rgba(245,166,35,0.13) 0%,transparent 60%); z-index:0; }
+  .bg-glow-purple { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:1000px; height:800px; background:radial-gradient(ellipse,rgba(94,23,235,0.20) 0%,transparent 60%); z-index:0; }
+  .bg-grid        { position:absolute; inset:0; background-image:linear-gradient(rgba(245,166,35,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(245,166,35,0.03) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines   { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+
+  .corner { position:absolute; width:72px; height:72px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(140,82,255,0.35); border-left:2px solid rgba(140,82,255,0.35); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(140,82,255,0.35); border-right:2px solid rgba(140,82,255,0.35); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .slide-num { position:absolute; top:40px; right:80px; font-size:18px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.18); z-index:10; }
+
+  /* ── Layout ── */
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; padding:108px 64px 72px; }
+
+  /* ── Header ── */
+  .header { text-align:center; margin-bottom:20px; width:100%; flex-shrink:0; }
+  .eyebrow { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:6px; }
+  .title-line1 { font-family:'Bebas Neue',sans-serif; font-size:130px; line-height:0.88; color:#f5a623; letter-spacing:4px; text-shadow:0 0 50px rgba(245,166,35,0.45); }
+  .title-line2 { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:0.95; color:#fff; letter-spacing:6px; }
+
+  .gold-rule { width:180px; height:3px; background:linear-gradient(90deg,transparent,#f5a623,transparent); border-radius:2px; box-shadow:0 0 18px rgba(245,166,35,0.65); margin:20px auto; flex-shrink:0; }
+
+  /* ── How it works — main description ── */
+  .how-card {
+    width:100%; flex-shrink:0;
+    background:rgba(245,166,35,0.07); border:1.5px solid rgba(245,166,35,0.30);
+    border-radius:18px; padding:28px 32px; margin-bottom:22px;
+  }
+  .card-label { font-size:13px; font-weight:700; letter-spacing:5px; text-transform:uppercase; margin-bottom:12px; }
+  .card-label.gold  { color:rgba(245,166,35,0.70); }
+  .card-label.purple{ color:rgba(140,82,255,0.75); }
+  .card-label.red   { color:rgba(239,68,68,0.75); }
+
+  .how-text { font-size:23px; font-weight:600; line-height:1.45; color:rgba(255,255,255,0.82); }
+  .how-text strong { color:#f5a623; font-weight:800; }
+
+  /* ── Point system ── */
+  .points-row { display:flex; gap:12px; margin-bottom:22px; flex-shrink:0; width:100%; }
+  .pt-chip {
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(245,166,35,0.08); border:1.5px solid rgba(245,166,35,0.30);
+    border-radius:14px; padding:20px 10px;
+  }
+  .pt-chip-val { font-family:'Bebas Neue',sans-serif; font-size:64px; line-height:1; color:#f5a623; text-shadow:0 0 20px rgba(245,166,35,0.40); }
+  .pt-chip-lbl { font-size:15px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-top:4px; text-align:center; }
+
+  /* ── Tiebreakers ── */
+  .tiebreak-card {
+    width:100%; flex-shrink:0;
+    background:rgba(140,82,255,0.07); border:1.5px solid rgba(140,82,255,0.25);
+    border-radius:18px; padding:28px 32px; margin-bottom:22px;
+  }
+  .tiebreak-list { list-style:none; display:flex; flex-direction:column; gap:16px; margin-top:4px; }
+  .tiebreak-item { display:flex; align-items:flex-start; gap:20px; }
+  .tb-num {
+    flex-shrink:0; width:40px; height:40px; border-radius:50%;
+    background:rgba(140,82,255,0.25); border:1.5px solid rgba(140,82,255,0.50);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:26px; color:#8c52ff;
+    margin-top:2px;
+  }
+  .tb-text { font-size:22px; font-weight:700; line-height:1.35; color:rgba(255,255,255,0.75); }
+  .tb-text em { color:#8c52ff; font-style:normal; font-weight:800; }
+
+  /* ── vs. Other Leagues ── */
+  .vs-card {
+    width:100%; flex-shrink:0;
+    background:rgba(239,68,68,0.06); border:1.5px solid rgba(239,68,68,0.22);
+    border-radius:18px; padding:24px 32px;
+  }
+  .vs-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+  .vs-col { padding:10px 16px; }
+  .vs-col:first-child { border-right:1px solid rgba(255,255,255,0.08); }
+  .vs-col-header { font-size:14px; font-weight:700; letter-spacing:4px; text-transform:uppercase; margin-bottom:14px; }
+  .vs-col-header.bad  { color:rgba(239,68,68,0.70); }
+  .vs-col-header.good { color:rgba(34,197,94,0.75); }
+  .vs-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+  .vs-icon { flex-shrink:0; font-size:18px; margin-top:2px; }
+  .vs-text { font-size:20px; font-weight:700; line-height:1.30; color:rgba(255,255,255,0.65); }
+
+  /* ── Footer ── */
+  .footer { display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-glow-purple"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="slide-num">PWHL · Season 8</div>
+
+<div class="slide">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="eyebrow">How It Works</div>
+    <div class="title-line1">GOLD PLAN</div>
+    <div class="title-line2">RULES EXPLAINED</div>
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <!-- How it works -->
+  <div class="how-card">
+    <div class="card-label gold">What is the Gold Plan?</div>
+    <div class="how-text">
+      Once a team is <strong>mathematically eliminated</strong> from playoff contention,
+      their remaining regular-season standings points become
+      <strong>Gold Plan Points</strong> — directly determining their position in the
+      <strong>2026 PWHL Entry Draft</strong>.
+      The team with the <strong>most Gold Plan Points earns the 1st overall pick</strong> in each round.
+    </div>
+  </div>
+
+  <!-- 3-2-1-0 point chips -->
+  <div class="points-row">
+    <div class="pt-chip">
+      <div class="pt-chip-val">3</div>
+      <div class="pt-chip-lbl">Reg Win</div>
+    </div>
+    <div class="pt-chip">
+      <div class="pt-chip-val">2</div>
+      <div class="pt-chip-lbl">OT/SO Win</div>
+    </div>
+    <div class="pt-chip">
+      <div class="pt-chip-val">1</div>
+      <div class="pt-chip-lbl">OT/SO Loss</div>
+    </div>
+    <div class="pt-chip">
+      <div class="pt-chip-val" style="color:rgba(255,255,255,0.30)">0</div>
+      <div class="pt-chip-lbl">Reg Loss</div>
+    </div>
+  </div>
+
+  <!-- Tiebreakers -->
+  <div class="tiebreak-card">
+    <div class="card-label purple">Tiebreaker Order</div>
+    <ul class="tiebreak-list">
+      <li class="tiebreak-item">
+        <div class="tb-num">A</div>
+        <div class="tb-text">Most <em>regulation wins</em> after elimination</div>
+      </li>
+      <li class="tiebreak-item">
+        <div class="tb-num">B</div>
+        <div class="tb-text">Most combined <em>OT &amp; shootout wins</em> after elimination</div>
+      </li>
+      <li class="tiebreak-item">
+        <div class="tb-num">C</div>
+        <div class="tb-text"><em>Fewest overall</em> regular-season standings points (lower seed wins)</div>
+      </li>
+      <li class="tiebreak-item">
+        <div class="tb-num">D</div>
+        <div class="tb-text">Standard <em>PWHL tiebreaker rules</em> for regular season if A–C don't break it</div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- vs. Other Leagues -->
+  <div class="vs-card">
+    <div class="card-label red" style="text-align:center;margin-bottom:16px;">PWHL vs. Other Leagues</div>
+    <div class="vs-grid">
+      <div class="vs-col">
+        <div class="vs-col-header bad">Other Leagues</div>
+        <div class="vs-row"><span class="vs-icon">✗</span><span class="vs-text">Lottery — luck decides top pick</span></div>
+        <div class="vs-row"><span class="vs-icon">✗</span><span class="vs-text">Teams can tank to improve odds</span></div>
+        <div class="vs-row"><span class="vs-icon">✗</span><span class="vs-text">Fans have nothing to cheer for</span></div>
+      </div>
+      <div class="vs-col">
+        <div class="vs-col-header good">PWHL Gold Plan</div>
+        <div class="vs-row"><span class="vs-icon">✓</span><span class="vs-text">Performance decides the pick</span></div>
+        <div class="vs-row"><span class="vs-icon">✓</span><span class="vs-text">Winning earns better draft position</span></div>
+        <div class="vs-row"><span class="vs-icon">✓</span><span class="vs-text">Every game still matters</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>

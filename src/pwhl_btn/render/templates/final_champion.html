@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Background layers ───────────────────────────────────────── */
+  .bg-gold-burst {
+    position:absolute; top:38%; left:50%; transform:translate(-50%,-50%);
+    width:1400px; height:1400px; border-radius:50%;
+    background:radial-gradient(ellipse, rgba(245,166,35,0.22) 0%, rgba(245,166,35,0.06) 40%, transparent 68%);
+    z-index:0;
+  }
+  .bg-purple-low {
+    position:absolute; bottom:0; left:50%; transform:translateX(-50%);
+    width:1200px; height:700px;
+    background:radial-gradient(ellipse, rgba(94,23,235,0.28) 0%, transparent 65%);
+    z-index:0;
+  }
+  .bg-scanlines {
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);
+    z-index:1;
+  }
+
+  /* ── Decorative rings around logo ───────────────────────────── */
+  .ring {
+    position:absolute; left:50%; top:37%; transform:translate(-50%,-50%);
+    border-radius:50%; z-index:2;
+  }
+  .ring-1 {
+    width:520px; height:520px;
+    border:1.5px solid rgba(245,166,35,0.35);
+    box-shadow:0 0 60px rgba(245,166,35,0.12) inset, 0 0 60px rgba(245,166,35,0.12);
+  }
+  .ring-2 {
+    width:620px; height:620px;
+    border:1px solid rgba(245,166,35,0.14);
+  }
+  .ring-3 {
+    width:740px; height:740px;
+    border:1px solid rgba(245,166,35,0.07);
+  }
+
+  /* ── Chrome ──────────────────────────────────────────────────── */
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:20; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .corner    { position:absolute; width:56px; height:56px; z-index:10; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-tr { top:48px; right:48px; border-top:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid rgba(245,166,35,0.35); border-left:2px solid rgba(245,166,35,0.35); }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid rgba(245,166,35,0.35); border-right:2px solid rgba(245,166,35,0.35); }
+
+  .brand  { position:absolute; top:38px; left:80px; z-index:20; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); }
+  .season { position:absolute; top:42px; right:80px; z-index:20; font-size:17px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.20); text-transform:uppercase; }
+
+  /* ── Logo ────────────────────────────────────────────────────── */
+  .logo-wrap {
+    position:absolute; left:50%; top:37%; transform:translate(-50%,-50%);
+    width:380px; height:380px; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    filter:drop-shadow(0 0 60px rgba(245,166,35,0.50)) drop-shadow(0 0 120px rgba(245,166,35,0.25));
+  }
+  .logo-wrap img { width:100%; height:100%; object-fit:contain; }
+
+  /* ── Gold bar above main title ───────────────────────────────── */
+  .gold-bar {
+    position:absolute; left:50%; top:60%; transform:translateX(-50%);
+    width:220px; height:4px; border-radius:2px;
+    background:linear-gradient(90deg, transparent, #f5a623, transparent);
+    box-shadow:0 0 20px rgba(245,166,35,0.70);
+    z-index:10;
+  }
+
+  /* ── Main text block ─────────────────────────────────────────── */
+  .text-block {
+    position:absolute; left:0; right:0; top:62%; z-index:10;
+    text-align:center; padding:0 60px;
+  }
+
+  .eyebrow {
+    font-size:18px; font-weight:700; letter-spacing:10px;
+    color:rgba(255,255,255,0.35); text-transform:uppercase; margin-bottom:16px;
+  }
+
+  .team-name {
+    font-family:'Bebas Neue',sans-serif; font-size:144px; line-height:0.84;
+    letter-spacing:4px; color:#fff;
+    text-shadow:0 0 80px rgba(255,255,255,0.15);
+  }
+
+  .cup-line {
+    font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.90;
+    letter-spacing:8px; color:#f5a623;
+    text-shadow:0 0 60px rgba(245,166,35,0.55);
+    margin-bottom:10px;
+  }
+
+  .champions-line {
+    font-family:'Bebas Neue',sans-serif; font-size:124px; line-height:0.88;
+    letter-spacing:6px; color:#f5a623;
+    text-shadow:0 0 80px rgba(245,166,35,0.60), 0 0 160px rgba(245,166,35,0.25);
+    margin-bottom:52px;
+  }
+
+  /* ── Season band ─────────────────────────────────────────────── */
+  .season-band {
+    display:inline-flex; align-items:center; gap:20px;
+    background:rgba(245,166,35,0.10); border:1.5px solid rgba(245,166,35,0.38);
+    border-radius:100px; padding:14px 48px; margin-bottom:72px;
+  }
+  .season-dot { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .season-text { font-size:22px; font-weight:700; letter-spacing:6px; color:#f5a623; text-transform:uppercase; }
+
+  /* ── Model note ──────────────────────────────────────────────── */
+  .model-note {
+    font-size:14px; font-weight:700; letter-spacing:3px;
+    color:rgba(140,82,255,0.65); text-transform:uppercase; margin-bottom:10px;
+  }
+  .model-prob {
+    font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:2px;
+    color:rgba(140,82,255,0.80);
+  }
+  .model-prob span { font-size:28px; color:rgba(140,82,255,0.50); margin-left:6px; }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .footer {
+    position:absolute; bottom:60px; left:0; right:0; z-index:10;
+    display:flex; justify-content:space-between; align-items:center; padding:0 80px;
+  }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.14); }
+  .footer-season { font-size:14px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.14); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-gold-burst"></div>
+<div class="bg-purple-low"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="season">PWHL · 2025–26</div>
+
+<!-- Decorative rings -->
+<div class="ring ring-3"></div>
+<div class="ring ring-2"></div>
+<div class="ring ring-1"></div>
+
+<!-- Logo -->
+<div class="logo-wrap">
+  <img src="{{ logo }}" alt="MTL">
+</div>
+
+<!-- Gold divider bar -->
+<div class="gold-bar"></div>
+
+<!-- Main text -->
+<div class="text-block">
+  <div class="eyebrow">{{ eyebrow }}</div>
+  <div class="team-name">MONTRÉAL</div>
+  <div class="cup-line">WALTER CUP</div>
+  <div class="champions-line">CHAMPIONS</div>
+
+  <div class="season-band">
+    <div class="season-dot"></div>
+    <div class="season-text">Season 2025–26</div>
+    <div class="season-dot"></div>
+  </div>
+
+  <div class="model-note">Model Prediction</div>
+  <div class="model-prob">{{ win_pct }}% <span>Series Win Probability</span></div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Walter Cup Final · BTN Prediction</div>
+</div>
+</body>
+</html>

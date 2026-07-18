@@ -40,7 +40,7 @@ def get_league_avg_sv_pct(conn, season_id: int = SEASON_ID) -> float:
     """), {"sid": season_id}).fetchone()
     if not row or not row.total_shots:
         return 0.910  # fallback
-    return row.total_saves / row.total_shots
+    return float(row.total_saves) / float(row.total_shots)
 
 
 # ── Season GSAA leaderboard ───────────────────────────────────────────────────
@@ -174,7 +174,10 @@ def get_stolen_games(player_id: int, season_id: int = SEASON_ID) -> list[dict]:
         """), {"sid": season_id, "pid": player_id}).fetchone()
 
     team_avg_sa   = float(avg_row.avg_sa or 0) if avg_row else 0
-    league_sv     = game_log[0]["league_avg_sv_pct"] if game_log else 0.910
+
+    engine2 = get_engine(pool_pre_ping=True)
+    with engine2.connect() as conn:
+        league_sv = get_league_avg_sv_pct(conn, season_id)
     stolen_thresh = team_avg_sa * 1.10  # 10% above team avg = defense broke down
 
     stolen = []

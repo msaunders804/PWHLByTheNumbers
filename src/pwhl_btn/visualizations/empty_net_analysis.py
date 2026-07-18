@@ -22,6 +22,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
+from pwhl_btn.ingest.hockeytech import API_BASE, API_KEY, CLIENT_CODE
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -29,9 +30,6 @@ OUTPUT_DIR = SCRIPT_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ── API config ────────────────────────────────────────────────────────────────
-BASE_URL    = "https://lscluster.hockeytech.com/feed/index.php"
-API_KEY     = "446521baf8c38984"
-CLIENT_CODE = "pwhl"
 SEASON_ID   = 8
 
 
@@ -48,7 +46,7 @@ def api_get(url):
 
 def get_season_game_ids(season_id):
     from datetime import datetime as _dt
-    url = (f"{BASE_URL}?feed=modulekit&view=schedule&season_id={season_id}"
+    url = (f"{API_BASE}?feed=modulekit&view=schedule&season_id={season_id}"
            f"&key={API_KEY}&client_code={CLIENT_CODE}&fmt=json")
     data = api_get(url)
     schedule = data.get("SiteKit", {}).get("Schedule", [])
@@ -75,7 +73,7 @@ def get_season_game_ids(season_id):
 
 
 def get_game_summary(game_id):
-    url = (f"{BASE_URL}?feed=statviewfeed&view=gameSummary&game_id={game_id}"
+    url = (f"{API_BASE}?feed=statviewfeed&view=gameSummary&game_id={game_id}"
            f"&key={API_KEY}&client_code={CLIENT_CODE}&lang=en&league_id=1&fmt=json")
     try:
         return api_get(url)

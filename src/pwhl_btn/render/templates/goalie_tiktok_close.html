@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-vignette { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 30%,rgba(94,23,235,0.3) 0%,transparent 60%),radial-gradient(ellipse at 50% 85%,rgba(245,166,35,0.08) 0%,transparent 40%); z-index:0; }
+  .bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.04) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+  .top-bar { position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); z-index:5; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:60px 64px 56px; }
+
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:44px; }
+  .brand { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:5px; color:rgba(255,255,255,0.35); }
+  .pill { background:rgba(140,82,255,0.12); border:1.5px solid rgba(140,82,255,0.4); border-radius:100px; padding:10px 28px; font-size:19px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:3px; color:rgba(255,255,255,0.22); text-align:center; margin-bottom:32px; }
+  .section-title span { color:#8c52ff; }
+
+  /* Full standings table */
+  .table-wrap { display:flex; flex-direction:column; gap:0; margin-bottom:40px; }
+  .table-header { display:grid; grid-template-columns:36px 1fr 44px 44px 44px 44px 52px 68px; gap:0 10px; padding:10px 18px; margin-bottom:4px; }
+  .th { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.25); text-transform:uppercase; text-align:right; }
+  .th.left { text-align:left; }
+
+  .row { display:grid; grid-template-columns:36px 1fr 44px 44px 44px 44px 52px 68px; gap:0 10px; align-items:center; padding:16px 18px; border-radius:12px; margin-bottom:8px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.05); }
+  .row.in-playoff { border-left:3px solid #8c52ff; }
+  .row.bubble { border-left:3px solid #f5a623; background:rgba(245,166,35,0.05); border-color:rgba(245,166,35,0.2); }
+  .row.out { border-left:3px solid rgba(248,113,113,0.4); opacity:0.6; }
+
+  .rank { font-family:'Bebas Neue',sans-serif; font-size:28px; color:rgba(255,255,255,0.25); text-align:center; }
+  .row.in-playoff .rank { color:#8c52ff; }
+  .row.bubble .rank { color:#f5a623; }
+
+  .name-col { display:flex; flex-direction:column; gap:1px; }
+  .team-code { font-family:'Bebas Neue',sans-serif; font-size:34px; letter-spacing:1px; color:#fff; line-height:1; }
+  .team-full { font-size:16px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.3); }
+
+  .cell { font-family:'Bebas Neue',sans-serif; font-size:30px; color:rgba(255,255,255,0.7); text-align:right; }
+  .pts-cell { font-family:'Bebas Neue',sans-serif; font-size:34px; text-align:right; }
+  .row.in-playoff .pts-cell { color:#8c52ff; }
+  .row.bubble .pts-cell { color:#f5a623; }
+
+  .gsaa-cell { font-family:'Bebas Neue',sans-serif; font-size:30px; text-align:right; }
+  .gsaa-pos { color:#4ade80; }
+  .gsaa-neg { color:#f87171; }
+
+  /* Playoff cutoff line */
+  .cutoff-line { display:flex; align-items:center; gap:12px; margin:4px 0 12px; }
+  .cutoff-rule { flex:1; height:1px; background:rgba(140,82,255,0.4); }
+  .cutoff-label { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(140,82,255,0.6); text-transform:uppercase; white-space:nowrap; }
+
+  /* Legend */
+  .legend { display:flex; gap:24px; justify-content:center; margin-bottom:32px; }
+  .legend-item { display:flex; align-items:center; gap:8px; }
+  .legend-dot { width:10px; height:10px; border-radius:50%; }
+  .legend-dot.purple { background:#8c52ff; }
+  .legend-dot.gold { background:#f5a623; }
+  .legend-dot.red { background:rgba(248,113,113,0.6); }
+  .legend-text { font-size:17px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+
+  /* CTA */
+  .cta-box { background:rgba(140,82,255,0.08); border:1px solid rgba(140,82,255,0.25); border-radius:18px; padding:28px 32px; text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center; gap:8px; }
+  .cta-main { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:3px; color:#fff; line-height:1; }
+  .cta-sub { font-size:22px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); margin-top:16px; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-vignette"></div>
+<div class="bg-grid"></div>
+<div class="bg-scanlines"></div>
+
+<div class="slide">
+
+  <div class="header">
+    <div class="brand">BTN</div>
+    <div class="pill">Final Standings</div>
+  </div>
+
+  <div class="section-title">WHERE THINGS <span>STAND</span></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot purple"></div><div class="legend-text">Playoff</div></div>
+    <div class="legend-item"><div class="legend-dot gold"></div><div class="legend-text">Bubble</div></div>
+    <div class="legend-item"><div class="legend-dot red"></div><div class="legend-text">Out</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="th">#</div>
+      <div class="th left">Team</div>
+      <div class="th">GP</div>
+      <div class="th">W</div>
+      <div class="th">L</div>
+      <div class="th">OTL</div>
+      <div class="th">GSAA</div>
+      <div class="th">PTS</div>
+    </div>
+
+    {% for t in standings %}
+    {% if loop.index == 5 %}
+    <div class="cutoff-line">
+      <div class="cutoff-rule"></div>
+      <div class="cutoff-label">Playoff Line</div>
+      <div class="cutoff-rule"></div>
+    </div>
+    {% endif %}
+    <div class="row {% if t.playoff_status == 'in' %}in-playoff{% elif t.playoff_status == 'bubble' %}bubble{% else %}out{% endif %}">
+      <div class="rank">{{ loop.index }}</div>
+      <div class="name-col">
+        <div class="team-code">{{ t.team_code }}</div>
+        <div class="team-full">{{ t.team_name }}</div>
+      </div>
+      <div class="cell">{{ t.gp }}</div>
+      <div class="cell">{{ t.wins }}</div>
+      <div class="cell">{{ t.losses }}</div>
+      <div class="cell">{{ t.otl }}</div>
+      <div class="gsaa-cell {% if t.goalie_gsaa_raw > 0 %}gsaa-pos{% elif t.goalie_gsaa_raw < 0 %}gsaa-neg{% else %}gsaa-zero{% endif %}">{{ t.goalie_gsaa }}</div>
+      <div class="pts-cell">{{ t.pts }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="cta-box">
+    <div class="cta-main">Follow for more PWHL analytics</div>
+    <div class="cta-sub">@PWHLByTheNumbers</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* ── Background ──────────────────────────────────────────────── */
+  .bg-glow-top {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:1200px; height:700px;
+    background:radial-gradient(ellipse, rgba(94,23,235,0.22) 0%, transparent 65%);
+    z-index:0;
+  }
+  .bg-glow-mid {
+    position:absolute; top:42%; left:50%; transform:translate(-50%,-50%);
+    width:1000px; height:600px;
+    background:radial-gradient(ellipse, rgba(245,166,35,0.07) 0%, transparent 65%);
+    z-index:0;
+  }
+  .bg-scanlines {
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);
+    z-index:1; pointer-events:none;
+  }
+
+  /* ── Chrome ──────────────────────────────────────────────────── */
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:20; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .brand { position:absolute; top:36px; left:80px; z-index:20; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); }
+  .badge { position:absolute; top:30px; right:80px; z-index:20; display:flex; align-items:center; gap:10px; background:rgba(94,23,235,0.18); border:1.5px solid rgba(140,82,255,0.45); border-radius:100px; padding:10px 26px; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  /* ── Main layout ─────────────────────────────────────────────── */
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:120px 80px 0; }
+
+  /* ── Header ──────────────────────────────────────────────────── */
+  .header { display:flex; align-items:center; gap:28px; margin-bottom:8px; }
+  .ott-logo { width:88px; height:88px; object-fit:contain; filter:drop-shadow(0 0 20px rgba(140,82,255,0.40)); }
+  .header-text {}
+  .eyebrow { font-size:16px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .title { font-family:'Bebas Neue',sans-serif; font-size:100px; line-height:0.86; color:#fff; letter-spacing:2px; }
+  .sub   { font-family:'Bebas Neue',sans-serif; font-size:44px; letter-spacing:6px; color:#8c52ff; line-height:1; margin-top:6px; }
+  .neon-rule { width:100%; height:2px; background:linear-gradient(90deg,rgba(140,82,255,0.70),rgba(245,166,35,0.35),transparent); border-radius:2px; margin:28px 0 32px; }
+
+  /* ── Column header row ───────────────────────────────────────── */
+  .col-header-row {
+    display:grid; grid-template-columns:240px 1fr 1fr;
+    gap:0; margin-bottom:16px;
+  }
+  .col-spacer {}
+  .col-h {
+    text-align:center; font-size:15px; font-weight:700; letter-spacing:5px;
+    text-transform:uppercase; padding:12px 0;
+    border-radius:10px 10px 0 0;
+  }
+  .col-h.reg { color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-bottom:none; }
+  .col-h.play { color:#f5a623; background:rgba(245,166,35,0.07); border:1px solid rgba(245,166,35,0.22); border-bottom:none; }
+  .col-sub { font-size:12px; font-weight:600; letter-spacing:3px; display:block; margin-top:2px; color:rgba(255,255,255,0.22); }
+  .col-sub.play { color:rgba(245,166,35,0.45); }
+
+  /* ── Stat rows ───────────────────────────────────────────────── */
+  .stat-row {
+    display:grid; grid-template-columns:240px 1fr 1fr;
+    gap:0; margin-bottom:14px; align-items:stretch;
+  }
+  .stat-label-cell {
+    display:flex; flex-direction:column; justify-content:center;
+    padding:18px 28px 18px 0;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .stat-name { font-family:'Bebas Neue',sans-serif; font-size:46px; letter-spacing:2px; color:#fff; line-height:1; }
+  .stat-desc { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:3px; }
+
+  .stat-cell {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:18px 16px; text-align:center;
+    border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .stat-cell.reg {
+    background:rgba(255,255,255,0.03); border-left:1px solid rgba(255,255,255,0.07); border-right:1px solid rgba(255,255,255,0.04);
+  }
+  .stat-cell.play {
+    background:rgba(245,166,35,0.05); border-left:1px solid rgba(245,166,35,0.12); border-right:1px solid rgba(245,166,35,0.12);
+  }
+  .stat-cell.play.hi {
+    background:rgba(245,166,35,0.10); border-color:rgba(245,166,35,0.28);
+  }
+  .stat-cell.play.pos-hi {
+    background:rgba(140,82,255,0.08); border-color:rgba(140,82,255,0.22);
+  }
+  .stat-val {
+    font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:0.90; letter-spacing:-1px;
+  }
+  .stat-val.reg { color:rgba(255,255,255,0.50); }
+  .stat-val.play { color:#fff; }
+  .stat-val.play.hi { color:#f5a623; }
+  .stat-val.play.pos { color:#8c52ff; }
+  .stat-val.play.green { color:#4ecb71; }
+
+  /* Section dividers */
+  .section-divider {
+    display:grid; grid-template-columns:240px 1fr 1fr;
+    margin-bottom:4px; margin-top:8px;
+  }
+  .section-label {
+    grid-column:1/-1; font-size:12px; font-weight:700; letter-spacing:5px;
+    text-transform:uppercase; color:rgba(255,255,255,0.22);
+    padding:6px 0 4px; border-top:1px solid rgba(255,255,255,0.08);
+  }
+
+  .delta-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    margin-top:10px; padding:5px 14px; border-radius:100px;
+    font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  }
+  .delta-badge.up-warn { background:rgba(245,166,35,0.15); color:#f5a623; border:1px solid rgba(245,166,35,0.30); }
+  .delta-badge.up-good { background:rgba(140,82,255,0.15); color:#8c52ff; border:1px solid rgba(140,82,255,0.30); }
+  .delta-badge.down    { background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.35); border:1px solid rgba(255,255,255,0.10); }
+
+  /* ── Insight callout ─────────────────────────────────────────── */
+  .insight {
+    background:rgba(245,166,35,0.07); border:1.5px solid rgba(245,166,35,0.22);
+    border-radius:16px; padding:28px 36px; margin-top:32px;
+    display:flex; align-items:flex-start; gap:20px;
+  }
+  .insight-icon { font-size:32px; line-height:1; flex-shrink:0; margin-top:2px; }
+  .insight-body {}
+  .insight-head { font-size:16px; font-weight:700; letter-spacing:5px; color:#f5a623; text-transform:uppercase; margin-bottom:6px; }
+  .insight-text { font-size:22px; font-weight:600; line-height:1.35; color:rgba(255,255,255,0.75); }
+  .insight-text strong { color:#fff; font-weight:800; }
+
+  /* ── Photo strip ─────────────────────────────────────────────── */
+  .player-strip { flex:1; position:relative; overflow:hidden; margin-top:32px; min-height:60px; }
+  .player-strip img { position:absolute; bottom:0; left:50%; transform:translateX(-50%); height:115%; width:auto; object-fit:cover; object-position:center top; }
+  .player-strip::before {
+    content:''; position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(to bottom, #07000f 0%, rgba(7,0,15,0.20) 40%, transparent 70%),
+      linear-gradient(to top, rgba(7,0,15,0.85) 0%, transparent 35%),
+      linear-gradient(to right, rgba(7,0,15,0.60) 0%, transparent 25%),
+      linear-gradient(to left,  rgba(7,0,15,0.60) 0%, transparent 25%);
+  }
+  .player-name-overlay {
+    position:absolute; bottom:80px; left:0; right:0; z-index:2;
+    text-align:center;
+    font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:4px;
+    color:rgba(255,255,255,0.55);
+  }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .footer { display:flex; justify-content:space-between; align-items:center; padding:16px 0 48px; z-index:10; position:relative; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.18); }
+  .footer-season { font-size:14px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.18); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-glow-mid"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">Playoff Form</div></div>
+
+<div class="slide">
+
+  <!-- Header -->
+  <div class="header">
+    <img class="ott-logo" src="{{ ott_logo }}" alt="OTT">
+    <div class="header-text">
+      <div class="eyebrow">BTN · 2025&#x2013;26 Analysis</div>
+      <div class="title">OTTAWA<br>CHARGE</div>
+      <div class="sub">REGULAR SEASON vs PLAYOFFS</div>
+    </div>
+  </div>
+
+  <div class="neon-rule"></div>
+
+  <!-- Column labels -->
+  <div class="col-header-row">
+    <div class="col-spacer"></div>
+    <div class="col-h reg">Regular Season<span class="col-sub">30 Games</span></div>
+    <div class="col-h play">Playoffs<span class="col-sub play">{{ playoff_opp_label }}</span></div>
+  </div>
+
+  <!-- OFFENSE -->
+  <div class="section-divider"><div class="section-label">Offense</div></div>
+
+  <!-- SF/GP -->
+  <div class="stat-row">
+    <div class="stat-label-cell">
+      <div class="stat-name">SF/GP</div>
+      <div class="stat-desc">Shots For</div>
+    </div>
+    <div class="stat-cell reg">
+      <div class="stat-val reg">{{ sf_reg }}</div>
+    </div>
+    <div class="stat-cell play">
+      <div class="stat-val play">{{ sf_play }}</div>
+      <div class="delta-badge down">&#9660; {{ sf_delta }}</div>
+    </div>
+  </div>
+
+  <!-- GF/GP -->
+  <div class="stat-row">
+    <div class="stat-label-cell">
+      <div class="stat-name">GF/GP</div>
+      <div class="stat-desc">Goals For</div>
+    </div>
+    <div class="stat-cell reg">
+      <div class="stat-val reg">{{ gf_reg }}</div>
+    </div>
+    <div class="stat-cell play {{ gf_cell_class }}">
+      <div class="stat-val play {{ gf_val_class }}">{{ gf_play }}</div>
+      <div class="delta-badge {{ gf_badge_class }}">{{ gf_arrow }} {{ gf_delta }}</div>
+    </div>
+  </div>
+
+  <!-- DEFENSE -->
+  <div class="section-divider"><div class="section-label">Defense &amp; Goaltending</div></div>
+
+  <!-- SA/GP -->
+  <div class="stat-row">
+    <div class="stat-label-cell">
+      <div class="stat-name">SA/GP</div>
+      <div class="stat-desc">Shots Against</div>
+    </div>
+    <div class="stat-cell reg">
+      <div class="stat-val reg">{{ sa_reg }}</div>
+    </div>
+    <div class="stat-cell play hi">
+      <div class="stat-val play hi">{{ sa_play }}</div>
+      <div class="delta-badge up-warn">&#9650; {{ sa_delta }}</div>
+    </div>
+  </div>
+
+  <!-- GA/GP -->
+  <div class="stat-row">
+    <div class="stat-label-cell">
+      <div class="stat-name">GA/GP</div>
+      <div class="stat-desc">Goals Against</div>
+    </div>
+    <div class="stat-cell reg">
+      <div class="stat-val reg">{{ ga_reg }}</div>
+    </div>
+    <div class="stat-cell play {{ ga_cell_class }}">
+      <div class="stat-val play {{ ga_val_class }}">{{ ga_play_pg }}</div>
+      <div class="delta-badge {{ ga_badge_class }}">{{ ga_arrow }} {{ ga_delta }}</div>
+    </div>
+  </div>
+
+  <!-- SV% -->
+  <div class="stat-row">
+    <div class="stat-label-cell">
+      <div class="stat-name">SV%</div>
+      <div class="stat-desc">Save Percentage</div>
+    </div>
+    <div class="stat-cell reg">
+      <div class="stat-val reg">{{ sv_reg }}</div>
+    </div>
+    <div class="stat-cell play {{ sv_cell_class }}">
+      <div class="stat-val play {{ sv_val_class }}">{{ sv_play }}</div>
+      <div class="delta-badge {{ sv_badge_class }}">{{ sv_arrow }} {{ sv_delta }}</div>
+    </div>
+  </div>
+
+  <!-- Insight callout -->
+  <div class="insight">
+    <div class="insight-body">
+      <div class="insight-head">{{ insight_head }}</div>
+      <div class="insight-text">{{ insight_text | safe }}</div>
+    </div>
+  </div>
+
+  {% if goalie_photo %}
+  <div class="player-strip">
+    <img src="{{ goalie_photo }}" alt="{{ goalie_name }}">
+    <div class="player-name-overlay">{{ goalie_name | upper }}</div>
+  </div>
+  {% else %}
+  <div style="flex:1;"></div>
+  {% endif %}
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">2025&#x2013;26 · BTN Analysis</div>
+  </div>
+</div>
+</body>
+</html>

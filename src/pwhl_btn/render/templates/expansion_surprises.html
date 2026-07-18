@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff;
+         font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:6px; z-index:30;
+             background:linear-gradient(to right,#f5a623,#e05a00,#f5a623); }
+
+  .bg-glow-top { position:absolute; top:0; left:50%; transform:translateX(-50%);
+                 width:1080px; height:800px;
+                 background:radial-gradient(ellipse at 50% 0%, rgba(224,90,0,0.12) 0%, transparent 65%);
+                 z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px); }
+
+  .corner { position:absolute; width:64px; height:64px; z-index:20; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(245,166,35,0.40); border-left:2px solid rgba(245,166,35,0.40); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(245,166,35,0.40); border-right:2px solid rgba(245,166,35,0.40); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.20); border-left:2px solid rgba(245,166,35,0.20); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.20); border-right:2px solid rgba(245,166,35,0.20); }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif;
+           font-size:26px; letter-spacing:6px; color:rgba(255,255,255,0.22); z-index:25; }
+  .stamp { position:absolute; top:32px; right:80px; z-index:25;
+           display:flex; align-items:center; gap:10px;
+           background:rgba(245,166,35,0.08); border:1.5px solid rgba(245,166,35,0.40);
+           border-radius:100px; padding:9px 22px; }
+  .stamp-dot  { width:7px; height:7px; border-radius:50%; background:#f5a623; }
+  .stamp-text { font-size:13px; font-weight:800; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  /* ── Hero ── */
+  .hero { position:relative; z-index:5; padding:140px 80px 0; }
+  .hero-eyebrow { font-size:16px; font-weight:800; letter-spacing:8px;
+                  color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:16px; }
+  .hero-title { font-family:'Bebas Neue',sans-serif; font-size:108px; line-height:0.88;
+                letter-spacing:2px; color:#fff; }
+  .hero-title .accent { color:#f5a623; }
+  .hero-sub { margin-top:20px; font-size:22px; font-weight:700; letter-spacing:1px;
+              color:rgba(255,255,255,0.35); line-height:1.4; }
+  .hero-rule { width:100%; height:1px; margin-top:48px;
+               background:linear-gradient(90deg,rgba(245,166,35,0.50),rgba(245,166,35,0.15),transparent); }
+
+  /* ── City cards ── */
+  .cities { position:relative; z-index:5; padding:52px 80px 0;
+            display:flex; flex-direction:column; gap:40px; }
+
+  .city-card {
+    padding:40px 44px;
+    background:rgba(255,255,255,0.03);
+    border:1.5px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    position:relative; overflow:hidden;
+  }
+  .city-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:rgba(245,166,35,0.55);
+    border-radius:14px 0 0 14px;
+  }
+
+  /* city name + venue row */
+  .city-header { margin-bottom:24px; }
+  .city-name { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.88;
+               letter-spacing:2px; color:#fff; }
+  .city-venue { font-size:17px; font-weight:700; letter-spacing:2px;
+                color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:8px; }
+
+  /* attendance numbers row */
+  .att-row { display:flex; gap:0; margin-bottom:24px; }
+  .att-block { flex:1; }
+  .att-block + .att-block { border-left:1px solid rgba(255,255,255,0.08); padding-left:28px; }
+  .att-label { font-size:12px; font-weight:800; letter-spacing:5px;
+               color:rgba(255,255,255,0.22); text-transform:uppercase; margin-bottom:6px; }
+  .att-number { font-family:'Bebas Neue',sans-serif; font-size:60px; letter-spacing:2px;
+                line-height:1; color:#f5a623; }
+  .att-sub { font-size:15px; font-weight:700; letter-spacing:2px;
+             color:rgba(255,255,255,0.30); margin-top:4px; }
+
+  /* context note */
+  .city-note { padding-top:20px; border-top:1px solid rgba(255,255,255,0.07);
+               font-size:19px; font-weight:600; line-height:1.50;
+               color:rgba(255,255,255,0.38); font-style:italic; }
+
+  /* ── Footer ── */
+  .footer { position:absolute; bottom:32px; left:0; right:0;
+            display:flex; justify-content:space-between; align-items:center;
+            padding:0 80px; z-index:25; }
+  .footer-brand { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-label { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="stamp">
+  <div class="stamp-dot"></div>
+  <div class="stamp-text">Takeover Tour</div>
+  <div class="stamp-dot"></div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">PWHL Expansion</div>
+  <div class="hero-title">THE<br><span class="accent">SURPRISES</span></div>
+  <div class="hero-sub">Markets that underperformed expectations<br>on the Takeover Tour</div>
+  <div class="hero-rule"></div>
+</div>
+
+<div class="cities">
+
+  <!-- Edmonton -->
+  <div class="city-card">
+    <div class="city-header">
+      <div class="city-name">Edmonton</div>
+      <div class="city-venue">Rogers Place · 18,347 capacity</div>
+    </div>
+    <div class="att-row">
+      <div class="att-block">
+        <div class="att-label">Game 1 — Feb 2025</div>
+        <div class="att-number">17,518</div>
+        <div class="att-sub">95% capacity</div>
+      </div>
+      <div class="att-block" style="padding-left:28px;">
+        <div class="att-label">Games 2 &amp; 3 Avg</div>
+        <div class="att-number">10,529</div>
+        <div class="att-sub">57% capacity</div>
+      </div>
+    </div>
+    <div class="city-note">The first game looked like a slam dunk. The next two told a different story — attendance dropped by nearly 7,000. Hard to build a franchise case on one outlier game.</div>
+  </div>
+
+  <!-- Halifax -->
+  <div class="city-card">
+    <div class="city-header">
+      <div class="city-name">Halifax</div>
+      <div class="city-venue">Scotiabank Centre · 10,595 capacity</div>
+    </div>
+    <div class="att-row">
+      <div class="att-block">
+        <div class="att-label">2-Game Average</div>
+        <div class="att-number">10,445</div>
+        <div class="att-sub">Avg across 2 games</div>
+      </div>
+      <div class="att-block" style="padding-left:28px;">
+        <div class="att-label">Capacity Fill</div>
+        <div class="att-number">98.6%</div>
+        <div class="att-sub">Effectively sold out</div>
+      </div>
+    </div>
+    <div class="city-note">Sold out both nights — but the building only holds 10,595. Raw attendance looks modest next to bigger markets. The demand is real. The arena isn't PWHL-scale.</div>
+  </div>
+
+  <!-- Buffalo -->
+  <div class="city-card">
+    <div class="city-header">
+      <div class="city-name">Buffalo</div>
+      <div class="city-venue">KeyBank Center · 19,070 capacity</div>
+    </div>
+    <div class="att-row">
+      <div class="att-block">
+        <div class="att-label">1-Game Total</div>
+        <div class="att-number">8,512</div>
+        <div class="att-sub">45% capacity</div>
+      </div>
+      <div class="att-block" style="padding-left:28px;">
+        <div class="att-label">Tour Ranking</div>
+        <div class="att-number">Last</div>
+        <div class="att-sub">Lowest of any stop</div>
+      </div>
+    </div>
+    <div class="city-note">Strong hockey market on paper — Sabres fanbase, proximity to the Canadian border. The numbers just weren't there. Lowest attended tour stop in the dataset.</div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-label">PWHL Expansion Series</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .bg-glow  { position:absolute; top:20%; left:50%; transform:translateX(-50%); width:1100px; height:900px; background:radial-gradient(ellipse,rgba(94,23,235,0.16) 0%,transparent 65%); z-index:0; }
+  .bg-glow2 { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:1000px; height:600px; background:radial-gradient(ellipse,rgba(245,166,35,0.09) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(245,166,35,0.14); border:1.5px solid rgba(245,166,35,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#f5a623; }
+  .badge-text { font-size:18px; font-weight:700; letter-spacing:4px; color:#f5a623; text-transform:uppercase; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:116px 80px 76px; }
+
+  /* ── Header ──────────────────────────────────────────────────────────────── */
+  .eyebrow { font-size:17px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:4px; }
+  .title   { font-family:'Bebas Neue',sans-serif; font-size:88px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .title span { color:#f5a623; }
+  .neon-rule { width:110px; height:3px; background:linear-gradient(90deg,#f5a623,rgba(245,166,35,0)); border-radius:2px; margin:18px 0 28px; }
+
+  /* ── Season series record (compact) ─────────────────────────────────────── */
+  .record-row { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:20px; }
+  .rec-team { display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; }
+  .rec-logo { width:88px; height:88px; object-fit:contain; filter:drop-shadow(0 0 16px rgba(140,82,255,0.40)); }
+  .rec-code { font-family:'Bebas Neue',sans-serif; font-size:38px; letter-spacing:4px; color:#fff; }
+  .rec-divider { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 16px; }
+  .rec-score { font-family:'Bebas Neue',sans-serif; font-size:110px; line-height:1; color:#f5a623; text-shadow:0 0 40px rgba(245,166,35,0.35); }
+  .rec-dash { font-family:'Bebas Neue',sans-serif; font-size:70px; color:rgba(255,255,255,0.18); }
+
+  /* ── Series stat pills ───────────────────────────────────────────────────── */
+  .stat-row { display:flex; gap:14px; margin-bottom:26px; }
+  .stat-pill { flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:18px 12px; text-align:center; }
+  .stat-pill.gold   { border-color:rgba(245,166,35,0.30); background:rgba(245,166,35,0.06); }
+  .stat-pill.accent { border-color:rgba(140,82,255,0.30); background:rgba(140,82,255,0.07); }
+  .sp-val  { font-family:'Bebas Neue',sans-serif; font-size:56px; line-height:1; color:#fff; }
+  .sp-val.go { color:#f5a623; }
+  .sp-val.pu { color:#8c52ff; }
+  .sp-lbl  { font-size:13px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-top:4px; }
+
+  /* ── Section divider ─────────────────────────────────────────────────────── */
+  .section-div { display:flex; align-items:center; gap:16px; margin:4px 0 20px; }
+  .sd-line { flex:1; height:1px; background:rgba(255,255,255,0.08); }
+  .sd-label { font-size:13px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.28); text-transform:uppercase; white-space:nowrap; }
+  .sd-label span { color:rgba(245,166,35,0.65); }
+
+  /* ── Goalie SV% hero ─────────────────────────────────────────────────────── */
+  .goalie-hero { display:flex; align-items:baseline; justify-content:center; gap:24px; margin-bottom:18px; }
+  .gh-val { font-family:'Bebas Neue',sans-serif; font-size:170px; line-height:0.85; color:#f5a623; letter-spacing:-4px; text-shadow:0 0 60px rgba(245,166,35,0.28); }
+  .gh-side { display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:14px; gap:6px; }
+  .gh-label { font-size:14px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.28); text-transform:uppercase; }
+  .gh-sub   { font-size:16px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.45); text-transform:uppercase; }
+
+  /* ── Goalie stat grid ────────────────────────────────────────────────────── */
+  .goalie-grid { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
+  .gc { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:18px 10px; text-align:center; }
+  .gc.hi { border-color:rgba(140,82,255,0.28); background:rgba(140,82,255,0.07); }
+  .gc-val  { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:#fff; }
+  .gc-val.pu { color:#8c52ff; }
+  .gc-lbl  { font-size:12px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.26); text-transform:uppercase; margin-top:3px; }
+
+  /* ── Comparison cards ────────────────────────────────────────────────────── */
+  .compare-row { display:flex; gap:14px; }
+  .comp-card { flex:1; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:22px 20px; text-align:center; }
+  .comp-card.active { border-color:rgba(245,166,35,0.28); background:rgba(245,166,35,0.05); }
+  .comp-opp { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:8px; }
+  .comp-logo { width:36px; height:36px; object-fit:contain; }
+  .comp-opp-label { font-size:15px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.35); text-transform:uppercase; }
+  .comp-sv { font-family:'Bebas Neue',sans-serif; font-size:72px; line-height:1; }
+  .comp-sv.active { color:#f5a623; }
+  .comp-sv.dim    { color:rgba(255,255,255,0.35); }
+  .comp-detail  { font-size:14px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-top:3px; }
+  .comp-detail.active { color:rgba(245,166,35,0.60); }
+
+  /* ── Desbiens photo strip ────────────────────────────────────────────────── */
+  .player-strip { flex:1; position:relative; overflow:hidden; margin-top:24px; min-height:60px; }
+  .player-strip img { position:absolute; bottom:0; left:0; width:100%; height:120%; object-fit:cover; object-position:center top; }
+  .player-strip::before {
+    content:''; position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(to bottom, #07000f 0%, rgba(7,0,15,0.30) 45%, transparent 75%),
+      linear-gradient(to top,    rgba(7,0,15,0.75) 0%, transparent 35%);
+  }
+
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.22); }
+  .footer-season { font-size:15px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.22); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-glow2"></div>
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">MTL vs MIN · Stats</div></div>
+
+<div class="slide">
+  <div class="eyebrow">2025&#x2013;26 Regular Season</div>
+  <div class="title">SEASON<br><span>DOMINANCE</span></div>
+  <div class="neon-rule"></div>
+
+  <!-- Season series 4-0 -->
+  <div class="record-row">
+    <div class="rec-team">
+      <img class="rec-logo" src="{{ mtl_logo }}" alt="MTL">
+      <div class="rec-code">MTL</div>
+    </div>
+    <div class="rec-divider">
+      <div class="rec-score">{{ wins_a }}</div>
+      <div class="rec-dash">&#x2013;</div>
+      <div class="rec-score" style="color:rgba(255,255,255,0.22);">{{ wins_b }}</div>
+    </div>
+    <div class="rec-team">
+      <img class="rec-logo" src="{{ min_logo }}" alt="MIN" style="filter:drop-shadow(0 0 12px rgba(255,255,255,0.10)) grayscale(0.4) opacity(0.55);">
+      <div class="rec-code" style="color:rgba(255,255,255,0.38);">MIN</div>
+    </div>
+  </div>
+
+  <!-- Series stats: GF | GA | GD -->
+  <div class="stat-row">
+    <div class="stat-pill gold">
+      <div class="sp-val go">{{ gf }}</div>
+      <div class="sp-lbl">Goals For</div>
+    </div>
+    <div class="stat-pill">
+      <div class="sp-val">{{ ga }}</div>
+      <div class="sp-lbl">Goals Against</div>
+    </div>
+    <div class="stat-pill accent">
+      <div class="sp-val pu">{{ gd }}</div>
+      <div class="sp-lbl">Goal Diff</div>
+    </div>
+  </div>
+
+  <!-- Section divider -->
+  <div class="section-div">
+    <div class="sd-line"></div>
+    <div class="sd-label">Goaltending &#xB7; <span>Ann-Ren&#xe9;e Desbiens</span></div>
+    <div class="sd-line"></div>
+  </div>
+
+  <!-- SV% hero -->
+  <div class="goalie-hero">
+    <div class="gh-val">{{ svp_vs_min }}</div>
+    <div class="gh-side">
+      <div class="gh-label">Save Pct vs MIN</div>
+      <div class="gh-sub">{{ goalie_starts }} Starts</div>
+      <div class="gh-sub">{{ goalie_ga }} Goals Allowed</div>
+    </div>
+  </div>
+
+  <!-- Comparison by opponent -->
+  <div class="compare-row">
+    <div class="comp-card active">
+      <div class="comp-opp">
+        <img class="comp-logo" src="{{ min_logo }}" alt="MIN">
+        <div class="comp-opp-label">vs MIN</div>
+      </div>
+      <div class="comp-sv active">{{ svp_vs_min }}</div>
+      <div class="comp-detail active">{{ ga_vs_min }} GA &#xB7; {{ gp_vs_min }} GP</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-opp">
+        <img class="comp-logo" src="{{ ott_logo }}" alt="OTT" style="opacity:0.55;">
+        <div class="comp-opp-label" style="color:rgba(255,255,255,0.28);">vs OTT</div>
+      </div>
+      <div class="comp-sv dim">{{ svp_vs_ott }}</div>
+      <div class="comp-detail">{{ ga_vs_ott }} GA &#xB7; {{ gp_vs_ott }} GP</div>
+    </div>
+  </div>
+
+  <!-- Desbiens photo -->
+  <div class="player-strip">
+    <img src="{{ desbiens_photo }}" alt="Ann-Ren&#xe9;e Desbiens">
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 &#xB7; 2025&#x2013;26</div>
+  </div>
+</div>
+</body>
+</html>

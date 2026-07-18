@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .bg-glow    { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 20%,rgba(94,23,235,0.32) 0%,transparent 55%),radial-gradient(ellipse at 80% 75%,rgba(245,166,35,0.08) 0%,transparent 40%); z-index:0; }
+  .bg-grid    { position:absolute; inset:0; background-image:linear-gradient(rgba(140,82,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(140,82,255,0.04) 1px,transparent 1px); background-size:80px 80px; z-index:0; }
+  .bg-scan    { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); z-index:1; }
+  .top-bar    { position:absolute; top:0; left:0; right:0; height:6px; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); z-index:5; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; padding:60px 72px 56px; }
+
+  /* HEADER */
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:48px; }
+  .brand  { font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:5px; color:rgba(255,255,255,0.35); }
+  .pill   { background:rgba(140,82,255,0.12); border:1.5px solid rgba(140,82,255,0.45); border-radius:100px; padding:10px 28px; font-size:19px; font-weight:700; letter-spacing:4px; color:#c49fff; text-transform:uppercase; }
+
+  /* NAME BLOCK */
+  .name-block { margin-bottom:36px; }
+  .game-date  { font-size:22px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .player-name { font-family:'Bebas Neue',sans-serif; font-size:110px; line-height:0.88; color:#fff; letter-spacing:2px; }
+  .team-line   { font-size:26px; font-weight:700; letter-spacing:5px; color:#8c52ff; text-transform:uppercase; margin-top:8px; }
+  .neon-rule   { width:90px; height:3px; background:linear-gradient(90deg,transparent,#8c52ff,transparent); margin:20px 0; border-radius:2px; box-shadow:0 0 14px rgba(140,82,255,0.6); }
+
+  /* SCOREBOARD */
+  .scoreboard { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:40px; background:rgba(255,255,255,0.03); border:1px solid rgba(140,82,255,0.18); border-radius:20px; overflow:hidden; }
+  .score-team { flex:1; display:flex; flex-direction:column; align-items:center; padding:28px 24px; }
+  .score-code { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:3px; color:rgba(255,255,255,0.55); line-height:1; }
+  .score-val  { font-family:'Bebas Neue',sans-serif; font-size:120px; line-height:0.9; color:#fff; }
+  .score-team.winner .score-code { color:#fff; }
+  .score-team.winner .score-val  { color:#f5a623; }
+  .score-divider { display:flex; flex-direction:column; align-items:center; padding:0 20px; gap:6px; }
+  .score-dash  { font-family:'Bebas Neue',sans-serif; font-size:80px; color:rgba(255,255,255,0.2); line-height:1; }
+  .result-badge { background:rgba(140,82,255,0.2); border:1px solid rgba(140,82,255,0.4); border-radius:8px; padding:6px 16px; font-size:18px; font-weight:700; letter-spacing:3px; color:#8c52ff; text-transform:uppercase; }
+
+  /* PERIOD BREAKDOWN */
+  .period-table { width:100%; margin-bottom:36px; border-collapse:collapse; }
+  .period-table th { font-size:17px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.25); text-transform:uppercase; text-align:center; padding:10px 8px; }
+  .period-table th.left { text-align:left; }
+  .period-table td { text-align:center; padding:14px 8px; border-top:1px solid rgba(255,255,255,0.05); }
+  .period-table td.left { text-align:left; }
+  .period-table tr.highlight td { background:rgba(140,82,255,0.06); }
+  .td-team  { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:rgba(255,255,255,0.6); }
+  .td-score { font-family:'Bebas Neue',sans-serif; font-size:32px; color:rgba(255,255,255,0.8); }
+  .td-total { font-family:'Bebas Neue',sans-serif; font-size:36px; color:#f5a623; }
+  .td-team.phillips { color:#8c52ff; }
+  .td-total.phillips { color:#8c52ff; }
+  .period-label { font-size:17px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.25); }
+
+  /* STAT GRID */
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:28px; }
+  .stat-card { background:rgba(255,255,255,0.03); border:1px solid rgba(140,82,255,0.15); border-radius:18px; padding:26px 20px 22px; display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(to right,#5e17eb,#8c52ff,transparent); }
+  .stat-card.gold::before { background:linear-gradient(to right,#f5a623,#ffcc70,transparent); }
+  .stat-card.green::before { background:linear-gradient(to right,#4ade80,#86efac,transparent); }
+  .stat-lbl  { font-size:16px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+  .stat-val  { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; color:#fff; }
+  .stat-val.purple { color:#8c52ff; }
+  .stat-val.gold   { color:#f5a623; }
+  .stat-val.green  { color:#4ade80; }
+  .stat-val.sm     { font-size:56px; }
+  .stat-sub  { font-size:17px; font-weight:600; color:rgba(255,255,255,0.28); letter-spacing:1px; }
+
+  /* DECISION BANNER */
+  .decision-banner { display:flex; align-items:center; justify-content:center; gap:20px; padding:22px 36px; border-radius:18px; margin-bottom:28px; }
+  .decision-banner.win  { background:rgba(74,222,128,0.08);  border:1.5px solid rgba(74,222,128,0.35); }
+  .decision-banner.loss { background:rgba(248,113,113,0.06); border:1.5px solid rgba(248,113,113,0.25); }
+  .dec-word  { font-family:'Bebas Neue',sans-serif; font-size:72px; line-height:1; letter-spacing:4px; }
+  .win  .dec-word  { color:#4ade80; }
+  .loss .dec-word  { color:#f87171; }
+  .dec-detail { font-size:24px; font-weight:700; letter-spacing:3px; color:rgba(255,255,255,0.4); text-transform:uppercase; }
+
+  /* CONTEXT BOX */
+  .context-box { background:rgba(140,82,255,0.06); border:1px solid rgba(140,82,255,0.18); border-radius:16px; padding:22px 28px; flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; }
+  .context-label { font-size:15px; font-weight:700; letter-spacing:4px; color:rgba(140,82,255,0.7); text-transform:uppercase; }
+  .context-text  { font-family:'Barlow',sans-serif; font-size:24px; font-weight:500; color:rgba(255,255,255,0.6); line-height:1.45; }
+
+  /* FOOTER */
+  .footer { display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); margin-top:16px; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.15); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.15); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+<div class="bg-scan"></div>
+
+<div class="slide">
+
+  <div class="header">
+    <div class="brand">BTN</div>
+    <div class="pill">Game Highlights</div>
+  </div>
+
+  <div class="name-block">
+    <div class="game-date">{{ game_date }} · {{ home_away }} vs {{ opponent }}</div>
+    <div class="player-name">{{ player_name }}</div>
+    <div class="team-line">{{ team_code }} · Season 8</div>
+    <div class="neon-rule"></div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard">
+    <div class="score-team {% if our_score > opp_score %}winner{% endif %}">
+      <div class="score-code">{{ team_code }}</div>
+      <div class="score-val">{{ our_score }}</div>
+    </div>
+    <div class="score-divider">
+      <div class="score-dash">–</div>
+      {% if result_type and result_type != 'REG' %}
+      <div class="result-badge">{{ result_type }}</div>
+      {% endif %}
+    </div>
+    <div class="score-team {% if opp_score > our_score %}winner{% endif %}">
+      <div class="score-code">{{ opponent }}</div>
+      <div class="score-val">{{ opp_score }}</div>
+    </div>
+  </div>
+
+  <!-- Period breakdown -->
+  <table class="period-table">
+    <thead>
+      <tr>
+        <th class="left"></th>
+        <th>1st</th>
+        <th>2nd</th>
+        <th>3rd</th>
+        {% if result_type and result_type != 'REG' %}<th>{{ result_type }}</th>{% endif %}
+        <th>Final</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="highlight">
+        <td class="left"><span class="td-team phillips">{{ team_code }}</span></td>
+        <td><span class="td-score">{{ our_p1 }}</span></td>
+        <td><span class="td-score">{{ our_p2 }}</span></td>
+        <td><span class="td-score">{{ our_p3 }}</span></td>
+        {% if result_type and result_type != 'REG' %}<td><span class="td-score">{{ our_ot }}</span></td>{% endif %}
+        <td><span class="td-total phillips">{{ our_score }}</span></td>
+      </tr>
+      <tr>
+        <td class="left"><span class="td-team">{{ opponent }}</span></td>
+        <td><span class="td-score">{{ opp_p1 }}</span></td>
+        <td><span class="td-score">{{ opp_p2 }}</span></td>
+        <td><span class="td-score">{{ opp_p3 }}</span></td>
+        {% if result_type and result_type != 'REG' %}<td><span class="td-score">{{ opp_ot }}</span></td>{% endif %}
+        <td><span class="td-total">{{ opp_score }}</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Decision -->
+  <div class="decision-banner {% if decision == 'W' %}win{% else %}loss{% endif %}">
+    <div class="dec-word">{% if decision == 'W' %}WIN{% else %}LOSS{% endif %}</div>
+    <div class="dec-detail">{{ minutes_fmt }} played{% if result_type and result_type != 'REG' %} · {{ result_type }}{% endif %}</div>
+  </div>
+
+  <!-- Key stats -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-lbl">Shots Against</div>
+      <div class="stat-val purple">{{ shots_against }}</div>
+      <div class="stat-sub">vs {{ league_avg_sa }} league avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Saves</div>
+      <div class="stat-val">{{ saves }}</div>
+      <div class="stat-sub">{{ goals_against }} goal{{ 's' if goals_against != 1 else '' }} allowed</div>
+    </div>
+    <div class="stat-card {% if sv_pct_raw >= league_sv_pct %}green{% endif %}">
+      <div class="stat-lbl">SV%</div>
+      <div class="stat-val sm {% if sv_pct_raw >= league_sv_pct %}green{% endif %}">{{ sv_pct }}</div>
+      <div class="stat-sub">Lg avg {{ league_sv_pct_fmt }}</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-lbl">GSAA</div>
+      <div class="stat-val sm gold">{{ gsaa }}</div>
+      <div class="stat-sub">Goals saved vs avg</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Season SV%</div>
+      <div class="stat-val sm purple">{{ season_sv_pct }}</div>
+      <div class="stat-sub">Season avg</div>
+    </div>
+    <div class="stat-card {% if season_gsaa_raw >= 0 %}green{% endif %}">
+      <div class="stat-lbl">Season GSAA</div>
+      <div class="stat-val sm {% if season_gsaa_raw >= 0 %}green{% else %}stat-val{% endif %}">{{ season_gsaa }}</div>
+      <div class="stat-sub">Season total</div>
+    </div>
+  </div>
+
+  <div class="context-box">
+    <div class="context-label">Game Context</div>
+    <div class="context-text">{{ context_line }}</div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -12,6 +12,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from pwhl_btn.db.db_config import get_engine
+from pwhl_btn.ingest.hockeytech import API_BASE, with_auth
 
 engine  = get_engine()
 Session = sessionmaker(bind=engine)
@@ -1226,13 +1227,11 @@ def get_upcoming_schedule(start_date, end_date):
     from datetime import datetime as _dt
 
     # Fetch full season schedule from API
-    params = {
+    params = with_auth({
         "feed": "modulekit", "view": "schedule",
         "season_id": SEASON_ID,
-        "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
-    }
-    resp = _req.get("https://lscluster.hockeytech.com/feed/index.php",
-                    params=params, timeout=15)
+    })
+    resp = _req.get(API_BASE, params=params, timeout=15)
     resp.raise_for_status()
     schedule = resp.json().get("SiteKit", {}).get("Schedule", [])
 
@@ -1345,12 +1344,10 @@ def get_game_to_watch(start_date, end_date):
         # Upcoming games this week — fetch from API since only finals are in DB
         import requests as _req
         from datetime import datetime as _dt2
-        api_params = {
+        api_params = with_auth({
             "feed": "modulekit", "view": "schedule", "season_id": SEASON_ID,
-            "key": "446521baf8c38984", "client_code": "pwhl", "fmt": "json"
-        }
-        api_schedule = _req.get("https://lscluster.hockeytech.com/feed/index.php",
-                                 params=api_params, timeout=15).json()
+        })
+        api_schedule = _req.get(API_BASE, params=api_params, timeout=15).json()
         raw_games = api_schedule.get("SiteKit", {}).get("Schedule", [])
 
         # Build a simple game list with team IDs for scoring
@@ -1885,7 +1882,7 @@ def get_simulation_inputs() -> dict[int, dict]:
     Returns per-team inputs needed to calculate win probability in Monte Carlo.
 
     Inputs per team:
-      - pts_pct       : season points / (games played * 2)
+      - pts_pct       : season points / (games played * 3)
       - rank_score    : raw power ranking score (streak*3 + ppg*20 + last5_gd*1.5)
       - last5_gd      : goal differential in last 5 games
       - home_win_pct  : wins at home / home games played
@@ -1980,7 +1977,7 @@ def get_simulation_inputs() -> dict[int, dict]:
             pts = int(r.pts or 0)
 
             # Points percentage
-            pts_pct = pts / (gp * 2) if gp else 0.0
+            pts_pct = pts / (gp * 3) if gp else 0.0
 
             # Home win %
             home_gp   = int(r.home_gp   or 0)
@@ -2024,5 +2021,466 @@ def get_simulation_inputs() -> dict[int, dict]:
 
         return result
 
+    finally:
+        session.close()
+
+
+# ── Gold Plan / Elimination ────────────────────────────────────────────────────
+
+def get_elimination_slide_data(team_code: str, elimination_date: str,
+                               season_id: int = SEASON_ID) -> dict:
+    """
+    Returns data needed to render the eliminated_announcement slide.
+
+    Args:
+        team_code:        e.g. "SEA"
+        elimination_date: human-readable string, e.g. "April 14, 2026"
+        season_id:        default 8 (Season 8)
+
+    Returns dict with:
+        team_code, team_name, team_logo, elimination_date
+    """
+    session = Session()
+    try:
+        row = session.execute(text(
+            "SELECT team_id, team_name FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"
+        ), {"code": team_code.upper(), "sid": season_id}).fetchone()
+        if not row:
+            raise ValueError(f"Team '{team_code}' not found for season {season_id}")
+
+        return {
+            "team_code":        team_code.upper(),
+            "team_name":        row.team_name,
+            "team_logo":        _logo_uri(team_code),
+            "elimination_date": elimination_date,
+        }
+    finally:
+        session.close()
+
+
+def get_gold_plan_slide_data(
+    eliminated_teams: list[dict],
+    updated_through:  str,
+    total_non_playoff: int = 4,
+    season_id: int = SEASON_ID,
+) -> dict:
+    """
+    Returns data needed to render the gold_plan_slide.
+
+    Args:
+        eliminated_teams: list of dicts for teams already eliminated, each with:
+            team_code       str   e.g. "SEA"
+            elim_date       str   e.g. "Apr 14"
+            games_remaining int
+            gold_pts        int   points earned in games played after elimination
+        updated_through:  human-readable string, e.g. "April 15, 2026"
+        total_non_playoff: total number of teams that will NOT make playoffs (default 4)
+        season_id:        default 8
+
+    Returns dict suitable for render_gold_plan_slide().
+    """
+    session = Session()
+    try:
+        # Enrich eliminated_teams with logo URIs
+        enriched: list[dict] = []
+        for t in eliminated_teams:
+            code = t["team_code"].upper()
+            row  = session.execute(text(
+                "SELECT team_name FROM teams WHERE team_code = :code AND season_id = :sid LIMIT 1"
+            ), {"code": code, "sid": season_id}).fetchone()
+            enriched.append({
+                "team_code":       code,
+                "team_name":       row.team_name if row else code,
+                "team_logo":       _logo_uri(code),
+                "gold_pts":        t.get("gold_pts", 0),
+                "elim_date":       t.get("elim_date"),
+                "games_remaining": t.get("games_remaining"),
+            })
+
+        # Pad to total_non_playoff rows with TBD placeholders
+        while len(enriched) < total_non_playoff:
+            enriched.append({
+                "team_code":       None,
+                "team_name":       None,
+                "team_logo":       None,
+                "gold_pts":        None,
+                "elim_date":       None,
+                "games_remaining": None,
+            })
+
+        return {
+            "updated_through": updated_through,
+            "standings":       enriched,
+        }
+    finally:
+        session.close()
+
+
+def _fmt_date(d, fmt: str) -> str:
+    """strftime without leading zeros (cross-platform: no %-d)."""
+    return d.strftime(fmt).replace(" 0", " ").lstrip("0") if d else ""
+
+
+def find_elimination_date(team_code: str, season_id: int = SEASON_ID) -> tuple[date | None, int]:
+    """
+    Find the date a team became mathematically eliminated and their games remaining at that point.
+
+    Returns:
+        (elimination_date, games_remaining_at_elimination)
+        elimination_date is None if the team is not yet eliminated.
+    """
+    from pwhl_btn.analytics.clinch import check_eliminated
+
+    session = Session()
+    try:
+        rows = session.execute(text(
+            "SELECT DISTINCT date FROM games "
+            "WHERE season_id = :sid AND game_status = 'final' "
+            "ORDER BY date ASC"
+        ), {"sid": season_id}).fetchall()
+    finally:
+        session.close()
+
+    game_dates = [r.date for r in rows]
+
+    for i, d in enumerate(game_dates):
+        after_date = d + timedelta(days=1)
+        snapshot = get_clinch_data(season_id, before_date=after_date)
+        elim = check_eliminated(snapshot)
+        team_id = next((tid for tid, info in snapshot.items()
+                        if info["team_code"].upper() == team_code.upper()), None)
+        if team_id and elim.get(team_id):
+            games_remaining = snapshot[team_id]["games_remaining"]
+            return d, games_remaining
+
+    return None, 0
+
+
+def get_auto_gold_plan_data(season_id: int = SEASON_ID) -> dict:
+    """
+    Auto-derive all Gold Plan elimination data from the DB.
+
+    For each eliminated team, computes:
+      - elim_date:       the date they became eliminated (formatted "Mon DD")
+      - games_remaining: games left at elimination
+      - gold_pts:        points earned in games played after elimination
+
+    Returns dict suitable for render_gold_plan_standings():
+      {
+        "updated_through": str,    e.g. "April 19, 2026"
+        "standings": list[dict],   4 rows (padded with TBD if needed)
+      }
+    """
+    from pwhl_btn.analytics.clinch import check_eliminated
+
+    current_snapshot = get_clinch_data(season_id)
+    elim_status = check_eliminated(current_snapshot)
+    eliminated_team_ids = [tid for tid, is_elim in elim_status.items() if is_elim]
+
+    session = Session()
+    try:
+        team_rows = session.execute(text(
+            "SELECT team_id, team_code, team_name FROM teams WHERE season_id = :sid"
+        ), {"sid": season_id}).fetchall()
+        team_info = {r.team_id: {"team_code": r.team_code, "team_name": r.team_name}
+                     for r in team_rows}
+
+        # Get last played game date for "updated through"
+        last_game = session.execute(text(
+            "SELECT MAX(date) AS last_date FROM games "
+            "WHERE season_id = :sid AND game_status = 'final'"
+        ), {"sid": season_id}).scalar()
+    finally:
+        session.close()
+
+    last_date = last_game if hasattr(last_game, "strftime") else \
+        (date.fromisoformat(str(last_game)) if last_game else date.today())
+    updated_through = _fmt_date(last_date, "%B %d, %Y")
+
+    eliminated_teams: list[dict] = []
+    for tid in eliminated_team_ids:
+        code = team_info[tid]["team_code"]
+        elim_date_obj, games_rem = find_elimination_date(code, season_id)
+
+        # pts at elimination = pts earned before day after elim_date
+        pts_at_elim = 0
+        if elim_date_obj:
+            snap = get_clinch_data(season_id, before_date=elim_date_obj + timedelta(days=1))
+            pts_at_elim = snap.get(tid, {}).get("pts", 0)
+
+        current_pts = current_snapshot[tid]["pts"]
+        gold_pts = current_pts - pts_at_elim
+
+        elim_date_str = _fmt_date(elim_date_obj, "%b %d") if elim_date_obj else None
+
+        eliminated_teams.append({
+            "team_code":       code,
+            "team_name":       team_info[tid]["team_name"],
+            "team_logo":       _logo_uri(code),
+            "gold_pts":        gold_pts,
+            "elim_date":       elim_date_str,
+            "games_remaining": games_rem,
+        })
+
+    # Sort by gold_pts desc, then games_remaining asc as tiebreaker
+    eliminated_teams.sort(key=lambda t: (-t["gold_pts"], t["games_remaining"]))
+
+    total_non_playoff = 4
+    while len(eliminated_teams) < total_non_playoff:
+        eliminated_teams.append({
+            "team_code": None, "team_name": None, "team_logo": None,
+            "gold_pts": None, "elim_date": None, "games_remaining": None,
+        })
+
+    return {
+        "updated_through": updated_through,
+        "standings":       eliminated_teams,
+    }
+
+
+# ── Season Recap ───────────────────────────────────────────────────────────────
+
+TEAM_COLORS = {
+    "BOS": "#007A33",
+    "MIN": "#813EA0",
+    "MTL": "#862633",
+    "NY":  "#00b2a9",
+    "OTT": "#c8102e",
+    "TOR": "#00205b",
+    "SEA": "#005c5c",
+    "VAN": "#00843d",
+}
+
+
+def _hex_to_rgba(hex_color: str, alpha: float = 0.3) -> str:
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
+
+
+def get_all_season_teams(season_id: int = 8) -> list[dict]:
+    """Returns all teams in the season as {team_id, team_code, team_name, logo}."""
+    session = Session()
+    try:
+        rows = session.execute(text("""
+            SELECT team_id, team_name, team_code FROM teams
+            WHERE season_id = :sid ORDER BY team_code
+        """), {"sid": season_id}).fetchall()
+        return [{"team_id": r.team_id, "team_code": r.team_code,
+                 "team_name": r.team_name, "logo": _logo_uri(r.team_code)}
+                for r in rows]
+    finally:
+        session.close()
+
+
+def get_season_recap_data(team_code: str, season_id: int = 8) -> dict:
+    """
+    Returns all data needed for the 4-slide season recap for a single team.
+    """
+    session = Session()
+    try:
+        team = session.execute(text("""
+            SELECT team_id, team_name, team_code FROM teams
+            WHERE team_code = :code AND season_id = :sid LIMIT 1
+        """), {"code": team_code, "sid": season_id}).fetchone()
+
+        if not team:
+            return {}
+
+        tid  = team.team_id
+        code = team.team_code
+        tc   = TEAM_COLORS.get(code, "#8c52ff")
+
+        standings = get_standings(season_id)
+        team_row  = next((t for t in standings if t["abbr"] == code), {})
+
+        offense = session.execute(text("""
+            SELECT COALESCE(SUM(s.shots), 0) AS total_shots,
+                   COALESCE(SUM(s.goals), 0) AS total_goals
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_goals = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.goals) AS goals,
+                   SUM(s.assists) AS assists, SUM(s.points) AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY goals DESC, pts DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_points = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.goals) AS goals,
+                   SUM(s.assists) AS assists, SUM(s.points) AS pts,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY pts DESC, goals DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        defense = session.execute(text("""
+            SELECT COALESCE(SUM(s.shots_against), 0) AS shots_against,
+                   COALESCE(SUM(s.saves), 0) AS total_saves,
+                   COUNT(CASE WHEN s.goals_against = 0 AND s.decision = 'W' THEN 1 END) AS shutouts,
+                   ROUND(SUM(s.saves) / NULLIF(SUM(s.shots_against), 0), 3) AS sv_pct
+            FROM goalie_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_goalie = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   SUM(CASE WHEN s.decision = 'W' THEN 1 ELSE 0 END) AS wins,
+                   SUM(CASE WHEN s.goals_against = 0 AND s.decision = 'W' THEN 1 ELSE 0 END) AS shutouts,
+                   ROUND(SUM(s.goals_against) / NULLIF(SUM(s.minutes_played) / 3600.0, 0), 2) AS gaa,
+                   ROUND(SUM(s.saves) / NULLIF(SUM(s.shots_against), 0), 3) AS sv_pct,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM goalie_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name
+            ORDER BY wins DESC, shutouts DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        total_pim = session.execute(text("""
+            SELECT COALESCE(SUM(s.pim), 0) AS total_pim
+            FROM player_game_stats s
+            JOIN games g ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_pim = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.pim) AS pim,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid AND g.game_status = 'final'
+            GROUP BY p.player_id, name, p.position
+            ORDER BY pim DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        top_pm = session.execute(text("""
+            SELECT CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   p.position, SUM(s.plus_minus) AS plus_minus,
+                   COUNT(DISTINCT s.game_id) AS gp
+            FROM player_game_stats s
+            JOIN players p ON p.player_id = s.player_id
+            JOIN games g   ON g.game_id = s.game_id
+            WHERE s.team_id = :tid AND g.season_id = :sid
+              AND g.game_status = 'final'
+              AND p.position NOT IN ('G', 'GK')
+            GROUP BY p.player_id, name, p.position
+            ORDER BY plus_minus DESC LIMIT 1
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        extra = session.execute(text("""
+            SELECT
+              SUM(CASE WHEN result_type = 'OT' AND (
+                  (home_team_id = :tid AND home_score > away_score) OR
+                  (away_team_id = :tid AND away_score > home_score)) THEN 1 ELSE 0 END) AS ot_wins,
+              SUM(CASE WHEN result_type = 'SO' AND (
+                  (home_team_id = :tid AND home_score > away_score) OR
+                  (away_team_id = :tid AND away_score > home_score)) THEN 1 ELSE 0 END) AS so_wins
+            FROM games
+            WHERE season_id = :sid AND game_status = 'final'
+              AND (home_team_id = :tid OR away_team_id = :tid)
+        """), {"tid": tid, "sid": season_id}).fetchone()
+
+        def _svp(val) -> str:
+            if val is None:
+                return ".000"
+            return f".{round(float(val) * 1000):03d}"
+
+        hw_str = team_row.get("home_record", "0-0-0")
+        aw_str = team_row.get("away_record", "0-0-0")
+        hw = int(hw_str.split("-")[0]) if hw_str else 0
+        aw = int(aw_str.split("-")[0]) if aw_str else 0
+
+        return {
+            "team_id":         tid,
+            "team_name":       team.team_name,
+            "team_code":       code,
+            "team_logo":       _logo_uri(code),
+            "team_color":      tc,
+            "team_color_dim":  _hex_to_rgba(tc, 0.15),
+            "team_color_glow": _hex_to_rgba(tc, 0.32),
+            # Record
+            "gp":          team_row.get("gp", 0),
+            "wins":        team_row.get("wins", 0),
+            "losses":      team_row.get("losses", 0),
+            "otl":         team_row.get("otl", 0),
+            "points":      team_row.get("points", 0),
+            "record_str":  f"{team_row.get('wins',0)}-{team_row.get('losses',0)}-{team_row.get('otl',0)}",
+            "home_record": hw_str,
+            "away_record": aw_str,
+            "home_wins":   hw,
+            "away_wins":   aw,
+            # Offense
+            "total_shots": int(offense.total_shots or 0),
+            "total_goals": int(offense.total_goals or 0),
+            "top_scorer": {
+                "name":    top_goals.name if top_goals else "—",
+                "pos":     top_goals.position if top_goals else "",
+                "goals":   int(top_goals.goals or 0) if top_goals else 0,
+                "assists": int(top_goals.assists or 0) if top_goals else 0,
+                "pts":     int(top_goals.pts or 0) if top_goals else 0,
+                "gp":      int(top_goals.gp or 0) if top_goals else 0,
+                "photo":   _player_photo_uri(top_goals.name) if top_goals else None,
+            },
+            "top_points_leader": {
+                "name":    top_points.name if top_points else "—",
+                "pos":     top_points.position if top_points else "",
+                "goals":   int(top_points.goals or 0) if top_points else 0,
+                "assists": int(top_points.assists or 0) if top_points else 0,
+                "pts":     int(top_points.pts or 0) if top_points else 0,
+                "gp":      int(top_points.gp or 0) if top_points else 0,
+                "photo":   _player_photo_uri(top_points.name) if top_points else None,
+            },
+            # Defense
+            "shots_against": int(defense.shots_against or 0),
+            "total_saves":   int(defense.total_saves or 0),
+            "shutouts":      int(defense.shutouts or 0),
+            "team_sv_pct":   _svp(defense.sv_pct),
+            "top_goalie": {
+                "name":     top_goalie.name if top_goalie else "—",
+                "wins":     int(top_goalie.wins or 0) if top_goalie else 0,
+                "shutouts": int(top_goalie.shutouts or 0) if top_goalie else 0,
+                "gaa":      f"{float(top_goalie.gaa):.2f}" if top_goalie and top_goalie.gaa else "0.00",
+                "sv_pct":   _svp(top_goalie.sv_pct) if top_goalie else ".000",
+                "gp":       int(top_goalie.gp or 0) if top_goalie else 0,
+                "photo":    _player_photo_uri(top_goalie.name) if top_goalie else None,
+            },
+            # Fun
+            "total_pim": int(total_pim.total_pim or 0),
+            "top_pim": {
+                "name":  top_pim.name if top_pim else "—",
+                "pos":   top_pim.position if top_pim else "",
+                "pim":   int(top_pim.pim or 0) if top_pim else 0,
+                "gp":    int(top_pim.gp or 0) if top_pim else 0,
+                "photo": _player_photo_uri(top_pim.name) if top_pim else None,
+            },
+            "top_plus_minus": {
+                "name":       top_pm.name if top_pm else "—",
+                "pos":        top_pm.position if top_pm else "",
+                "plus_minus": int(top_pm.plus_minus or 0) if top_pm else 0,
+                "pm_str":     f"{int(top_pm.plus_minus or 0):+d}" if top_pm else "+0",
+                "gp":         int(top_pm.gp or 0) if top_pm else 0,
+            },
+            "ot_wins": int(extra.ot_wins or 0) if extra else 0,
+            "so_wins": int(extra.so_wins or 0) if extra else 0,
+        }
     finally:
         session.close()

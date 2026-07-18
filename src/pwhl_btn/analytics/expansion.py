@@ -51,24 +51,23 @@ def _load_nhl_market_scores() -> dict[str, float]:
 
 def _get_tour_attendance(conn, home_venues: list[str], season_id: int) -> dict[str, dict]:
     """
-    Returns {venue: {avg_att, total_att, game_count}} for all non-home venues.
+    Returns {venue: {avg_att, total_att, game_count}} for all non-home venues,
+    aggregated across all seasons with venue data (not just the current season).
     """
     rows = conn.execute(text("""
         SELECT g.venue,
                COUNT(*)           AS game_count,
-               AVG(g.attendance)  AS avg_att,
                SUM(g.attendance)  AS total_att
         FROM games g
-        WHERE g.season_id   = :sid
-          AND g.game_status = 'final'
+        WHERE g.game_status = 'final'
           AND g.venue       IS NOT NULL
           AND g.attendance  IS NOT NULL
         GROUP BY g.venue
-    """), {"sid": season_id}).fetchall()
+    """)).fetchall()
 
     return {
         r.venue: {
-            "avg_att":    round(float(r.avg_att or 0)),
+            "avg_att":    round(int(r.total_att or 0) / int(r.game_count)) if r.game_count else 0,
             "total_att":  int(r.total_att or 0),
             "game_count": int(r.game_count),
         }

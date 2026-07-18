@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  /* Photo background from goalie photo */
+  .photo-bg { position:absolute; inset:0; z-index:0; }
+  .goalie-photo { width:100%; height:100%; object-fit:cover; object-position:top center; display:block; opacity:0.35; }
+  .overlay-top    { position:absolute; top:0; left:0; right:0; height:500px; z-index:1; background:linear-gradient(to bottom,rgba(7,0,15,0.96) 0%,transparent 100%); }
+  .overlay-bottom { position:absolute; bottom:0; left:0; right:0; height:1400px; z-index:1; background:linear-gradient(to top,rgba(7,0,15,1.0) 0%,rgba(7,0,15,0.90) 52%,transparent 100%); }
+  .no-photo-bg { position:absolute; inset:0; z-index:0; background:radial-gradient(ellipse at 50% 30%, rgba(94,23,235,0.26) 0%, transparent 60%); }
+  .bg-scanlines { position:absolute; inset:0; z-index:2; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px); }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:20; background:linear-gradient(to right,#5e17eb,#8c52ff,#f5a623); }
+  .brand { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .badge { position:absolute; top:30px; right:80px; display:flex; align-items:center; gap:10px; background:rgba(140,82,255,0.14); border:1.5px solid rgba(140,82,255,0.45); border-radius:100px; padding:10px 26px; z-index:10; }
+  .badge-dot  { width:8px; height:8px; border-radius:50%; background:#8c52ff; }
+  .badge-text { font-size:17px; font-weight:700; letter-spacing:4px; color:#8c52ff; text-transform:uppercase; }
+
+  /* Outer flex column using space-between */
+  .slide { position:relative; z-index:5; width:1080px; height:1920px; display:flex; flex-direction:column; justify-content:space-between; padding:120px 72px 72px; }
+
+  /* ── Header group ── */
+  .header-group { flex-shrink:0; }
+  .eyebrow      { font-size:18px; font-weight:700; letter-spacing:8px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:6px; }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:140px; line-height:0.85; color:#fff; letter-spacing:4px; margin-bottom:6px; }
+  .team-sub     { font-size:22px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.32); text-transform:uppercase; }
+  .neon-rule    { width:140px; height:3px; background:linear-gradient(90deg,#8c52ff,rgba(140,82,255,0)); border-radius:2px; margin-top:22px; }
+
+  /* ── Three-col stat strip ── */
+  .stat-strip-3 { display:flex; gap:16px; flex-shrink:0; }
+  .stat-block { flex:1; text-align:center; padding:40px 16px 36px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:22px; }
+  .stat-block.hi { background:rgba(140,82,255,0.08); border-color:rgba(140,82,255,0.28); }
+  .stat-num { font-family:'Bebas Neue',sans-serif; font-size:104px; line-height:1; color:#fff; }
+  .stat-num.purple { color:#8c52ff; }
+  .stat-lbl { font-size:13px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.30); margin-top:6px; }
+
+  /* ── Shutout hero banner ── */
+  .shutout-hero { display:flex; align-items:center; gap:28px; border:2px solid rgba(140,82,255,0.35); border-radius:24px; padding:40px 40px; flex-shrink:0; }
+  .shutout-hero.has-shutouts { background:rgba(140,82,255,0.10); }
+  .shutout-hero.no-shutouts  { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.10); }
+  .shutout-num  { font-family:'Bebas Neue',sans-serif; font-size:180px; line-height:1; color:#8c52ff; letter-spacing:-6px; text-shadow:0 0 60px rgba(140,82,255,0.45); flex-shrink:0; }
+  .shutout-num.zero { color:rgba(255,255,255,0.20); text-shadow:none; }
+  .shutout-info { flex:1; }
+  .shutout-label { font-size:15px; font-weight:700; letter-spacing:6px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-bottom:8px; }
+  .shutout-sub   { font-family:'Bebas Neue',sans-serif; font-size:56px; color:#fff; letter-spacing:2px; line-height:1.1; }
+
+  /* ── Goalie section ── */
+  .goalie-section { flex-shrink:0; }
+  .section-label { font-size:14px; font-weight:700; letter-spacing:7px; text-transform:uppercase; color:rgba(255,255,255,0.24); margin-bottom:16px; padding-left:4px; }
+  .goalie-card { display:flex; align-items:center; gap:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:22px; padding:30px 32px; }
+  .goalie-avatar { width:104px; height:104px; border-radius:50%; object-fit:cover; object-position:top center; flex-shrink:0; border:2px solid rgba(140,82,255,0.45); }
+  .goalie-avatar-placeholder { width:104px; height:104px; border-radius:50%; flex-shrink:0; background:rgba(140,82,255,0.16); border:2px solid rgba(140,82,255,0.45); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:36px; color:rgba(140,82,255,0.7); }
+  .goalie-info { flex:1; min-width:0; }
+  .goalie-role { font-size:13px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.28); text-transform:uppercase; margin-bottom:4px; }
+  .goalie-name { font-family:'Bebas Neue',sans-serif; font-size:54px; line-height:1; letter-spacing:2px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .goalie-meta { font-size:15px; font-weight:600; letter-spacing:2px; color:rgba(255,255,255,0.30); text-transform:uppercase; margin-top:4px; }
+  .goalie-stats { display:flex; gap:22px; align-items:center; flex-shrink:0; }
+  .gs-box { text-align:center; }
+  .gs-val { font-family:'Bebas Neue',sans-serif; font-size:64px; line-height:1; color:#fff; }
+  .gs-val.hi { color:#8c52ff; }
+  .gs-lbl { font-size:12px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.28); margin-top:2px; }
+  .gs-div { width:1px; height:54px; background:rgba(255,255,255,0.10); }
+
+  /* ── Footer ── */
+  .footer { flex-shrink:0; display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.12); }
+  .footer-season { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.12); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+{% if top_goalie.photo %}
+<div class="photo-bg"><img class="goalie-photo" src="{{ top_goalie.photo }}" alt="{{ top_goalie.name }}"></div>
+<div class="overlay-top"></div>
+<div class="overlay-bottom"></div>
+{% else %}
+<div class="no-photo-bg"></div>
+{% endif %}
+<div class="bg-scanlines"></div>
+<div class="brand">BTN</div>
+<div class="badge"><div class="badge-dot"></div><div class="badge-text">{{ team_code }} · Defence</div></div>
+
+<div class="slide">
+
+  <div class="header-group">
+    <div class="eyebrow">2025–26 Season Recap</div>
+    <div class="section-title">DEFENCE</div>
+    <div class="team-sub">{{ team_name }}</div>
+    <div class="neon-rule"></div>
+  </div>
+
+  <div class="stat-strip-3">
+    <div class="stat-block">
+      <div class="stat-num">{{ shots_against }}</div>
+      <div class="stat-lbl">Shots Against</div>
+    </div>
+    <div class="stat-block hi">
+      <div class="stat-num purple">{{ shutouts }}</div>
+      <div class="stat-lbl">Shutouts</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">{{ team_sv_pct }}</div>
+      <div class="stat-lbl">Team SV%</div>
+    </div>
+  </div>
+
+  <div class="shutout-hero {% if shutouts > 0 %}has-shutouts{% else %}no-shutouts{% endif %}">
+    <div class="shutout-num {% if shutouts == 0 %}zero{% endif %}">{{ top_goalie.shutouts }}</div>
+    <div class="shutout-info">
+      <div class="shutout-label">{% if shutouts > 0 %}Shutouts This Season{% else %}Clean Sheet Total{% endif %}</div>
+      <div class="shutout-sub">{{ top_goalie.wins }} Wins<br>{{ top_goalie.gp }} Starts</div>
+    </div>
+  </div>
+
+  <div class="goalie-section">
+    <div class="section-label">Starting Goalie</div>
+    <div class="goalie-card">
+      {% if top_goalie.photo %}
+        <img class="goalie-avatar" src="{{ top_goalie.photo }}" alt="{{ top_goalie.name }}">
+      {% else %}
+        <div class="goalie-avatar-placeholder">{{ top_goalie.name[0] if top_goalie.name else 'G' }}</div>
+      {% endif %}
+      <div class="goalie-info">
+        <div class="goalie-role">Season Starter</div>
+        <div class="goalie-name">{{ top_goalie.name }}</div>
+        <div class="goalie-meta">{{ top_goalie.gp }} GP · {{ top_goalie.wins }} W</div>
+      </div>
+      <div class="goalie-stats">
+        <div class="gs-box"><div class="gs-val hi">{{ top_goalie.sv_pct }}</div><div class="gs-lbl">SV%</div></div>
+        <div class="gs-div"></div>
+        <div class="gs-box"><div class="gs-val">{{ top_goalie.gaa }}</div><div class="gs-lbl">GAA</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">BY THE NUMBERS</div>
+    <div class="footer-season">Season 8 · 2025–26</div>
+  </div>
+</div>
+</body>
+</html>

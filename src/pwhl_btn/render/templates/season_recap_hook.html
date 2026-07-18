@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:10px; z-index:20; background:linear-gradient(to right, {{ team_color }}, rgba(255,255,255,0.5), {{ team_color }}); }
+
+  .bg-glow-main { position:absolute; top:20%; left:50%; transform:translate(-50%,-50%); width:1200px; height:1200px; border-radius:50%; background:radial-gradient(circle, {{ team_color_glow }} 0%, transparent 62%); z-index:0; }
+  .bg-glow-bottom { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:1000px; height:700px; background:radial-gradient(ellipse, {{ team_color_dim }} 0%, transparent 65%); z-index:0; }
+  .bg-scanlines { position:absolute; inset:0; background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px); z-index:1; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:3; }
+  .corner-tl { top:48px; left:48px; border-top:2px solid {{ team_color }}; border-left:2px solid {{ team_color }}; opacity:0.55; }
+  .corner-tr { top:48px; right:48px; border-top:2px solid {{ team_color }}; border-right:2px solid {{ team_color }}; opacity:0.55; }
+  .corner-bl { bottom:48px; left:48px; border-bottom:2px solid {{ team_color }}; border-left:2px solid {{ team_color }}; opacity:0.55; }
+  .corner-br { bottom:48px; right:48px; border-bottom:2px solid {{ team_color }}; border-right:2px solid {{ team_color }}; opacity:0.55; }
+
+  .brand  { position:absolute; top:38px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .season-label { position:absolute; top:42px; right:80px; font-size:16px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.20); text-transform:uppercase; z-index:10; }
+
+  .slide { position:relative; z-index:2; width:1080px; height:1920px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; padding:0 60px; }
+
+  .eyebrow { font-size:20px; font-weight:700; letter-spacing:12px; color:rgba(255,255,255,0.30); text-transform:uppercase; text-align:center; margin-bottom:52px; }
+
+  .logo-wrap { width:420px; height:420px; display:flex; align-items:center; justify-content:center; margin-bottom:44px; }
+  .team-logo { width:420px; height:420px; object-fit:contain; filter:drop-shadow(0 0 60px {{ team_color_glow }}) drop-shadow(0 0 120px {{ team_color_dim }}); }
+  .logo-placeholder { width:420px; height:420px; display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:120px; color:rgba(255,255,255,0.18); }
+
+  .team-name { font-family:'Bebas Neue',sans-serif; font-size:96px; letter-spacing:6px; color:#fff; text-align:center; line-height:1; margin-bottom:0; text-shadow:0 0 60px rgba(255,255,255,0.10); }
+
+  .neon-rule { width:240px; height:4px; background:linear-gradient(90deg, transparent, {{ team_color }}, transparent); border-radius:2px; box-shadow:0 0 20px {{ team_color_glow }}; margin:32px auto; }
+
+  .recap-title { font-family:'Bebas Neue',sans-serif; font-size:72px; letter-spacing:10px; color:{{ team_color }}; text-align:center; text-shadow:0 0 50px {{ team_color_glow }}; line-height:1; margin-bottom:8px; }
+  .season-year { font-family:'Bebas Neue',sans-serif; font-size:96px; letter-spacing:8px; color:{{ team_color }}; text-align:center; text-shadow:0 0 60px {{ team_color_glow }}; line-height:0.9; margin-bottom:52px; }
+
+  .record-badge { display:flex; align-items:center; gap:0; background:rgba(255,255,255,0.05); border:1.5px solid {{ team_color }}; border-radius:100px; padding:0; overflow:hidden; opacity:0.85; }
+  .record-cell { padding:18px 36px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); }
+  .record-cell:last-child { border-right:none; }
+  .record-val { font-family:'Bebas Neue',sans-serif; font-size:52px; line-height:1; color:#fff; }
+  .record-lbl { font-size:13px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-top:3px; }
+
+  .footer { position:absolute; bottom:56px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 80px; z-index:10; }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:4px; color:rgba(255,255,255,0.14); }
+  .footer-season { font-size:14px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.14); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-main"></div>
+<div class="bg-glow-bottom"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<div class="brand">BTN</div>
+<div class="season-label">PWHL · Season 8</div>
+
+<div class="slide">
+  <div class="eyebrow">PWHL · 2025–26</div>
+  <div class="logo-wrap">
+    {% if team_logo %}
+      <img class="team-logo" src="{{ team_logo }}" alt="{{ team_name }}">
+    {% else %}
+      <div class="logo-placeholder">{{ team_code }}</div>
+    {% endif %}
+  </div>
+  <div class="team-name">{{ team_name }}</div>
+  <div class="neon-rule"></div>
+  <div class="recap-title">SEASON RECAP</div>
+  <div class="season-year">2025–26</div>
+  <div class="record-badge">
+    <div class="record-cell">
+      <div class="record-val">{{ wins }}</div>
+      <div class="record-lbl">Wins</div>
+    </div>
+    <div class="record-cell">
+      <div class="record-val">{{ losses }}</div>
+      <div class="record-lbl">Losses</div>
+    </div>
+    <div class="record-cell">
+      <div class="record-val">{{ otl }}</div>
+      <div class="record-lbl">OTL</div>
+    </div>
+    <div class="record-cell">
+      <div class="record-val">{{ points }}</div>
+      <div class="record-lbl">Points</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">Season 8 · 2025–26</div>
+</div>
+</body>
+</html>

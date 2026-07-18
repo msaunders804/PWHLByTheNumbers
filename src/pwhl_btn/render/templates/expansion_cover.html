@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { width:1080px; height:1920px; background:#07000f; color:#fff; font-family:'Barlow Condensed',sans-serif; overflow:hidden; position:relative; }
+
+  .top-bar { position:absolute; top:0; left:0; right:0; height:8px; z-index:5;
+             background:linear-gradient(to right,#06b6d4,#0ea5e9,#f5a623); }
+
+  .bg-glow-top   { position:absolute; top:-100px; left:50%; transform:translateX(-50%);
+                   width:1200px; height:800px;
+                   background:radial-gradient(ellipse,rgba(6,182,212,0.18) 0%,transparent 65%); z-index:0; }
+  .bg-glow-bottom{ position:absolute; bottom:200px; left:50%; transform:translateX(-50%);
+                   width:900px; height:600px;
+                   background:radial-gradient(ellipse,rgba(245,166,35,0.10) 0%,transparent 65%); z-index:0; }
+  .bg-scanlines  { position:absolute; inset:0;
+                   background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);
+                   z-index:1; }
+
+  .corner { position:absolute; width:80px; height:80px; z-index:3; }
+  .corner-tl { top:44px; left:44px; border-top:2px solid rgba(6,182,212,0.45); border-left:2px solid rgba(6,182,212,0.45); }
+  .corner-tr { top:44px; right:44px; border-top:2px solid rgba(6,182,212,0.45); border-right:2px solid rgba(6,182,212,0.45); }
+  .corner-bl { bottom:44px; left:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-left:2px solid rgba(245,166,35,0.45); }
+  .corner-br { bottom:44px; right:44px; border-bottom:2px solid rgba(245,166,35,0.45); border-right:2px solid rgba(245,166,35,0.45); }
+
+  .brand  { position:absolute; top:36px; left:80px; font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:6px; color:rgba(255,255,255,0.28); z-index:10; }
+  .label  { position:absolute; top:40px; right:80px; font-size:17px; font-weight:700; letter-spacing:5px; color:rgba(255,255,255,0.22); text-transform:uppercase; z-index:10; }
+
+  .slide {
+    position:relative; z-index:2;
+    width:1080px; height:1920px;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:0; padding:0 80px;
+  }
+
+  .eyebrow {
+    font-size:22px; font-weight:800; letter-spacing:8px;
+    color:rgba(6,182,212,0.75); text-transform:uppercase;
+    text-align:center; margin-bottom:32px;
+  }
+
+  .headline {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:148px; line-height:0.90;
+    letter-spacing:4px; text-align:center;
+    color:#fff;
+    text-shadow:0 0 80px rgba(6,182,212,0.25);
+    margin-bottom:0;
+  }
+
+  .headline-accent {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:148px; line-height:0.90;
+    letter-spacing:4px; text-align:center;
+    color:#06b6d4;
+    text-shadow:0 0 60px rgba(6,182,212,0.50), 0 0 120px rgba(6,182,212,0.20);
+    margin-bottom:48px;
+  }
+
+  .rule {
+    width:220px; height:3px;
+    background:linear-gradient(90deg,transparent,#f5a623,transparent);
+    box-shadow:0 0 20px rgba(245,166,35,0.70);
+    border-radius:2px; margin-bottom:48px;
+  }
+
+  .subhead {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:52px; letter-spacing:8px;
+    color:rgba(255,255,255,0.60); text-align:center;
+    margin-bottom:48px;
+  }
+
+  .pillars {
+    display:flex; gap:32px; align-items:center; justify-content:center;
+    margin-bottom:64px;
+  }
+  .pillar-chip {
+    background:rgba(6,182,212,0.10);
+    border:1.5px solid rgba(6,182,212,0.35);
+    border-radius:100px;
+    padding:12px 28px;
+    font-size:18px; font-weight:700; letter-spacing:3px;
+    color:rgba(6,182,212,0.85); text-transform:uppercase;
+  }
+
+  .data-note {
+    font-size:18px; font-weight:600; letter-spacing:2px;
+    color:rgba(255,255,255,0.25); text-align:center;
+  }
+
+  .footer {
+    position:absolute; bottom:52px; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 80px; z-index:10;
+  }
+  .footer-brand  { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:4px; color:rgba(255,255,255,0.13); }
+  .footer-season { font-size:16px; font-weight:600; letter-spacing:3px; color:rgba(255,255,255,0.13); text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="top-bar"></div>
+<div class="bg-glow-top"></div>
+<div class="bg-glow-bottom"></div>
+<div class="bg-scanlines"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<div class="brand">BTN</div>
+<div class="label">EXPANSION</div>
+
+<div class="slide">
+  <div class="eyebrow">PWHL · By The Numbers</div>
+  <div class="headline">WHERE SHOULD</div>
+  <div class="headline">THE PWHL</div>
+  <div class="headline-accent">EXPAND?</div>
+  <div class="rule"></div>
+  <div class="subhead">I RAN THE NUMBERS</div>
+  <div class="pillars">
+    <div class="pillar-chip">Tour Attendance</div>
+    <div class="pillar-chip">NHL Market</div>
+    <div class="pillar-chip">Women's Sports</div>
+  </div>
+  <div class="data-note">3 data sources · {{ city_count }} cities scored · Season 5 + 8 Takeover Tour</div>
+</div>
+
+<div class="footer">
+  <div class="footer-brand">BY THE NUMBERS</div>
+  <div class="footer-season">PWHL · 2025–26</div>
+</div>
+</body>
+</html>

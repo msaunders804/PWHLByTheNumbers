@@ -129,6 +129,9 @@ def win_prob(home_tid: int, away_tid: int, strength: dict[int, float]) -> float:
 
 # PWHL season average goals per game (used to scale Poisson lambdas)
 PWHL_AVG_GPG = 2.8   # league average goals per team per game
+REG_WIN_POINTS = 3
+OT_WIN_POINTS = 2
+OT_LOSS_POINTS = 1
 
 def _poisson_sample(lam: float, rng: random.Random) -> int:
     """
@@ -181,17 +184,17 @@ def simulate_once(
         goals_a = _poisson_sample(max(lam_a, 0.3), rng)
 
         if goals_h > goals_a:
-            pts[h] = pts.get(h, 0) + 2
+            pts[h] = pts.get(h, 0) + REG_WIN_POINTS
         elif goals_a > goals_h:
-            pts[a] = pts.get(a, 0) + 2
+            pts[a] = pts.get(a, 0) + REG_WIN_POINTS
         else:
             # Tied after regulation → OT: 50/50, loser gets 1 pt
             if rng.random() < 0.5:
-                pts[h] = pts.get(h, 0) + 2
-                pts[a] = pts.get(a, 0) + 1
+                pts[h] = pts.get(h, 0) + OT_WIN_POINTS
+                pts[a] = pts.get(a, 0) + OT_LOSS_POINTS
             else:
-                pts[a] = pts.get(a, 0) + 2
-                pts[h] = pts.get(h, 0) + 1
+                pts[a] = pts.get(a, 0) + OT_WIN_POINTS
+                pts[h] = pts.get(h, 0) + OT_LOSS_POINTS
 
     return pts
 
@@ -345,12 +348,16 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
         current_pts = {tid: 0 for tid in team_ids}
         for g in played:
             h, a = g.home_team_id, g.away_team_id
+            is_extra_time = g.result_type in ('OT', 'SO')
+            win_pts = OT_WIN_POINTS if is_extra_time else REG_WIN_POINTS
             if g.home_score > g.away_score:
-                current_pts[h] += 2
+                current_pts[h] += win_pts
+                if is_extra_time:
+                    current_pts[a] += OT_LOSS_POINTS
             else:
-                current_pts[a] += 2
-                if g.result_type in ('OT', 'SO'):
-                    current_pts[h] += 1
+                current_pts[a] += win_pts
+                if is_extra_time:
+                    current_pts[h] += OT_LOSS_POINTS
 
         # Fetch team codes — try target season first, fall back to any season
         team_code_map = {}
@@ -418,14 +425,20 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
             recent_pts = 0
             for g in recent:
                 h, a = g.home_team_id, g.away_team_id
+                is_extra_time = g.result_type in ('OT', 'SO')
+                win_pts = OT_WIN_POINTS if is_extra_time else REG_WIN_POINTS
                 if g.home_score > g.away_score:
-                    if h == tid: recent_pts += 2
+                    if h == tid:
+                        recent_pts += win_pts
+                    elif is_extra_time and a == tid:
+                        recent_pts += OT_LOSS_POINTS
                 else:
-                    if a == tid: recent_pts += 2
-                    elif g.result_type in ('OT','SO'):
-                        if h == tid: recent_pts += 1
-            recent_pts_pct = recent_pts / (len(recent) * 2) if recent else 0.5
-            blended_pts_pct = (pts / (gp * 2) * 0.5 + recent_pts_pct * 0.5) if gp else 0.5
+                    if a == tid:
+                        recent_pts += win_pts
+                    elif is_extra_time and h == tid:
+                        recent_pts += OT_LOSS_POINTS
+            recent_pts_pct = recent_pts / (len(recent) * REG_WIN_POINTS) if recent else 0.5
+            blended_pts_pct = (pts / (gp * REG_WIN_POINTS) * 0.5 + recent_pts_pct * 0.5) if gp else 0.5
 
             # Streak
             streak = 0
@@ -482,7 +495,7 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
                 "gp":              gp,
                 "pts":             pts,
                 "pts_pct":         adjusted_pts_pct,
-                "raw_pts_pct":     pts / (gp * 2) if gp else 0.0,
+                "raw_pts_pct":     pts / (gp * REG_WIN_POINTS) if gp else 0.0,
                 "home_win_pct":    home_win_pct,
                 "last5_gd":        last5_gd,
                 "rank_score":      rank_score,
@@ -518,12 +531,16 @@ def run_validation(season_id: int = None, as_of_str: str = None, game_pct: float
         actual_pts = {tid: 0 for tid in team_ids}
         for g in final_games:
             h, a = g.home_team_id, g.away_team_id
+            is_extra_time = g.result_type in ('OT', 'SO')
+            win_pts = OT_WIN_POINTS if is_extra_time else REG_WIN_POINTS
             if g.home_score > g.away_score:
-                actual_pts[h] += 2
+                actual_pts[h] += win_pts
+                if is_extra_time:
+                    actual_pts[a] += OT_LOSS_POINTS
             else:
-                actual_pts[a] += 2
-                if g.result_type in ('OT', 'SO'):
-                    actual_pts[h] += 1
+                actual_pts[a] += win_pts
+                if is_extra_time:
+                    actual_pts[h] += OT_LOSS_POINTS
 
         # Compare predicted rank (by proj_pts_mean) vs actual rank
         pred_rank   = {tid: rank+1 for rank, (tid, _) in
@@ -626,6 +643,3 @@ if __name__ == "__main__":
             with open(out_path, "w") as f:
                 json.dump(results, f, indent=2)
             print(f"\n  Exported → {out_path}")
-
-
-

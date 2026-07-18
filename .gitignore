@@ -73,6 +73,9 @@ src/utils/config.py
 .secrets
 credentials/google_drive_creds.json
 
+# Personal/private files                                                                  
+DDA_interview_prep.md    
+
 # Python cache
 __pycache__/
 *.pyc

@@ -22,8 +22,6 @@ from playwright.sync_api import sync_playwright
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 OUTPUT_DIR   = Path(__file__).parent / "output"
 
-ORDINAL = {1: "1ST", 2: "2ND", 3: "3RD", 4: "4TH"}
-
 
 def render_clinch_slide(data: dict, out_dir: Path | None = None) -> Path:
     """
@@ -41,7 +39,11 @@ def render_clinch_slide(data: dict, out_dir: Path | None = None) -> Path:
 
     # Enrich data with derived display values
     data = dict(data)
-    data.setdefault("seed_label", ORDINAL.get(data.get("seed"), f"{data.get('seed')}TH"))
+
+    _MILESTONES = {
+        "MTL": "First team to clinch playoffs in all 3 PWHL seasons",
+    }
+    data.setdefault("milestone", _MILESTONES.get(data.get("team_code", "").upper()))
 
     env  = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
     tmpl = env.get_template("clinch_slide.html")
@@ -197,7 +199,6 @@ def render_clinch_announcement(data: dict, out_dir: Path | None = None) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     data = dict(data)
-    data.setdefault("seed_label", ORDINAL.get(data.get("seed"), f"{data.get('seed')}TH"))
 
     env  = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
     tmpl = env.get_template("clinch_announcement.html")
